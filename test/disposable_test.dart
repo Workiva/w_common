@@ -8,7 +8,7 @@ class DisposableThing extends Object with Disposable {
 
   Future<Null> onDispose() {
     wasOnDisposeCalled = true;
-    return didDispose;
+    return new Future(() {});
   }
 }
 
