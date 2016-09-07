@@ -6,11 +6,13 @@ main(List<String> args) async {
 
   config.analyze.entryPoints = ['lib/', 'lib/src', 'test/unit/', 'tool/'];
 
-  config.format.directories = [
-    'lib/',
-    'test/',
-    'tool/',
-  ];
+  config.format
+    ..directories = [
+      'lib/',
+      'test/',
+      'tool/',
+    ]
+    ..exclude = ['test/generated_runner_test.dart'];
 
   config.genTestRunner.configs = [
     new TestRunnerConfig(
