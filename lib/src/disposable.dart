@@ -33,7 +33,7 @@ abstract class Disposable {
     // method is allowed to return a plain old null value.
     return Future
         .wait(futures.where((future) => future != null))
-        .then(_disposeCompleter);
+        .then(_completeDisposeFuture);
   }
 
   /// Automatically dispose another object when this object is disposed.
@@ -56,16 +56,16 @@ abstract class Disposable {
     return null;
   }
 
-  Future _disposeDisposables(Disposable disposable) => disposable.dispose();
-
-  Null _disposeCompleter(List<dynamic> _) {
-    _didDispose.complete();
-    return null;
-  }
+  Future _cancelStreamSubscriptions(StreamSubscription subscription) =>
+      subscription.cancel();
 
   Future _closeStreamControllers(StreamController controller) =>
       controller.close();
 
-  Future _cancelStreamSubscriptions(StreamSubscription subscription) =>
-      subscription.cancel();
+  Null _completeDisposeFuture(List<dynamic> _) {
+    _didDispose.complete();
+    return null;
+  }
+
+  Future _disposeDisposables(Disposable disposable) => disposable.dispose();
 }
