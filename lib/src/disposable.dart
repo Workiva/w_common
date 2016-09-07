@@ -2,7 +2,7 @@ import 'dart:async';
 
 /// Allows the creation of managed objects, including helpers for common patterns.
 ///
-/// There are three ways to consume this class, as a mixin, a base class,
+/// There are three ways to consume this class: as a mixin, a base class,
 /// and an interface. All should work fine but the first is the simplest
 /// and most powerful. Using the class as an interface will require
 /// significant effort.
