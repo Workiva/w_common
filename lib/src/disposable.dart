@@ -4,7 +4,8 @@ abstract class Disposable {
   Completer<Null> _willDispose = new Completer<Null>();
   Completer<Null> _didDispose = new Completer<Null>();
 
-  List<StreamSubscription> _subscriptions = [];
+  List<StreamController> _streamControllers = [];
+  List<StreamSubscription> _streamSubscriptions = [];
   List<Disposable> _disposables = [];
 
   /// A [Future] that will complete when this object is about to be disposed.
@@ -17,34 +18,55 @@ abstract class Disposable {
   bool get wasDisposed => _didDispose.isCompleted;
 
   /// Dispose of the object, cleaning up to prevent memory leaks.
-  Future<Null> dispose() {
+  Future<Null> dispose() async {
     if (wasDisposed) {
-      return new Future(() {});
+      return null;
     }
 
     _willDispose.complete();
 
-    _disposables.forEach((disposable) => disposable.dispose());
-    _subscriptions.forEach((sub) => sub.cancel());
+    List<Future> futures = []
+      ..addAll(_disposables.map(_disposableDisposer))
+      ..addAll(_streamControllers.map(_controllerCloser))
+      ..addAll(_streamSubscriptions.map(_subscriptionCanceler))
+      ..add(onDispose());
 
-    return onDispose().then((_) {
-      _didDispose.complete();
-      return null;
-    });
+    // We need to filter out nulls because a subscription cancel
+    // method is allowed to return a plain old null value.
+    return Future
+        .wait(futures.where((future) => future != null))
+        .then(_disposeCompleter);
   }
 
-  /// Automatically another object when this object is disposed.
-  void manageDisposable(Disposable object) {
-    _disposables.add(object);
+  /// Automatically dispose another object when this object is disposed.
+  void manageDisposable(Disposable disposable) {
+    _disposables.add(disposable);
+  }
+
+  /// Automatically cancel a stream controller when this object is disposed.
+  void manageStreamController(StreamController controller) {
+    _streamControllers.add(controller);
   }
 
   /// Automatically cancel a stream subscription when this object is disposed.
-  void manageSubscription(StreamSubscription subscription) {
-    _subscriptions.add(subscription);
+  void manageStreamSubscription(StreamSubscription subscription) {
+    _streamSubscriptions.add(subscription);
   }
 
   /// Callback to allow arbitrary cleanup on dispose.
-  Future<Null> onDispose() {
-    return new Future(() {});
+  Future<Null> onDispose() async {
+    return null;
   }
+
+  Future _disposableDisposer(Disposable disposable) => disposable.dispose();
+
+  Null _disposeCompleter(List<dynamic> _) {
+    _didDispose.complete();
+    return null;
+  }
+
+  Future _controllerCloser(StreamController controller) => controller.close();
+
+  Future _subscriptionCanceler(StreamSubscription subscription) =>
+      subscription.cancel();
 }
