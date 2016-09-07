@@ -15,20 +15,18 @@ import 'dart:async';
 /// cleanup to be automated. Managed subscriptions will be automatically
 /// canceled when [dispose] is called on the object.
 ///
-/// ```dart
-/// class MyDisposable extends Object with Disposable {
-///   StreamController _controller = new StreamController();
+///      class MyDisposable extends Object with Disposable {
+///        StreamController _controller = new StreamController();
 ///
-///   MyDisposable(Stream someStream) {
-///     manageStreamSubscription(someStream.listen((_) => print('some stream')));
-///     manageStreamController(_controller);
-///   }
+///        MyDisposable(Stream someStream) {
+///          manageStreamSubscription(someStream.listen((_) => print('some stream')));
+///          manageStreamController(_controller);
+///        }
 ///
-///   Future<Null> onDispose() {
-///     // Other cleanup
-///   }
-/// }
-/// ```
+///        Future<Null> onDispose() {
+///          // Other cleanup
+///        }
+///      }
 ///
 /// Implementing the [onDispose] method is entirely optional and is only
 /// necessary if there is cleanup required that is not covered by one of
@@ -39,12 +37,10 @@ import 'dart:async';
 /// (for example, you might want to remove any objects that are disposed
 /// from a cache). To do this, use the [didDispose] future:
 ///
-/// ```dart
-/// var myDisposable = new MyDisposable();
-/// myDisposable.didDispose.then((_) {
-///   // External cleanup
-/// });
-/// ```
+///      var myDisposable = new MyDisposable();
+///      myDisposable.didDispose.then((_) {
+///        // External cleanup
+///      });
 abstract class Disposable {
   Completer<Null> _didDispose = new Completer<Null>();
   List<Disposable> _disposables = [];
