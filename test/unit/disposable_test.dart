@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:w_common/w_common.dart';
 import 'package:test/test.dart';
+
+import 'package:w_common/w_common.dart';
 
 typedef void StreamCallback(dynamic _);
 
@@ -35,9 +36,9 @@ void main() {
       test('should dispose child when parent is disposed', () async {
         var childThing = new DisposableThing();
         thing.manageDisposable(childThing);
-        expect(childThing.wasDisposed, isFalse);
+        expect(childThing.isDisposed, isFalse);
         await thing.dispose();
-        expect(childThing.wasDisposed, isTrue);
+        expect(childThing.isDisposed, isTrue);
       });
     });
 

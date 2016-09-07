@@ -22,7 +22,10 @@ doc/api/
 *.ipr
 *.iws
 
+# Directories created by dart_dev
+coverage/
+
 # Misc
 .DS_Store
 *~
-*.swp
+*.sw[p-z]

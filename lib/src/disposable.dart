@@ -1,35 +1,33 @@
 import 'dart:async';
 
 abstract class Disposable {
-  Completer<Null> _willDispose = new Completer<Null>();
   Completer<Null> _didDispose = new Completer<Null>();
 
+  List<Disposable> _disposables = [];
   List<StreamController> _streamControllers = [];
   List<StreamSubscription> _streamSubscriptions = [];
-  List<Disposable> _disposables = [];
-
-  /// A [Future] that will complete when this object is about to be disposed.
-  Future<Null> get willDispose => _willDispose.future;
 
   /// A [Future] that will complete when this object has been disposed.
   Future<Null> get didDispose => _didDispose.future;
 
   /// Whether this object has been disposed.
-  bool get wasDisposed => _didDispose.isCompleted;
+  bool get isDisposed => _didDispose.isCompleted;
 
   /// Dispose of the object, cleaning up to prevent memory leaks.
   Future<Null> dispose() async {
-    if (wasDisposed) {
+    if (isDisposed) {
       return null;
     }
 
-    _willDispose.complete();
-
     List<Future> futures = []
-      ..addAll(_disposables.map(_disposableDisposer))
-      ..addAll(_streamControllers.map(_controllerCloser))
-      ..addAll(_streamSubscriptions.map(_subscriptionCanceler))
+      ..addAll(_disposables.map(_disposeDisposables))
+      ..addAll(_streamControllers.map(_closeStreamControllers))
+      ..addAll(_streamSubscriptions.map(_cancelStreamSubscriptions))
       ..add(onDispose());
+
+    _disposables = [];
+    _streamControllers = [];
+    _streamSubscriptions = [];
 
     // We need to filter out nulls because a subscription cancel
     // method is allowed to return a plain old null value.
@@ -58,15 +56,16 @@ abstract class Disposable {
     return null;
   }
 
-  Future _disposableDisposer(Disposable disposable) => disposable.dispose();
+  Future _disposeDisposables(Disposable disposable) => disposable.dispose();
 
   Null _disposeCompleter(List<dynamic> _) {
     _didDispose.complete();
     return null;
   }
 
-  Future _controllerCloser(StreamController controller) => controller.close();
+  Future _closeStreamControllers(StreamController controller) =>
+      controller.close();
 
-  Future _subscriptionCanceler(StreamSubscription subscription) =>
+  Future _cancelStreamSubscriptions(StreamSubscription subscription) =>
       subscription.cancel();
 }
