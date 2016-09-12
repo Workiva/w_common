@@ -104,8 +104,12 @@ abstract class Disposable {
   Future _cancelStreamSubscriptions(StreamSubscription subscription) =>
       subscription.cancel();
 
-  Future _closeStreamControllers(StreamController controller) =>
-      controller.close();
+  Future _closeStreamControllers(StreamController controller) {
+    if (!controller.hasListener) {
+      controller.stream.listen((_) {});
+    }
+    return controller.close();
+  }
 
   Null _completeDisposeFuture(List<dynamic> _) {
     _didDispose.complete();
