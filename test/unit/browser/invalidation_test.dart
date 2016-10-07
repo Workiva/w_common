@@ -3,16 +3,6 @@ import 'dart:async';
 import 'package:test/test.dart';
 import 'package:w_common/w_common.dart';
 
-class DisposableThing extends Disposable {
-  bool wasOnDisposeCalled = false;
-
-  @override
-  Future<Null> onDispose() {
-    wasOnDisposeCalled = true;
-    return new Future(() {});
-  }
-}
-
 void main() {
   group('InvalidationMixin', () {
     InvalidThing thing;
