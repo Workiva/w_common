@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
-import 'package:w_common/w_common.dart';
 
+import '../../../lib/src/disposable.dart';
 import 'typedefs.dart';
 
 class DisposableThing extends Disposable {
