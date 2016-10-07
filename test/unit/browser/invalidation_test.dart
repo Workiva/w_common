@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:test/test.dart';
 import 'package:w_common/w_common.dart';
-//import 'dart:html';
 
 class DisposableThing extends Disposable {
   bool wasOnDisposeCalled = false;
@@ -33,7 +32,7 @@ void main() {
         expect(thing.invalid, isFalse);
       });
 
-      test('does a thing', () async {
+      test('calls validate, eventually', () async {
         thing.invalidate();
 
         thing.onValidate.listen(expectAsync((_) {}, count: 1));
