@@ -12,18 +12,28 @@ main(List<String> args) async {
       'test/',
       'tool/',
     ]
-    ..exclude = ['test/generated_runner_test.dart'];
+    ..exclude = [
+      'test/unit/vm/generated_vm_tests.dart',
+      'test/unit/browser/generated_browser_tests.dart'
+    ];
 
   config.genTestRunner.configs = [
     new TestRunnerConfig(
-        directory: 'test',
+        directory: 'test/unit/vm',
         env: Environment.vm,
-        filename: 'generated_runner_test')
+        filename: 'generated_vm_tests'),
+    new TestRunnerConfig(
+        directory: 'test/unit/browser',
+        env: Environment.browser,
+        filename: 'generated_browser_tests')
   ];
 
   config.test
-    ..platforms = ['vm']
-    ..unitTests = ['test/generated_runner_test.dart'];
+    ..platforms = ['vm', 'content-shell']
+    ..unitTests = [
+      'test/unit/vm/generated_vm_tests.dart',
+      'test/unit/browser/generated_browser_tests.dart'
+    ];
 
   await dev(args);
 }

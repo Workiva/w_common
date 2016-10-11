@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:w_common/w_common.dart';
+import 'package:w_common/src/func.dart';
 
 void main() {
   group('Func<T>', () {
