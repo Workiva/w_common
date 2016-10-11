@@ -19,7 +19,7 @@ abstract class InvalidationMixin {
   ///
   /// Schedule a call to [validate] to occur at the next frame. Multiple calls
   /// to invalidate will not enqueue multiple validations. The [Future] returned
-  /// will complete when the class in validated and complete with an error if
+  /// will complete when the class is validated and complete with an error if
   /// invalidation is cancelled.
   Future invalidate() {
     if (invalid) return _onValidate.future;
@@ -28,9 +28,8 @@ abstract class InvalidationMixin {
 
     window.animationFrame.then((_) {
       if (invalid) {
-        _onValidate.complete();
-
         validate();
+        _onValidate.complete();
       }
     });
 
@@ -41,9 +40,15 @@ abstract class InvalidationMixin {
   void validate();
 
   /// Cancels the current validation attempt.
+  ///
+  /// The future returned by [invalidate] will receive an
+  /// [InvalidationCancelledException] as a result of calling this method.
   void cancelInvalidation() {
     _onValidate.completeError(new InvalidationCancelledException());
   }
 }
 
+/// An exception representing a cancelled invalidation.
+///
+/// An instance of this [Exception] will be sent if the invalidation is cancelled.
 class InvalidationCancelledException implements Exception {}
