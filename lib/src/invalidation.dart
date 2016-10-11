@@ -44,7 +44,9 @@ abstract class InvalidationMixin {
   /// The future returned by [invalidate] will receive an
   /// [InvalidationCancelledException] as a result of calling this method.
   void cancelInvalidation() {
-    _onValidate.completeError(new InvalidationCancelledException());
+    if (invalid) {
+      _onValidate.completeError(new InvalidationCancelledException());
+    }
   }
 }
 
