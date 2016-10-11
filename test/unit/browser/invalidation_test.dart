@@ -13,9 +13,12 @@ void main() {
 
     group('invalidate', () {
       test('marks the thing as invalid', () {
-        thing.invalidate();
+        Future onValidation = thing.invalidate();
 
         expect(thing.invalid, isTrue);
+
+        onValidation.catchError(
+            expectAsync((InvalidationCancelledException e) {}, count: 1));
 
         thing.cancelInvalidation();
 
@@ -23,8 +26,11 @@ void main() {
       });
 
       test('calls validate, eventually', () async {
-        thing.invalidate();
+        Future onValidation = thing.invalidate();
 
+        onValidation.then(expectAsync((_) {}, count: 1));
+
+        // ignore: STRONG_MODE_DOWN_CAST_COMPOSITE
         thing.onValidate.listen(expectAsync((_) {}, count: 1));
       });
     });
