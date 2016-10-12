@@ -23,16 +23,11 @@ class ExampleSerializable extends JsonSerializable {
   }
 }
 
-class NotSerializableToString {
-  String name = 'NotSerializableToString';
-}
-
 void main() {
   group('JsonSerializable : verify that', () {
     test('example object can be properly serialized', () async {
       ExampleSerializable testSerializable = new ExampleSerializable();
       testSerializable.context['child'] = 'childName';
-
       expect(
           JSON.encode(testSerializable), '{"context":{"child":"childName"}}');
     });
