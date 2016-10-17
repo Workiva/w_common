@@ -51,11 +51,5 @@ linter:
     - unnecessary_brace_in_string_interp
     - unnecessary_getters_setters
 
-    # TODO
-    #- public_member_api_docs
-
-    # This rule forces overly verbose declaration of variables.
-    #- always_specify_types
-
     # Pub Rules
     - package_names
