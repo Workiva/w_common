@@ -3,7 +3,6 @@ description: General utilities for Dart projects.
 version: 0.0.1
 author: Workiva Client Platform Team <team-clientplatform@workiva.com>
 homepage: https://www.github.com/Workiva/w_common
-publish_to: https://pub.workiva.org
 
 environment:
   sdk: '>=1.12.0 <2.0.0'
