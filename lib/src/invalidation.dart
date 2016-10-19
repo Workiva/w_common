@@ -7,7 +7,7 @@ import 'dart:html';
 ///
 /// Call [invalidate] to mark class as needing to be validated.  Implement
 /// [validate] to specify logic that should happen when the class is validated.
-/// Validation is scheduled using [animationFrame] on [window].
+/// Validation is scheduled using animationFrame on [window].
 abstract class InvalidationMixin {
   /// A boolean reflection of the current validity.
   bool get invalid => _onValidate != null && !_onValidate.isCompleted;

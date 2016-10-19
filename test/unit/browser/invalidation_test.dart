@@ -11,6 +11,10 @@ void main() {
       thing = new InvalidThing();
     });
 
+    tearDown(() {
+      thing.dispose();
+    });
+
     group('invalidate', () {
       test('marks the thing as invalid', () {
         Future onValidation = thing.invalidate();
@@ -28,6 +32,7 @@ void main() {
       test('calls validate, eventually', () async {
         Future onValidation = thing.invalidate();
 
+        // ignore: unawaited_futures
         onValidation.then(expectAsync((_) {}, count: 1));
 
         // ignore: STRONG_MODE_DOWN_CAST_COMPOSITE
@@ -41,7 +46,12 @@ class InvalidThing extends InvalidationMixin {
   StreamController _onValidate = new StreamController.broadcast();
   Stream get onValidate => _onValidate.stream;
 
+  @override
   void validate() {
     _onValidate.add(null);
+  }
+
+  void dispose() {
+    _onValidate.close();
   }
 }

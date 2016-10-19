@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:async';
+
 import 'package:dart_dev/dart_dev.dart'
     show dev, config, TestRunnerConfig, Environment;
 
-main(List<String> args) async {
+Future main(List<String> args) async {
   // https://github.com/Workiva/dart_dev
 
   config.analyze.entryPoints = ['lib/', 'lib/src', 'test/unit/', 'tool/'];
