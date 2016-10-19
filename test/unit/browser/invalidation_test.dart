@@ -21,8 +21,10 @@ void main() {
 
         expect(thing.invalid, isTrue);
 
-        onValidation.catchError(
-            expectAsync((InvalidationCancelledException e) {}, count: 1));
+        // ignore: unawaited_futures
+        onValidation.then(expectAsync((ValidationStatus status) {
+          expect(status, equals(ValidationStatus.cancelled));
+        }, count: 1));
 
         thing.cancelInvalidation();
 
@@ -33,7 +35,9 @@ void main() {
         Future onValidation = thing.invalidate();
 
         // ignore: unawaited_futures
-        onValidation.then(expectAsync((_) {}, count: 1));
+        onValidation.then(expectAsync((ValidationStatus status) {
+          expect(status, equals(ValidationStatus.complete));
+        }, count: 1));
 
         // ignore: STRONG_MODE_DOWN_CAST_COMPOSITE
         thing.onValidate.listen(expectAsync((_) {}, count: 1));
