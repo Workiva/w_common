@@ -1,10 +1,10 @@
 @TestOn('browser')
 library user_analytics.common_test;
 
-import 'package:test/test.dart';
-
 import 'dart:convert' show JSON;
-import 'package:w_common/w_common.dart';
+
+import 'package:test/test.dart';
+import 'package:w_common/src/json_serializable.dart';
 
 class ExampleSerializable extends JsonSerializable {
   Map _context = new Map();
