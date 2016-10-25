@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export 'src/disposable.dart';
+export 'src/disposable.dart' show Disposable;
 export 'src/func.dart' show Func;
-export 'src/invalidation.dart'
-    show InvalidationMixin, ValidationStatus;
-export 'src/json_serializable.dart';
+export 'src/invalidation_mixin.dart' show InvalidationMixin, ValidationStatus;
+export 'src/json_serializable.dart' show JsonSerializable;

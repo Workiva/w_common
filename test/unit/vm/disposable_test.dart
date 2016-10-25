@@ -17,7 +17,7 @@ import 'dart:async';
 import 'package:test/test.dart';
 import 'package:w_common/src/disposable.dart';
 
-import 'typedefs.dart';
+import '../typedefs.dart';
 
 class DisposableThing extends Disposable {
   bool wasOnDisposeCalled = false;
@@ -74,6 +74,8 @@ void main() {
         expect(controller.isClosed, isFalse);
         await thing.dispose();
         expect(controller.isClosed, isTrue);
+        await subscription.cancel();
+        await controller.close();
       });
 
       test(
@@ -96,6 +98,8 @@ void main() {
         thing.manageStreamSubscription(subscription);
         await thing.dispose();
         controller.add(null);
+        await subscription.cancel();
+        await controller.close();
       });
     });
   });
