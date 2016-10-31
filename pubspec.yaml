@@ -1,6 +1,6 @@
 name: w_common
 description: General utilities for Dart projects.
-version: 0.0.1
+version: 0.1.0
 author: Workiva Client Platform Team <team-clientplatform@workiva.com>
 homepage: https://www.github.com/Workiva/w_common
 
