@@ -43,12 +43,11 @@ void main() {
     });
 
     test('example object can be properly deserialized', () async {
-      ExampleSerializable testSerializable = new ExampleSerializable();
-
       Map<String, dynamic> json = new Map();
-      json['context'] = {
-        'child': 'childname'
-      };
+      json['context'] = {'child': 'childname'};
+
+      ExampleSerializable testSerializable = new ExampleSerializable()
+        ..fromJson(json);
 
       testSerializable.fromJson(json);
       expect(testSerializable.context['child'], 'childname');

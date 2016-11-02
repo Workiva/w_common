@@ -29,8 +29,7 @@ abstract class JsonSerializable {
   ///
   ///   @override
   ///   void fromJson(Map<String, dynamic> json) {
-  ///     _id = json[id];
-  ///     _name = json['name'];
+  ///     _context = json['context'];
   ///   }
 
   Map<String, dynamic> toJson();
