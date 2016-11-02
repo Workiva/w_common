@@ -26,6 +26,11 @@ class ExampleSerializable extends JsonSerializable {
     fieldMap['context'] = context;
     return fieldMap;
   }
+
+  @override
+  void fromJson(Map<String, dynamic> json) {
+    context = json['context'];
+  }
 }
 
 void main() {
@@ -35,6 +40,18 @@ void main() {
       testSerializable.context['child'] = 'childName';
       expect(
           JSON.encode(testSerializable), '{"context":{"child":"childName"}}');
+    });
+
+    test('example object can be properly deserialized', () async {
+      ExampleSerializable testSerializable = new ExampleSerializable();
+
+      Map<String, dynamic> json = new Map();
+      json['context'] = {
+        'child': 'childname'
+      };
+
+      testSerializable.fromJson(json);
+      expect(testSerializable.context['child'], 'childname');
     });
   });
 }
