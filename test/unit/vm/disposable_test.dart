@@ -19,8 +19,20 @@ import 'package:w_common/src/disposable.dart';
 
 import '../typedefs.dart';
 
-class DisposableThing extends Disposable {
+class DisposableThing extends Object with Disposable {
   bool wasOnDisposeCalled = false;
+
+  void testManageDisposable(Disposable thing) {
+    manageDisposable(thing);
+  }
+
+  void testManageStreamController(StreamController controller) {
+    manageStreamController(controller);
+  }
+
+  void testManageStreamSubscription(StreamSubscription subscription) {
+    manageStreamSubscription(subscription);
+  }
 
   @override
   Future<Null> onDispose() {
@@ -48,7 +60,7 @@ void main() {
     group('manageDisposable', () {
       test('should dispose child when parent is disposed', () async {
         var childThing = new DisposableThing();
-        thing.manageDisposable(childThing);
+        thing.testManageDisposable(childThing);
         expect(childThing.isDisposed, isFalse);
         await thing.dispose();
         expect(childThing.isDisposed, isTrue);
@@ -58,7 +70,7 @@ void main() {
     group('manageStreamController', () {
       test('should close a broadcast stream when parent is disposed', () async {
         var controller = new StreamController.broadcast();
-        thing.manageStreamController(controller);
+        thing.testManageStreamController(controller);
         expect(controller.isClosed, isFalse);
         await thing.dispose();
         expect(controller.isClosed, isTrue);
@@ -70,7 +82,7 @@ void main() {
         var subscription = controller.stream
             .listen(expectAsync(([_]) {}, count: 0) as StreamListener);
         subscription.onDone(expectAsync(([_]) {}, count: 1) as StreamListener);
-        thing.manageStreamController(controller);
+        thing.testManageStreamController(controller);
         expect(controller.isClosed, isFalse);
         await thing.dispose();
         expect(controller.isClosed, isTrue);
@@ -82,7 +94,7 @@ void main() {
           'should close a single-subscription stream with no listener'
           'when parent is disposed', () async {
         var controller = new StreamController();
-        thing.manageStreamController(controller);
+        thing.testManageStreamController(controller);
         expect(controller.isClosed, isFalse);
         await thing.dispose();
         expect(controller.isClosed, isTrue);
@@ -95,7 +107,7 @@ void main() {
         controller.onCancel = expectAsync(([_]) {}, count: 1);
         var subscription = controller.stream
             .listen(expectAsync((_) {}, count: 0) as StreamListener);
-        thing.manageStreamSubscription(subscription);
+        thing.testManageStreamSubscription(subscription);
         await thing.dispose();
         controller.add(null);
         await subscription.cancel();
