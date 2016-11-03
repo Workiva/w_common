@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import 'package:test/test.dart';
-import 'package:w_common/src/func.dart';
+import 'package:w_common/func.dart';
 
 void main() {
   group('Func<T>', () {
