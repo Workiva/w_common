@@ -7,6 +7,9 @@ homepage: https://www.github.com/Workiva/w_common
 environment:
   sdk: '>=1.12.0 <2.0.0'
 
+dependencies:
+  meta: ^1.0.4
+
 dev_dependencies:
   analyzer: ^0.27.3
   coverage: ^0.7.2

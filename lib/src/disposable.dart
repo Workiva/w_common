@@ -14,6 +14,8 @@
 
 import 'dart:async';
 
+import 'package:meta/meta.dart';
+
 /// Allows the creation of managed objects, including helpers for common patterns.
 ///
 /// There are three ways to consume this class: as a mixin, a base class,
@@ -96,21 +98,28 @@ abstract class Disposable {
   }
 
   /// Automatically dispose another object when this object is disposed.
+  @mustCallSuper
+  @protected
   void manageDisposable(Disposable disposable) {
     _disposables.add(disposable);
   }
 
   /// Automatically cancel a stream controller when this object is disposed.
+  @mustCallSuper
+  @protected
   void manageStreamController(StreamController controller) {
     _streamControllers.add(controller);
   }
 
   /// Automatically cancel a stream subscription when this object is disposed.
+  @mustCallSuper
+  @protected
   void manageStreamSubscription(StreamSubscription subscription) {
     _streamSubscriptions.add(subscription);
   }
 
   /// Callback to allow arbitrary cleanup on dispose.
+  @protected
   Future<Null> onDispose() async {
     return null;
   }
