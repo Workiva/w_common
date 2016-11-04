@@ -16,6 +16,30 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 
+// ignore: one_member_abstracts
+abstract class _Disposable {
+  Future<Null> dispose();
+}
+
+class _InternalDisposable implements _Disposable {
+  Disposer _disposer;
+
+  _InternalDisposable(this._disposer);
+
+  @override
+  Future<Null> dispose() {
+    var disposeFuture = _disposer();
+    _disposer = null;
+    if (disposeFuture == null) {
+      return new Future(() => null);
+    }
+    return disposeFuture.then((_) => null);
+  }
+}
+
+/// A function that, when called, disposes of one or more objects.
+typedef Future<dynamic> Disposer();
+
 /// Allows the creation of managed objects, including helpers for common patterns.
 ///
 /// There are three ways to consume this class: as a mixin, a base class,
@@ -44,6 +68,27 @@ import 'package:meta/meta.dart';
 ///        }
 ///      }
 ///
+/// The [manageDisposer] helper allows you to clean up arbitrary objects
+/// on dispose so that you can avoid keeping track of them yourself. To
+/// use it, simply provide a callback that returns a [Future] of any
+/// kind. For example:
+///
+///      class MyDisposable extends Object with Disposable {
+///        StreamController _controller = new StreamController();
+///
+///        MyDisposable() {
+///          var thing = new ThingThatRequiresCleanup();
+///          manageDisposer(() {
+///            thing.cleanUp();
+///            return new Future(() {});
+///          });
+///        }
+///      }
+///
+/// Cleanup will then be automatically performed when the containing
+/// object is disposed. If returning a future is inconvenient or
+/// otherwise undesireable, you may also return `null` explicitly.
+///
 /// Implementing the [onDispose] method is entirely optional and is only
 /// necessary if there is cleanup required that is not covered by one of
 /// the helpers.
@@ -57,12 +102,10 @@ import 'package:meta/meta.dart';
 ///      myDisposable.didDispose.then((_) {
 ///        // External cleanup
 ///      });
-abstract class Disposable {
+abstract class Disposable implements _Disposable {
   Completer<Null> _didDispose = new Completer<Null>();
-  List<Disposable> _disposables = [];
   bool _isDisposing = false;
-  List<StreamController> _streamControllers = [];
-  List<StreamSubscription> _streamSubscriptions = [];
+  List<_Disposable> _internalDisposables = [];
 
   /// A [Future] that will complete when this object has been disposed.
   Future<Null> get didDispose => _didDispose.future;
@@ -71,6 +114,7 @@ abstract class Disposable {
   bool get isDisposed => _didDispose.isCompleted;
 
   /// Dispose of the object, cleaning up to prevent memory leaks.
+  @override
   Future<Null> dispose() async {
     if (isDisposed) {
       return null;
@@ -81,14 +125,10 @@ abstract class Disposable {
     _isDisposing = true;
 
     List<Future> futures = []
-      ..addAll(_disposables.map(_disposeDisposables))
-      ..addAll(_streamControllers.map(_closeStreamControllers))
-      ..addAll(_streamSubscriptions.map(_cancelStreamSubscriptions))
+      ..addAll(_internalDisposables.map((disposable) => disposable.dispose()))
       ..add(onDispose());
 
-    _disposables = [];
-    _streamControllers = [];
-    _streamSubscriptions = [];
+    _internalDisposables = [];
 
     // We need to filter out nulls because a subscription cancel
     // method is allowed to return a plain old null value.
@@ -101,21 +141,34 @@ abstract class Disposable {
   @mustCallSuper
   @protected
   void manageDisposable(Disposable disposable) {
-    _disposables.add(disposable);
+    _internalDisposables.add(disposable);
+  }
+
+  /// Automatically handle arbitrary disposals using a callback.
+  @mustCallSuper
+  @protected
+  void manageDisposer(Disposer disposer) {
+    _internalDisposables.add(new _InternalDisposable(disposer));
   }
 
   /// Automatically cancel a stream controller when this object is disposed.
   @mustCallSuper
   @protected
   void manageStreamController(StreamController controller) {
-    _streamControllers.add(controller);
+    _internalDisposables.add(new _InternalDisposable(() {
+      if (!controller.hasListener) {
+        controller.stream.listen((_) {});
+      }
+      return controller.close();
+    }));
   }
 
   /// Automatically cancel a stream subscription when this object is disposed.
   @mustCallSuper
   @protected
   void manageStreamSubscription(StreamSubscription subscription) {
-    _streamSubscriptions.add(subscription);
+    _internalDisposables
+        .add(new _InternalDisposable(() => subscription.cancel()));
   }
 
   /// Callback to allow arbitrary cleanup on dispose.
@@ -124,20 +177,8 @@ abstract class Disposable {
     return null;
   }
 
-  Future _cancelStreamSubscriptions(StreamSubscription subscription) =>
-      subscription.cancel();
-
-  Future _closeStreamControllers(StreamController controller) {
-    if (!controller.hasListener) {
-      controller.stream.listen((_) {});
-    }
-    return controller.close();
-  }
-
   Null _completeDisposeFuture(List<dynamic> _) {
     _didDispose.complete();
     return null;
   }
-
-  Future _disposeDisposables(Disposable disposable) => disposable.dispose();
 }

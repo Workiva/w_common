@@ -26,6 +26,10 @@ class DisposableThing extends Object with Disposable {
     manageDisposable(thing);
   }
 
+  void testManageDisposer(Disposer disposer) {
+    manageDisposer(disposer);
+  }
+
   void testManageStreamController(StreamController controller) {
     manageStreamController(controller);
   }
@@ -64,6 +68,23 @@ void main() {
         expect(childThing.isDisposed, isFalse);
         await thing.dispose();
         expect(childThing.isDisposed, isTrue);
+      });
+    });
+
+    group('manageDisposer', () {
+      test(
+          'should call callback and accept null return value'
+          'when parent is disposed', () async {
+        thing.testManageDisposer(expectAsync(() => null, count: 1) as Disposer);
+        await thing.dispose();
+      });
+
+      test(
+          'should call callback and accept Future return value'
+          'when parent is disposed', () async {
+        thing.testManageDisposer(
+            expectAsync(() => new Future(() {}), count: 1) as Disposer);
+        await thing.dispose();
       });
     });
 
