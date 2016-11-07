@@ -27,10 +27,10 @@ abstract class JsonSerializable {
   ///     return fieldMap;
   ///   }
   ///
-  ///   @override
-  ///   void fromJson(Map<String, dynamic> json) {
-  ///     _context = json['context'];
+  ///   ExampleSerializable.fromJson(Map<String, dynamic> json): super.fromJson(json) {
+  ///     context = json['context'];
   ///   }
+
   JsonSerializable();
   JsonSerializable.fromJson(Map<String, dynamic> json);
   Map<String, dynamic> toJson();
