@@ -31,7 +31,7 @@ abstract class JsonSerializable {
   ///   void fromJson(Map<String, dynamic> json) {
   ///     _context = json['context'];
   ///   }
-
+  JsonSerializable();
+  JsonSerializable.fromJson(Map<String, dynamic> json);
   Map<String, dynamic> toJson();
-  void fromJson(Map<String, dynamic> json);
 }
