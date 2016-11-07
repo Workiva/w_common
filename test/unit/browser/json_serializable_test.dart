@@ -15,7 +15,7 @@
 import 'dart:convert' show JSON;
 
 import 'package:test/test.dart';
-import 'package:w_common/src/json_serializable.dart';
+import 'package:w_common/json_serializable.dart';
 
 class ExampleSerializable extends JsonSerializable {
   Map context = new Map();
