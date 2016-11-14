@@ -69,6 +69,10 @@ void main() {
         await thing.dispose();
         expect(childThing.isDisposed, isTrue);
       });
+
+      test('should throw if called with a null argument', () {
+        expect(() => thing.testManageDisposable(null), throwsArgumentError);
+      });
     });
 
     group('manageDisposer', () {
@@ -85,6 +89,10 @@ void main() {
         thing.testManageDisposer(
             expectAsync(() => new Future(() {}), count: 1) as Disposer);
         await thing.dispose();
+      });
+
+      test('should throw if called with a null argument', () {
+        expect(() => thing.testManageDisposer(null), throwsArgumentError);
       });
     });
 
@@ -120,6 +128,11 @@ void main() {
         await thing.dispose();
         expect(controller.isClosed, isTrue);
       });
+
+      test('should throw if called with a null argument', () {
+        expect(
+            () => thing.testManageStreamController(null), throwsArgumentError);
+      });
     });
 
     group('manageStreamSubscription', () {
@@ -133,6 +146,11 @@ void main() {
         controller.add(null);
         await subscription.cancel();
         await controller.close();
+      });
+
+      test('should throw if called with a null argument', () {
+        expect(() => thing.testManageStreamSubscription(null),
+            throwsArgumentError);
       });
     });
   });
