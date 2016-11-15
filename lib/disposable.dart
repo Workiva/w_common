@@ -138,23 +138,32 @@ abstract class Disposable implements _Disposable {
   }
 
   /// Automatically dispose another object when this object is disposed.
+  ///
+  /// The parameter may not be `null`.
   @mustCallSuper
   @protected
   void manageDisposable(Disposable disposable) {
+    _throwIfNull(disposable, 'disposable');
     _internalDisposables.add(disposable);
   }
 
   /// Automatically handle arbitrary disposals using a callback.
+  ///
+  /// The parameter may not be `null`.
   @mustCallSuper
   @protected
   void manageDisposer(Disposer disposer) {
+    _throwIfNull(disposer, 'disposer');
     _internalDisposables.add(new _InternalDisposable(disposer));
   }
 
   /// Automatically cancel a stream controller when this object is disposed.
+  ///
+  /// The parameter may not be `null`.
   @mustCallSuper
   @protected
   void manageStreamController(StreamController controller) {
+    _throwIfNull(controller, 'controller');
     _internalDisposables.add(new _InternalDisposable(() {
       if (!controller.hasListener) {
         controller.stream.listen((_) {});
@@ -164,9 +173,12 @@ abstract class Disposable implements _Disposable {
   }
 
   /// Automatically cancel a stream subscription when this object is disposed.
+  ///
+  /// The parameter may not be `null`.
   @mustCallSuper
   @protected
   void manageStreamSubscription(StreamSubscription subscription) {
+    _throwIfNull(subscription, 'subscription');
     _internalDisposables
         .add(new _InternalDisposable(() => subscription.cancel()));
   }
@@ -180,5 +192,11 @@ abstract class Disposable implements _Disposable {
   Null _completeDisposeFuture(List<dynamic> _) {
     _didDispose.complete();
     return null;
+  }
+
+  void _throwIfNull(dynamic subscription, String name) {
+    if (subscription == null) {
+      throw new ArgumentError.notNull(name);
+    }
   }
 }
