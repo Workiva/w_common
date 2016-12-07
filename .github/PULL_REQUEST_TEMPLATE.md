@@ -13,11 +13,6 @@
 
 ### Semantic Versioning
 
-> **This library is still pre-1.0.0.**
->
-> Patches and minor changes will be released in a patch version, while breaking
-> changes can be released in a minor version.
-
 - [ ] **Patch**
   - [ ] This change does not affect the public API
   - [ ] This change fixes existing incorrect behavior without any additions
