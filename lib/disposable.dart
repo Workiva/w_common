@@ -113,6 +113,20 @@ abstract class Disposable implements _Disposable {
   /// Whether this object has been disposed.
   bool get isDisposed => _didDispose.isCompleted;
 
+  /// Whether this object has been disposed or is disposing.
+  ///
+  /// This will become `true` as soon as the [dispose] method is called
+  /// and will remain `true` forever. This is intended as a convenience
+  /// and `object.isDisposedOrDisposing` will always be the same as
+  /// `object.isDisposed || object.isDisposing`.
+  bool get isDisposedOrDisposing => isDisposed || isDisposing;
+
+  /// Whether this object is in the process of being disposed.
+  ///
+  /// This will become `true` as soon as the [dispose] method is called
+  /// and will become `false` once the [didDispose] future completes.
+  bool get isDisposing => _isDisposing;
+
   /// Dispose of the object, cleaning up to prevent memory leaks.
   @override
   Future<Null> dispose() async {
@@ -191,6 +205,7 @@ abstract class Disposable implements _Disposable {
 
   Null _completeDisposeFuture(List<dynamic> _) {
     _didDispose.complete();
+    _isDisposing = false;
     return null;
   }
 

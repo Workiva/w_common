@@ -40,8 +40,18 @@ class DisposableThing extends Object with Disposable {
 
   @override
   Future<Null> onDispose() {
+    expect(isDisposed, isFalse);
+    expect(isDisposing, isTrue);
+    expect(isDisposedOrDisposing, isTrue);
     wasOnDisposeCalled = true;
-    return new Future(() {});
+    var future = new Future<Null>(() => null);
+    future.then((_) async {
+      await new Future(() {}); // Give it a chance to update state.
+      expect(isDisposed, isTrue);
+      expect(isDisposing, isFalse);
+      expect(isDisposedOrDisposing, isTrue);
+    });
+    return future;
   }
 }
 
