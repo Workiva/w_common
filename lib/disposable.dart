@@ -120,11 +120,15 @@ typedef Future<dynamic> Disposer();
 ///
 /// Below is an example of using the class as a concrete proxy.
 ///
-///      class MyLifecycleThing {
+///      class MyLifecycleThing implements DisposableManager {
 ///        Disposable _disposable = new Disposable();
 ///
 ///        MyLifecycleThing() {
 ///          _disposable.manageStreamSubscription(someStream.listen(() => null));
+///        }
+///
+///        void manageStreamSubscription(StreamSubscription sub) {
+///          _disposable.manageStreamSubscription(sub);
 ///        }
 ///
 ///        // ...
