@@ -37,7 +37,10 @@ class _InternalDisposable implements _Disposable {
   }
 }
 
-/// An interface to abstract management from actual disposal machinery.
+/// Managers for disposable members.
+///
+/// This interface allows consumers to exercise more control over how
+/// disposal is implemented for their classes.
 ///
 /// When new management methods are to be added, they should be added
 /// here first, then implemented in [Disposable].
