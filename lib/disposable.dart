@@ -127,11 +127,12 @@ typedef Future<dynamic> Disposer();
 ///          _disposable.manageStreamSubscription(someStream.listen(() => null));
 ///        }
 ///
+///        @override
 ///        void manageStreamSubscription(StreamSubscription sub) {
 ///          _disposable.manageStreamSubscription(sub);
 ///        }
 ///
-///        // ...
+///        // ...more methods
 ///
 ///        Future<Null> unload() async {
 ///          await _disposable.dispose();
