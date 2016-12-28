@@ -37,13 +37,28 @@ class _InternalDisposable implements _Disposable {
   }
 }
 
+/// Managers for disposable members.
+///
+/// This interface allows consumers to exercise more control over how
+/// disposal is implemented for their classes.
+///
+/// When new management methods are to be added, they should be added
+/// here first, then implemented in [Disposable].
+abstract class DisposableManager {
+  void manageDisposable(Disposable disposable);
+  void manageDisposer(Disposer disposer);
+  void manageStreamController(StreamController controller);
+  void manageStreamSubscription(StreamSubscription subscription);
+}
+
 /// A function that, when called, disposes of one or more objects.
 typedef Future<dynamic> Disposer();
 
 /// Allows the creation of managed objects, including helpers for common patterns.
 ///
-/// There are three ways to consume this class: as a mixin, a base class,
-/// and an interface. All should work fine but the first is the simplest
+/// There are four ways to consume this class: as a mixin, a base class,
+/// an interface, and a concrete class used as a proxy. All should work
+/// fine but the first is the simplest
 /// and most powerful. Using the class as an interface will require
 /// significant effort.
 ///
@@ -102,7 +117,33 @@ typedef Future<dynamic> Disposer();
 ///      myDisposable.didDispose.then((_) {
 ///        // External cleanup
 ///      });
-abstract class Disposable implements _Disposable {
+///
+/// Below is an example of using the class as a concrete proxy.
+///
+///      class MyLifecycleThing implements DisposableManager {
+///        Disposable _disposable = new Disposable();
+///
+///        MyLifecycleThing() {
+///          _disposable.manageStreamSubscription(someStream.listen(() => null));
+///        }
+///
+///        @override
+///        void manageStreamSubscription(StreamSubscription sub) {
+///          _disposable.manageStreamSubscription(sub);
+///        }
+///
+///        // ...more methods
+///
+///        Future<Null> unload() async {
+///          await _disposable.dispose();
+///        }
+///      }
+///
+/// In this case, we want `MyLifecycleThing` to have its own lifecycle
+/// without explicit reference to [Disposable]. To do this, we use
+/// composition to include the [Disposable] machinery without changing
+/// the public interface of our class or polluting its lifecycle.
+class Disposable implements _Disposable, DisposableManager {
   Completer<Null> _didDispose = new Completer<Null>();
   bool _isDisposing = false;
   List<_Disposable> _internalDisposables = [];
@@ -155,7 +196,7 @@ abstract class Disposable implements _Disposable {
   ///
   /// The parameter may not be `null`.
   @mustCallSuper
-  @protected
+  @override
   void manageDisposable(Disposable disposable) {
     _throwIfNull(disposable, 'disposable');
     _internalDisposables.add(disposable);
@@ -165,7 +206,7 @@ abstract class Disposable implements _Disposable {
   ///
   /// The parameter may not be `null`.
   @mustCallSuper
-  @protected
+  @override
   void manageDisposer(Disposer disposer) {
     _throwIfNull(disposer, 'disposer');
     _internalDisposables.add(new _InternalDisposable(disposer));
@@ -175,7 +216,7 @@ abstract class Disposable implements _Disposable {
   ///
   /// The parameter may not be `null`.
   @mustCallSuper
-  @protected
+  @override
   void manageStreamController(StreamController controller) {
     _throwIfNull(controller, 'controller');
     _internalDisposables.add(new _InternalDisposable(() {
@@ -190,7 +231,7 @@ abstract class Disposable implements _Disposable {
   ///
   /// The parameter may not be `null`.
   @mustCallSuper
-  @protected
+  @override
   void manageStreamSubscription(StreamSubscription subscription) {
     _throwIfNull(subscription, 'subscription');
     _internalDisposables
