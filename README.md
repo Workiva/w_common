@@ -3,7 +3,7 @@
 A collection of helpful utilities for use in Dart projects. Right now, it
 includes the following:
 
-  * A `Cache` implementation that maintians references to an object instance by
+  * A `Cache` implementation that maintains references to an object instance by
   an identifier. Specializations of this class allow invariants to be
   maintained:
     * `ReferenceCache` maintains a count for each access for a given identifier.

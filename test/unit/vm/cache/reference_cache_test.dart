@@ -32,7 +32,7 @@ void main() {
         expect(cache.referenceCount(cachedId), 1);
       });
     });
-    
+
     group('onRemove', () {
       test('should reset reference count to 0', () async {
         expect(cache.referenceCount(cachedId), 1);

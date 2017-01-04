@@ -55,13 +55,13 @@ void main() {
         expect(didCallValueFactory, isTrue);
       });
 
-      test('should not call valueFactory if id is cached', () async {
+      test('should not call valueFactory if identifier is cached', () async {
         var didCallValueFactory = false;
-        await cache.get(notCachedId, () {
+        await cache.get(cachedId, () {
           didCallValueFactory = true;
           return notCachedValue;
         });
-        expect(didCallValueFactory, isTrue);
+        expect(didCallValueFactory, isFalse);
       });
 
       test('should not dispatch didUpdate event on cached get', () async {

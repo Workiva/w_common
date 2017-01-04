@@ -21,11 +21,18 @@ class CacheContext<TIdentifier, TValue> {
 /// References are retained for the lifecycle of the instance of the [Cache],
 /// unless explicitly removed.
 class Cache<TIdentifier, TValue> extends Object with Disposable {
+  /// The backing store for values in the [Cache].
   Map<TIdentifier, Future<TValue>> _cache = <TIdentifier, Future<TValue>>{};
+
+  // ignore: close_sinks
   StreamController<CacheContext<TIdentifier, TValue>> _didUpdateController =
       new StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
+
+  // ignore: close_sinks
   StreamController<CacheContext<TIdentifier, TValue>> _didRemoveController =
       new StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
+
+  /// A collection of pending removals for a given [TIdentifier].
   Map<TIdentifier, Completer<Null>> _removalCompleters =
       <TIdentifier, Completer<Null>>{};
 
@@ -151,14 +158,29 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   ///
   /// If the [Cache] [isDisposedOrDisposing] then a [StateError] is thrown.
   bool isCached(TIdentifier id) {
-    _throwWhenDisposed('determine if id is cached');
+    _throwWhenDisposed('determine if identifier is cached');
     return _cache.containsKey(id);
   }
+
+  /// Allows consumers to define behavior that is executed when a [TValue] is
+  /// obtained from the [Cache].
+  @protected
+  Future<Null> onGet(TIdentifier id, TValue value) async {}
+
+  /// Allows consumers to define behavior that is executed when a [TValue] is
+  /// put in the [Cache].
+  @protected
+  Future<Null> onPut(TIdentifier id, TValue value) async {}
+
+  /// Allows consumers to define behavior that is executed when a [TValue] is
+  /// removed.
+  @protected
+  Future<Null> onRemove(TIdentifier id, TValue value) async {}
 
   /// Updates the current value for a given [TIdentifier] with the given
   /// [TValue].
   ///
-  /// Putting a value into the [Cache] results in the imeddiate replacement. any
+  /// Putting a value into the [Cache] results in the imeddiate replacement. Any
   /// future call to [get] or [getAsync] will return the given [value]. Any call
   /// to put will await the completion of the [onPut] lifecycle method before
   /// returning the given value. A [CacheContext] event is emitted by the
@@ -178,21 +200,6 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     return _cache[id];
   }
 
-  /// Allows consumers to define behavior that is executed when a [TValue] is
-  /// obtained from the [Cache].
-  @protected
-  Future<Null> onGet(TIdentifier id, TValue value) async {}
-
-  /// Allows consumers to define behavior that is executed when a [TValue] is
-  /// updated in the [Cache].
-  @protected
-  Future<Null> onPut(TIdentifier id, TValue value) async {}
-
-  /// Allows consumers to define behavior that is executed when a [TValue] is
-  /// removed.
-  @protected
-  Future<Null> onRemove(TIdentifier id, TValue value) async {}
-
   /// Removes the reference to a [TValue] associated with the given
   /// [TIdentifier].
   ///
@@ -202,13 +209,14 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// against the cache resovle to a value.
   ///
   /// A [CacheContext] value is emitted by the [didUpdate] stream upon
-  /// successfull removal of the given [TIdentifier].
+  /// successfull removal of the given [TIdentifier]. In addition, a
+  /// [CacheContext] value is emitted by the [didRemove] stream upon successfull
+  /// removal from the cache.
   ///
   /// If the [Cache] [isDisposedOrDisposing] then a [StateError] is thrown.
   @mustCallSuper
   Future<Null> remove(TIdentifier id) {
     _throwWhenDisposed('remove');
-
     if (_cache.containsKey(id)) {
       return _removalCompleters.putIfAbsent(id, () {
         final completer = new Completer<Null>();
