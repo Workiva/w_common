@@ -16,7 +16,7 @@ class CacheContext<TIdentifier, TValue> {
   CacheContext(this.id, this.value);
 }
 
-/// Maintians a reference to a given any [TValue] attributed to a [TIdentifier].
+/// Maintains a reference to a given [TValue] associated with a [TIdentifier].
 ///
 /// References are retained for the lifecycle of the instance of the [Cache],
 /// unless explicitly removed.
@@ -25,11 +25,11 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   Map<TIdentifier, Future<TValue>> _cache = <TIdentifier, Future<TValue>>{};
 
   // ignore: close_sinks
-  StreamController<CacheContext<TIdentifier, TValue>> _didUpdateController =
+  StreamController<CacheContext<TIdentifier, TValue>> _didRemoveController =
       new StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
 
   // ignore: close_sinks
-  StreamController<CacheContext<TIdentifier, TValue>> _didRemoveController =
+  StreamController<CacheContext<TIdentifier, TValue>> _didUpdateController =
       new StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
 
   /// A collection of pending removals for a given [TIdentifier].
@@ -41,30 +41,28 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
         .forEach(manageStreamController);
   }
 
-  /// The collection of removals from the [Cache].
+  /// The stream of events that indicate a removal [Cache].
   Stream<CacheContext<TIdentifier, TValue>> get didRemove =>
       _didRemoveController.stream;
 
-  /// The collection of changes to the [Cache].
-  ///
-  /// Values are emitted when the cached value is changes.
+  /// The stream of events that indicate a change to a cached [TValue].
   Stream<CacheContext<TIdentifier, TValue>> get didUpdate =>
       _didUpdateController.stream;
 
-  /// Returns a value from the cache for a given [TIdentifier] or adds the
-  /// [TValue] returned by the value factory when the value does not exist in
-  /// the cache.
+  /// Returns a value from the cache for a given [TIdentifier]. If the
+  /// [TIdentifier] is not present in the cache the value returned by the given
+  /// [valueFactory] is added to the cache and returned.
   ///
   /// All calls to [get] await a call to the [onGet] lifecycle method before
   /// returning the cached value. If the [Cache] does not contain an instance
-  /// for the given [TIdentifier], the given [valueFactory] is called and an
+  /// for the given [TIdentifier], the given [valueFactory] is called and a
   /// [CacheContext] event is emitted on the [didUpdate] stream. A call to [get]
   /// that returns a cached value does not emit this event as the [Cache] has
-  /// not updated.
+  /// not changed.
   ///
-  /// Calls to [get] are evaluated syncronously and will return the future value
-  /// established by the first call to [get]. This allows calls to get to
-  /// return the same value regardless of completion of asyncronous calls to
+  /// Calls to [get] are evaluated synchronously and will return the future
+  /// value established by the first call to [get]. This allows calls to [get]
+  /// to return the same value regardless of completion of asynchronous calls to
   /// the [onGet] lifecycle methods or [valueFactory].
   ///
   /// ```
@@ -72,8 +70,8 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// var b = cache.get('id', _superLongCall);
   /// var c = cache.get('id', _superLongCall);
   ///
-  /// // All of the values in this list are the same instance returned by the
-  /// // first call to `_superLongCall`.
+  /// // The futures in this list will all resolve to the same instance,
+  /// // which was returned by `_superLongCall` the first time `get` was called.
   /// var values = Future.wait([a, b, c]);
   /// ```
   ///
@@ -103,29 +101,30 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     return _cache[id];
   }
 
-  /// Returns a value from the cache for a given [TIdentifier] or adds the
-  /// [TValue] resolved from the [Future] returned by factory when the value
-  /// does not exist in the cache.
+  /// Returns a value from the cache for a given [TIdentifier]. If the
+  /// [TIdentifier] is not present in the cache the value returned by the given
+  /// [valueFactory] is added to the cache and returned.
   ///
-  /// All calls to [get] await a call to the [onGet] lifecycle method before
-  /// returning the cached value. If the [Cache] does not contain an instance
-  /// for the given [TIdentifier], the given [valueFactory] is called and an
-  /// [CacheContext] event is emitted on the [didUpdate] stream. A call to [get]
-  /// that returns a cached value does not emit this event as the [Cache] has
-  /// not updated.
+  /// All calls to [getAsync] await a call to the [onGet] lifecycle method
+  /// before returning the cached value. If the [Cache] does not contain an
+  /// instance for the given [TIdentifier], the given [valueFactory] is called
+  /// and an [CacheContext] event is emitted on the [didUpdate] stream. A call
+  /// to [get] that returns a cached value does not emit this event as the
+  /// [Cache] has not updated.
   ///
-  /// Calls to [get] are evaluated syncronously and will return the future value
-  /// established by the first call to [get]. This allows calls to get to
-  /// return the same value regardless of completion of asyncronous calls to
-  /// the [onGet] lifecycle methods or [valueFactory].
+  /// Calls to [getAsync] are evaluated synchronously and will return the future
+  /// value established by the first call to [get]. This allows calls to
+  /// [getAsync] to return the same value regardless of completion of
+  /// asynchronous calls to the [onGet] lifecycle methods or [valueFactory].
   ///
   /// ```
   /// var a = cache.getAsync('id', _superLongAsyncCall);
   /// var b = cache.getAsync('id', _superLongAsyncCall);
   /// var c = cache.getAsync('id', _superLongAsyncCall);
   ///
-  /// // All of the values in this list are the same instance returned by the
-  /// // first call to `_superLongAsyncCall`.
+  /// // The futures in this list will all resolve to the same instance,
+  /// // which was returned by `_superLongAsyncCall` the first time `get` was
+  /// // called.
   /// var values = Future.wait([a, b, c]);
   /// ```
   ///
@@ -154,33 +153,30 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     return _cache[id];
   }
 
-  /// Is the given identifier in the [Cache]?
+  /// Does the [Cache] contain the given [TIdentifier]?
   ///
   /// If the [Cache] [isDisposedOrDisposing] then a [StateError] is thrown.
-  bool isCached(TIdentifier id) {
+  bool containsKey(Object id) {
     _throwWhenDisposed('determine if identifier is cached');
     return _cache.containsKey(id);
   }
 
-  /// Allows consumers to define behavior that is executed when a [TValue] is
-  /// obtained from the [Cache].
+  /// Custom logic to be executed during a [get] or [getAsync].
   @protected
   Future<Null> onGet(TIdentifier id, TValue value) async {}
 
-  /// Allows consumers to define behavior that is executed when a [TValue] is
-  /// put in the [Cache].
+  /// Custom logic to be executed during a [put].
   @protected
   Future<Null> onPut(TIdentifier id, TValue value) async {}
 
-  /// Allows consumers to define behavior that is executed when a [TValue] is
-  /// removed.
+  /// Custom logic to be executed during a [remove].
   @protected
   Future<Null> onRemove(TIdentifier id, TValue value) async {}
 
   /// Updates the current value for a given [TIdentifier] with the given
   /// [TValue].
   ///
-  /// Putting a value into the [Cache] results in the imeddiate replacement. Any
+  /// Putting a value into the [Cache] results in the immediate replacement. Any
   /// future call to [get] or [getAsync] will return the given [value]. Any call
   /// to put will await the completion of the [onPut] lifecycle method before
   /// returning the given value. A [CacheContext] event is emitted by the
@@ -205,12 +201,12 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   ///
   /// If a value is currently cached for the given [TIdentifier], the completion
   /// of the [get] or [put] that inserted the [TIdentifier] into the cache is
-  /// awaited before removal. This ensures that any pending asyncronous calls
-  /// against the cache resovle to a value.
+  /// awaited before removal. This ensures that any pending asynchronous calls
+  /// against the cache resolve  to a value.
   ///
   /// A [CacheContext] value is emitted by the [didUpdate] stream upon
-  /// successfull removal of the given [TIdentifier]. In addition, a
-  /// [CacheContext] value is emitted by the [didRemove] stream upon successfull
+  /// successful removal of the given [TIdentifier]. In addition, a
+  /// [CacheContext] value is emitted by the [didRemove] stream upon successful
   /// removal from the cache.
   ///
   /// If the [Cache] [isDisposedOrDisposing] then a [StateError] is thrown.

@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 
 import 'package:w_common/src/cache/cache.dart';
 
-/// Maintains the number of references for an instance of an cache value.
+/// Maintains the number of references to an instance of a cache value.
 class ReferenceCache<TIdentifier, TValue> extends Cache<TIdentifier, TValue> {
   Map<TIdentifier, int> _count = {};
 

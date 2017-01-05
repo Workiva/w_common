@@ -6,14 +6,14 @@ includes the following:
   * A `Cache` implementation that maintains references to an object instance by
   an identifier. Specializations of this class allow invariants to be
   maintained:
-    * `ReferenceCache` maintains a count for each access for a given identifier.
+    * A `ReferenceCache` maintains a count for each access for a given identifier.
     When the final reference is released, the item is removed from the cache.
   * A `Disposable` interface / mixin to assist with cleaning up streams and
   other data structures that won't necessarily be garbage collected without some
   manual intervention.
   * A simple typedef that can be parameterized to represent a zero-arity
   callback that returns a particular type.
-  * A `InvalidationMixin` mixin used to mark a class as requiring validation.
+  * An `InvalidationMixin` mixin used to mark a class as requiring validation.
   * A `JsonSerializable` interface to indicate that something can be serialized
   to JSON.
 

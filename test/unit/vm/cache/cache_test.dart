@@ -30,7 +30,7 @@ void main() {
 
       test(
           'should return same value when called successively '
-          'syncronously', () async {
+          'synchronously', () async {
         var cachedValues = <Future<Object>>[
           cache.get(notCachedId, () => notCachedValue),
           cache.get(notCachedId, () => new Object())
@@ -99,18 +99,18 @@ void main() {
       });
     });
 
-    group('isCached', () {
+    group('containsKey', () {
       test('should return false when identifier has not been cached', () {
-        expect(cache.isCached(notCachedId), isFalse);
+        expect(cache.containsKey(notCachedId), isFalse);
       });
 
       test('should return true when identifier has been cached', () {
-        expect(cache.isCached(cachedId), isTrue);
+        expect(cache.containsKey(cachedId), isTrue);
       });
 
       test('should return false when identifier has been removed', () async {
         await cache.remove(cachedId);
-        expect(cache.isCached(cachedId), isFalse);
+        expect(cache.containsKey(cachedId), isFalse);
       });
 
       test('should throw when disposed', () async {
@@ -135,7 +135,7 @@ void main() {
         expect(childCache.onPutValue, putValue);
       });
 
-      test('should put syncronously', () {
+      test('should put synchronously', () {
         final getA = cache.getAsync(notCachedId, () async {
           await new Future.delayed(new Duration(milliseconds: 100));
           return notCachedValue;
@@ -170,7 +170,7 @@ void main() {
 
       test(
           'should dispatch one didUpdate event when identifier is removed '
-          'syncronously', () {
+          'synchronously', () {
         cache.didUpdate.listen(expectAsync1((CacheContext context) {
           expect(context.id, cachedId);
           expect(context.value, isNull);
@@ -191,7 +191,7 @@ void main() {
 
       test(
           'should dispatch one didRemove event when identifier is removed '
-          'syncronously', () {
+          'synchronously', () {
         cache.didRemove.listen(expectAsync1((CacheContext context) {
           expect(context.id, cachedId);
           expect(context.value, cachedValue);
@@ -221,7 +221,7 @@ void main() {
         expect(childCache.onRemoveValue, isNull);
       });
 
-      test('should remove after pending get if called syncronously', () {
+      test('should remove after pending get if called synchronously', () {
         cache.get(notCachedId, () => notCachedValue);
         cache.remove(notCachedId).then(expectAsync1((Null _) {
           expect(cacheEvents.ids, [notCachedId, notCachedId]);
@@ -229,7 +229,7 @@ void main() {
         }));
       });
 
-      test('should remove after pending getAsync if called syncronously', () {
+      test('should remove after pending getAsync if called synchronously', () {
         cache.getAsync(notCachedId, () async {
           await new Future.delayed(new Duration(milliseconds: 100));
           return notCachedValue;
@@ -240,7 +240,7 @@ void main() {
         }));
       });
 
-      test('should remove after pending put if called syncronously', () {
+      test('should remove after pending put if called synchronously', () {
         cache.put(putId, putValue);
         cache.remove(putId).then(expectAsync1((Null _) {
           expect(cacheEvents.ids, [putId, putId]);
