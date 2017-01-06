@@ -4,10 +4,9 @@ A collection of helpful utilities for use in Dart projects. Right now, it
 includes the following:
 
   * A `Cache` implementation that maintains references to an object instance by
-  an identifier. Specializations of this class allow invariants to be
-  maintained:
-    * A `ReferenceCache` maintains a count for each access for a given identifier.
-    When the final reference is released, the item is removed from the cache.
+  an identifier. Specializations of this class allow invariant to be
+  maintained. For instance, the `ReferenceCache` maintains a count of gets
+  and releases. The item is removed from the cache when these counts are equal.
   * A `Disposable` interface / mixin to assist with cleaning up streams and
   other data structures that won't necessarily be garbage collected without some
   manual intervention.

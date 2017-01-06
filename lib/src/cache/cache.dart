@@ -41,11 +41,13 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
         .forEach(manageStreamController);
   }
 
-  /// The stream of events that indicate a removal [Cache].
+  /// A stream of [CacheContext]s that dispatches when an item is removed from
+  /// the cache.
   Stream<CacheContext<TIdentifier, TValue>> get didRemove =>
       _didRemoveController.stream;
 
-  /// The stream of events that indicate a change to a cached [TValue].
+  /// The stream of [CacheContext]s that dispatches when an item is updated in
+  /// the cache.
   Stream<CacheContext<TIdentifier, TValue>> get didUpdate =>
       _didUpdateController.stream;
 
