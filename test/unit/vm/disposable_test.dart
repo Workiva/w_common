@@ -117,19 +117,15 @@ void main() {
       test('should wait for the future to complete before disposing', () async {
         var completer = new Completer();
         thing.manageFuture(completer.future);
-        thing.dispose();
+        thing.dispose().then((_) {
+          expect(thing.isDisposing, isFalse,
+              reason: 'isDisposing post-complete');
+          expect(thing.isDisposed, isTrue, reason: 'isDisposed post-complete');
+        });
         await new Future(() {});
         expect(thing.isDisposing, isTrue, reason: 'isDisposing pre-complete');
         expect(thing.isDisposed, isFalse, reason: 'isDisposed pre-complete');
         completer.complete();
-        // We need to await two futures because there are two awaits
-        // in the dispose method, one for the managed futures and then
-        // another for the Disposer futures that come from all the
-        // other manage methods.
-        await new Future(() {});
-        await new Future(() {});
-        expect(thing.isDisposing, isFalse, reason: 'isDisposing post-complete');
-        expect(thing.isDisposed, isTrue, reason: 'isDisposed post-complete');
       });
 
       testManageMethod('manageFuture',
