@@ -216,9 +216,8 @@ class Disposable implements _Disposable, DisposableManager {
     _internalDisposables.add(new _InternalDisposable(disposer));
   }
 
-  /// Causes the object to add the future to a list of futures which will
-  /// be awaited before the object disposes itself or any of the objects
-  /// under its management.
+  /// Add [future] to a list of futures that will be awaited before the
+  /// object is disposed.
   @mustCallSuper
   @override
   Future<T> manageFuture<T>(Future<T> future) {
