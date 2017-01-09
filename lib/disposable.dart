@@ -73,11 +73,11 @@ typedef Future Disposer();
 /// canceled when [dispose] is called on the object.
 ///
 ///      class MyDisposable extends Object with Disposable {
-///        StreamController _controller = new StreamController();
+///        StreamController _controller;
 ///
 ///        MyDisposable(Stream someStream) {
 ///          manageStreamSubscription(someStream.listen((_) => print('some stream')));
-///          manageStreamController(_controller);
+///          _controller = manageStreamController(new StreamController());
 ///        }
 ///
 ///        Future<Null> onDispose() {
@@ -91,13 +91,11 @@ typedef Future Disposer();
 /// kind. For example:
 ///
 ///      class MyDisposable extends Object with Disposable {
-///        StreamController _controller = new StreamController();
-///
 ///        MyDisposable() {
 ///          var thing = new ThingThatRequiresCleanup();
 ///          manageDisposer(() {
-///            thing.cleanUp();
-///            return new Future(() {});
+///            // `thing.cleanUp()` is async here.
+///            return thing.cleanUp();
 ///          });
 ///        }
 ///      }
@@ -111,7 +109,7 @@ typedef Future Disposer();
 /// the helpers.
 ///
 /// It is possible to schedule a callback to be called after the object
-/// is disposed for purposes of further, external, cleanup or bookkeeping
+/// is disposed for purposes of further, external cleanup or bookkeeping
 /// (for example, you might want to remove any objects that are disposed
 /// from a cache). To do this, use the [didDispose] future:
 ///
@@ -120,7 +118,9 @@ typedef Future Disposer();
 ///        // External cleanup
 ///      });
 ///
-/// Below is an example of using the class as a concrete proxy.
+/// Below is an example of using the class as a concrete proxy. For a
+/// more extensive example of this, see the
+/// [w_module](https://github.com/Workiva/w_module/) package.
 ///
 ///      class MyLifecycleThing implements DisposableManager {
 ///        Disposable _disposable = new Disposable();
@@ -145,6 +145,8 @@ typedef Future Disposer();
 /// without explicit reference to [Disposable]. To do this, we use
 /// composition to include the [Disposable] machinery without changing
 /// the public interface of our class or polluting its lifecycle.
+///
+/// Implementing the [DisposableManager] interface is not required.
 class Disposable implements _Disposable, DisposableManager {
   Completer<Null> _didDispose = new Completer<Null>();
   bool _isDisposing = false;
@@ -254,6 +256,30 @@ class Disposable implements _Disposable, DisposableManager {
 
   /// Add [future] to a list of futures that will be awaited before the
   /// object is disposed.
+  ///
+  /// For example, a long-running network request might result in the use
+  /// of a [Disposable] instance when it returns. If we started to dispose
+  /// while the request was pending, upon returning the request's callback
+  /// would throw. We can avoid this by waiting on the request's future.
+  ///
+  ///      class MyApi extends Object with Disposable {
+  ///        MyHelper helper;
+  ///
+  ///        MyApi() {
+  ///          helper = manageDisposable(new MyHelper());
+  ///        }
+  ///
+  ///        Future makeRequest(String message) {
+  ///          return waitBeforeDispose(
+  ///              helper.sendRequest(onSuccess: (response) {
+  ///            // If the `MyApi` instance was disposed while the request
+  ///            // was pending, this would normally result in an exception
+  ///            // being thrown. But instead, the dispose process will wait
+  ///            // for the request to complete before disposing of `helper'.
+  ///            helper.handleResponse(message, response);
+  ///          }))
+  ///        }
+  ///      }
   @mustCallSuper
   @override
   Future<T> waitBeforeDispose<T>(Future<T> future) {
