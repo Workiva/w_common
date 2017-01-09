@@ -224,9 +224,12 @@ class Disposable implements _Disposable, DisposableManager {
   Future<T> manageFuture<T>(Future<T> future) {
     _throwOnInvalidCall(future, 'manageFuture');
     if (!_blockingFutures.contains(future)) {
-      _blockingFutures.add(future.then((_) {
+      Future removeFuture;
+      removeFuture = future.then((_) {
         _blockingFutures.remove(future);
-      }));
+        _blockingFutures.remove(removeFuture);
+      });
+      _blockingFutures.addAll([future, removeFuture]);
     }
     return future;
   }
