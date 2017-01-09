@@ -182,20 +182,17 @@ class Disposable implements _Disposable, DisposableManager {
     }
     _isDisposing = true;
 
+    await Future.wait(_blockingFutures);
     // We need to filter out nulls because a subscription cancel
     // method is allowed to return a plain old null value.
-    var futures = _blockingFutures
-      ..addAll(_internalDisposables
-          .map((disposable) => disposable.dispose())
-          .where((future) => future != null))
-      ..add(onDispose());
+    await Future.wait(_internalDisposables
+        .map((disposable) => disposable.dispose())
+        .where((future) => future != null));
 
-    _internalDisposables = [];
-    _blockingFutures = new Set<Future>();
+    _internalDisposables = null;
+    _blockingFutures = null;
 
-    return Future
-        .forEach(futures, (future) => future)
-        .then(_completeDisposeFuture);
+    return onDispose().then(_completeDisposeFuture);
   }
 
   /// Automatically dispose another object when this object is disposed.
