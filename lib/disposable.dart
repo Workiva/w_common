@@ -47,10 +47,10 @@ class _InternalDisposable implements _Disposable {
 abstract class DisposableManager {
   Disposable manageDisposable(Disposable disposable);
   void manageDisposer(Disposer disposer);
-  Future<T> manageFuture<T>(Future<T> future);
   StreamController<T> manageStreamController<T>(StreamController<T> controller);
   StreamSubscription<T> manageStreamSubscription<T>(
       StreamSubscription<T> subscription);
+  Future<T> waitBeforeDispose<T>(Future<T> future);
 }
 
 /// A function that, when called, disposes of one or more objects.
@@ -216,23 +216,6 @@ class Disposable implements _Disposable, DisposableManager {
     _internalDisposables.add(new _InternalDisposable(disposer));
   }
 
-  /// Add [future] to a list of futures that will be awaited before the
-  /// object is disposed.
-  @mustCallSuper
-  @override
-  Future<T> manageFuture<T>(Future<T> future) {
-    _throwOnInvalidCall(future, 'manageFuture');
-    if (!_blockingFutures.contains(future)) {
-      Future removeFuture;
-      removeFuture = future.then((_) {
-        _blockingFutures.remove(future);
-        _blockingFutures.remove(removeFuture);
-      });
-      _blockingFutures.addAll([future, removeFuture]);
-    }
-    return future;
-  }
-
   /// Automatically cancel a stream controller when this object is disposed.
   ///
   /// The parameter may not be `null`.
@@ -267,6 +250,23 @@ class Disposable implements _Disposable, DisposableManager {
   @protected
   Future<Null> onDispose() async {
     return null;
+  }
+
+  /// Add [future] to a list of futures that will be awaited before the
+  /// object is disposed.
+  @mustCallSuper
+  @override
+  Future<T> waitBeforeDispose<T>(Future<T> future) {
+    _throwOnInvalidCall(future, 'waitBeforeDispose');
+    if (!_blockingFutures.contains(future)) {
+      Future removeFuture;
+      removeFuture = future.then((_) {
+        _blockingFutures.remove(future);
+        _blockingFutures.remove(removeFuture);
+      });
+      _blockingFutures.addAll([future, removeFuture]);
+    }
+    return future;
   }
 
   Null _completeDisposeFuture(Null _) {

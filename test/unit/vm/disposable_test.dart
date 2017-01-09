@@ -113,25 +113,6 @@ void main() {
           doesCallbackReturn: false);
     });
 
-    group('manageFuture', () {
-      test('should wait for the future to complete before disposing', () async {
-        var completer = new Completer();
-        thing.manageFuture(completer.future);
-        thing.dispose().then((_) {
-          expect(thing.isDisposing, isFalse,
-              reason: 'isDisposing post-complete');
-          expect(thing.isDisposed, isTrue, reason: 'isDisposed post-complete');
-        });
-        await new Future(() {});
-        expect(thing.isDisposing, isTrue, reason: 'isDisposing pre-complete');
-        expect(thing.isDisposed, isFalse, reason: 'isDisposed pre-complete');
-        completer.complete();
-      });
-
-      testManageMethod('manageFuture',
-          (argument) => thing.manageFuture(argument), new Future(() {}));
-    });
-
     group('manageStreamController', () {
       test('should close a broadcast stream when parent is disposed', () async {
         var controller = new StreamController.broadcast();
@@ -187,6 +168,25 @@ void main() {
           (argument) => thing.manageStreamSubscription(argument),
           controller.stream.listen((_) {}));
       controller.close();
+    });
+
+    group('waitBeforeDispose', () {
+      test('should wait for the future to complete before disposing', () async {
+        var completer = new Completer();
+        thing.waitBeforeDispose(completer.future);
+        thing.dispose().then((_) {
+          expect(thing.isDisposing, isFalse,
+              reason: 'isDisposing post-complete');
+          expect(thing.isDisposed, isTrue, reason: 'isDisposed post-complete');
+        });
+        await new Future(() {});
+        expect(thing.isDisposing, isTrue, reason: 'isDisposing pre-complete');
+        expect(thing.isDisposed, isFalse, reason: 'isDisposed pre-complete');
+        completer.complete();
+      });
+
+      testManageMethod('waitBeforeDispose',
+          (argument) => thing.waitBeforeDispose(argument), new Future(() {}));
     });
   });
 }
