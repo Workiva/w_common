@@ -5,15 +5,15 @@ author: Workiva Client Platform Team <team-clientplatform@workiva.com>
 homepage: https://www.github.com/Workiva/w_common
 
 environment:
-  sdk: '>=1.12.0 <2.0.0'
+  sdk: '>=1.21.0 <2.0.0'
 
 dependencies:
   meta: ^1.0.4
 
 dev_dependencies:
-  analyzer: ^0.27.3
+  analyzer: ^0.29.0
   coverage: ^0.7.2
-  dart_dev: ^1.4.1
+  dart_dev: ^1.5.0
   dart_style: ^0.2.4
-  dartdoc: ^0.8.0
+  dartdoc: ^0.9.0
   test: ^0.12.4

@@ -45,14 +45,16 @@ class _InternalDisposable implements _Disposable {
 /// When new management methods are to be added, they should be added
 /// here first, then implemented in [Disposable].
 abstract class DisposableManager {
-  void manageDisposable(Disposable disposable);
+  Disposable manageDisposable(Disposable disposable);
   void manageDisposer(Disposer disposer);
-  void manageStreamController(StreamController controller);
-  void manageStreamSubscription(StreamSubscription subscription);
+  Future<T> manageFuture<T>(Future<T> future);
+  StreamController<T> manageStreamController<T>(StreamController<T> controller);
+  StreamSubscription<T> manageStreamSubscription<T>(
+      StreamSubscription<T> subscription);
 }
 
 /// A function that, when called, disposes of one or more objects.
-typedef Future<dynamic> Disposer();
+typedef Future Disposer();
 
 /// Allows the creation of managed objects, including helpers for common patterns.
 ///
@@ -147,6 +149,7 @@ class Disposable implements _Disposable, DisposableManager {
   Completer<Null> _didDispose = new Completer<Null>();
   bool _isDisposing = false;
   List<_Disposable> _internalDisposables = [];
+  Set<Future> _blockingFutures = new Set<Future>();
 
   /// A [Future] that will complete when this object has been disposed.
   Future<Null> get didDispose => _didDispose.future;
@@ -179,17 +182,17 @@ class Disposable implements _Disposable, DisposableManager {
     }
     _isDisposing = true;
 
-    List<Future> futures = []
-      ..addAll(_internalDisposables.map((disposable) => disposable.dispose()))
-      ..add(onDispose());
-
-    _internalDisposables = [];
-
+    await Future.wait(_blockingFutures);
     // We need to filter out nulls because a subscription cancel
     // method is allowed to return a plain old null value.
-    return Future
-        .wait(futures.where((future) => future != null))
-        .then(_completeDisposeFuture);
+    await Future.wait(_internalDisposables
+        .map((disposable) => disposable.dispose())
+        .where((future) => future != null));
+
+    _internalDisposables = [];
+    _blockingFutures = new Set<Future>();
+
+    return onDispose().then(_completeDisposeFuture);
   }
 
   /// Automatically dispose another object when this object is disposed.
@@ -197,9 +200,10 @@ class Disposable implements _Disposable, DisposableManager {
   /// The parameter may not be `null`.
   @mustCallSuper
   @override
-  void manageDisposable(Disposable disposable) {
-    _throwIfNull(disposable, 'disposable');
+  Disposable manageDisposable(Disposable disposable) {
+    _throwOnInvalidCall(disposable, 'disposable');
     _internalDisposables.add(disposable);
+    return disposable;
   }
 
   /// Automatically handle arbitrary disposals using a callback.
@@ -207,9 +211,24 @@ class Disposable implements _Disposable, DisposableManager {
   /// The parameter may not be `null`.
   @mustCallSuper
   @override
-  void manageDisposer(Disposer disposer) {
-    _throwIfNull(disposer, 'disposer');
+  void manageDisposer<T>(Disposer disposer) {
+    _throwOnInvalidCall(disposer, 'disposer');
     _internalDisposables.add(new _InternalDisposable(disposer));
+  }
+
+  /// Causes the object to add the future to a list of futures which will
+  /// be awaited before the object disposes itself or any of the objects
+  /// under its management.
+  @mustCallSuper
+  @override
+  Future<T> manageFuture<T>(Future<T> future) {
+    _throwOnInvalidCall(future, 'manageFuture');
+    if (!_blockingFutures.contains(future)) {
+      _blockingFutures.add(future.then((_) {
+        _blockingFutures.remove(future);
+      }));
+    }
+    return future;
   }
 
   /// Automatically cancel a stream controller when this object is disposed.
@@ -217,14 +236,16 @@ class Disposable implements _Disposable, DisposableManager {
   /// The parameter may not be `null`.
   @mustCallSuper
   @override
-  void manageStreamController(StreamController controller) {
-    _throwIfNull(controller, 'controller');
+  StreamController<T> manageStreamController<T>(
+      StreamController<T> controller) {
+    _throwOnInvalidCall(controller, 'manageStreamController');
     _internalDisposables.add(new _InternalDisposable(() {
       if (!controller.hasListener) {
         controller.stream.listen((_) {});
       }
       return controller.close();
     }));
+    return controller;
   }
 
   /// Automatically cancel a stream subscription when this object is disposed.
@@ -232,10 +253,12 @@ class Disposable implements _Disposable, DisposableManager {
   /// The parameter may not be `null`.
   @mustCallSuper
   @override
-  void manageStreamSubscription(StreamSubscription subscription) {
-    _throwIfNull(subscription, 'subscription');
+  StreamSubscription<T> manageStreamSubscription<T>(
+      StreamSubscription<T> subscription) {
+    _throwOnInvalidCall(subscription, 'subscription');
     _internalDisposables
         .add(new _InternalDisposable(() => subscription.cancel()));
+    return subscription;
   }
 
   /// Callback to allow arbitrary cleanup on dispose.
@@ -244,15 +267,21 @@ class Disposable implements _Disposable, DisposableManager {
     return null;
   }
 
-  Null _completeDisposeFuture(List<dynamic> _) {
+  Null _completeDisposeFuture(Null _) {
     _didDispose.complete();
     _isDisposing = false;
     return null;
   }
 
-  void _throwIfNull(dynamic subscription, String name) {
-    if (subscription == null) {
+  void _throwOnInvalidCall(dynamic argument, String name) {
+    if (argument == null) {
       throw new ArgumentError.notNull(name);
+    }
+    if (isDisposing) {
+      throw new StateError('$name not allowed, object is disposing');
+    }
+    if (isDisposed) {
+      throw new StateError('$name not allowed, object is already disposed');
     }
   }
 }
