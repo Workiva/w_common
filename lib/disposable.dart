@@ -54,7 +54,7 @@ abstract class DisposableManager {
 }
 
 /// A function that, when called, disposes of one or more objects.
-typedef Future Disposer();
+typedef Future<dynamic> Disposer();
 
 /// Allows the creation of managed objects, including helpers for common patterns.
 ///
@@ -151,7 +151,7 @@ class Disposable implements _Disposable, DisposableManager {
   Completer<Null> _didDispose = new Completer<Null>();
   bool _isDisposing = false;
   List<_Disposable> _internalDisposables = [];
-  Set<Future> _blockingFutures = new Set<Future>();
+  Set<Future<dynamic>> _blockingFutures = new Set<Future<dynamic>>();
 
   /// A [Future] that will complete when this object has been disposed.
   Future<Null> get didDispose => _didDispose.future;
@@ -203,7 +203,7 @@ class Disposable implements _Disposable, DisposableManager {
   @mustCallSuper
   @override
   Disposable manageDisposable(Disposable disposable) {
-    _throwOnInvalidCall(disposable, 'disposable');
+    _throwOnInvalidCall(disposable, 'manageDisposable');
     _internalDisposables.add(disposable);
     return disposable;
   }
@@ -214,7 +214,7 @@ class Disposable implements _Disposable, DisposableManager {
   @mustCallSuper
   @override
   void manageDisposer(Disposer disposer) {
-    _throwOnInvalidCall(disposer, 'disposer');
+    _throwOnInvalidCall(disposer, 'manageDisposer');
     _internalDisposables.add(new _InternalDisposable(disposer));
   }
 
@@ -242,7 +242,7 @@ class Disposable implements _Disposable, DisposableManager {
   @override
   StreamSubscription<T> manageStreamSubscription<T>(
       StreamSubscription<T> subscription) {
-    _throwOnInvalidCall(subscription, 'subscription');
+    _throwOnInvalidCall(subscription, 'manageStreamSubscription');
     _internalDisposables
         .add(new _InternalDisposable(() => subscription.cancel()));
     return subscription;

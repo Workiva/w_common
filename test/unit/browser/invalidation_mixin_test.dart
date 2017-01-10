@@ -53,7 +53,6 @@ void main() {
           expect(status, equals(ValidationStatus.complete));
         }, count: 1));
 
-        // ignore: STRONG_MODE_DOWN_CAST_COMPOSITE
         thing.onValidate.listen(expectAsync1((_) {}, count: 1));
       });
     });
