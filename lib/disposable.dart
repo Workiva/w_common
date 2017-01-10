@@ -213,7 +213,7 @@ class Disposable implements _Disposable, DisposableManager {
   /// The parameter may not be `null`.
   @mustCallSuper
   @override
-  void manageDisposer<T>(Disposer disposer) {
+  void manageDisposer(Disposer disposer) {
     _throwOnInvalidCall(disposer, 'disposer');
     _internalDisposables.add(new _InternalDisposable(disposer));
   }
