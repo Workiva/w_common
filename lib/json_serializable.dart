@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import 'dart:convert';
 
 /// Abstract class that identifies other classes being serializable as json.
 ///
@@ -27,4 +28,7 @@ abstract class JsonSerializable {
   ///     return fieldMap;
   ///   }
   Map<String, dynamic> toJson();
+
+  /// Returns a String in JSON format representing the serialized class.
+  String toJsonString() => JSON.encode(this);
 }
