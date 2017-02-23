@@ -37,6 +37,43 @@ class _InternalDisposable implements _Disposable {
   }
 }
 
+/// A [Timer] implementation that exposes a [Future] that resolves when a
+/// non-periodic timer finishes it's callback or when any type of [Timer] is
+/// cancelled.
+class _ObservableTimer implements Timer {
+  Completer<Null> _didConclude = new Completer<Null>();
+  Timer _timer;
+
+  _ObservableTimer(Duration duration, void callback()) {
+    _timer = new Timer(duration, () {
+      callback();
+
+      if (!_didConclude.isCompleted) {
+        _didConclude.complete();
+      }
+    });
+  }
+
+  _ObservableTimer.periodic(Duration duration, void callback(Timer t)) {
+    _timer = new Timer.periodic(duration, callback);
+  }
+
+  /// The timer has either been completed or has been cancelled.
+  Future<Null> get didConclude => _didConclude.future;
+
+  @override
+  void cancel() {
+    _timer.cancel();
+
+    if (!_didConclude.isCompleted) {
+      _didConclude.complete();
+    }
+  }
+
+  @override
+  bool get isActive => _timer.isActive;
+}
+
 /// Managers for disposable members.
 ///
 /// This interface allows consumers to exercise more control over how
@@ -46,11 +83,9 @@ class _InternalDisposable implements _Disposable {
 /// here first, then implemented in [Disposable].
 abstract class DisposableManager {
   /// Creates a [Timer] instance that will be cancelled if active upon disposal.
-  @mustCallSuper
   Timer getManagedTimer(Duration duration, void callback());
 
   /// Creates a periodic [Timer] that will be cancelled if active upon disposal.
-  @mustCallSuper
   Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer));
 
   /// Automatically dispose another object when this object is disposed.
@@ -219,15 +254,8 @@ class Disposable implements _Disposable, DisposableManager {
   @mustCallSuper
   @override
   Timer getManagedTimer(Duration duration, void callback()) {
-    _InternalDisposable disposable;
-    var timer = new Timer(duration, () {
-      _internalDisposables.remove(disposable);
-      callback();
-    });
-
-    disposable = new _InternalDisposable(() async => timer.cancel());
-    _internalDisposables.add(disposable);
-
+    var timer = new _ObservableTimer(duration, callback);
+    _addObservableTimerDisposable(timer);
     return timer;
   }
 
@@ -235,9 +263,8 @@ class Disposable implements _Disposable, DisposableManager {
   @mustCallSuper
   @override
   Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer)) {
-    var timer = new Timer.periodic(duration, callback);
-    _internalDisposables
-        .add(new _InternalDisposable(() async => timer.cancel()));
+    var timer = new _ObservableTimer.periodic(duration, callback);
+    _addObservableTimerDisposable(timer);
     return timer;
   }
 
@@ -285,6 +312,13 @@ class Disposable implements _Disposable, DisposableManager {
     _didDispose.complete();
     _isDisposing = false;
     return null;
+  }
+
+  void _addObservableTimerDisposable(_ObservableTimer timer) {
+    _InternalDisposable disposable =
+        new _InternalDisposable(() async => timer.cancel());
+    _internalDisposables.add(disposable);
+    timer.didConclude.then((Null _) => _internalDisposables.remove(disposable));
   }
 
   void _throwIfNull(dynamic argument, String name) {
