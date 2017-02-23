@@ -14,6 +14,5 @@
 
 import 'dart:async';
 
-typedef void StreamListener([dynamic payload]);
 typedef void TimerHarnessCallback();
 typedef void TimerHarnessPeriodicCallback(Timer timer);

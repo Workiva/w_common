@@ -15,10 +15,8 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
-import 'package:w_common/disposable.dart';
 
 import '../stubs.dart';
-import '../typedefs.dart';
 
 void main() {
   group('Disposable', () {
@@ -108,15 +106,14 @@ void main() {
       test(
           'should call callback and accept null return value'
           'when parent is disposed', () async {
-        thing.testManageDisposer(expectAsync(() => null, count: 1) as Disposer);
+        thing.testManageDisposer(expectAsync0(() => null));
         await thing.dispose();
       });
 
       test(
           'should call callback and accept Future return value'
           'when parent is disposed', () async {
-        thing.testManageDisposer(
-            expectAsync(() => new Future(() {}), count: 1) as Disposer);
+        thing.testManageDisposer(expectAsync0(() => new Future(() {})));
         await thing.dispose();
       });
 
@@ -137,9 +134,9 @@ void main() {
       test('should close a single-subscription stream when parent is disposed',
           () async {
         var controller = new StreamController();
-        var subscription = controller.stream
-            .listen(expectAsync(([_]) {}, count: 0) as StreamListener);
-        subscription.onDone(expectAsync(([_]) {}, count: 1) as StreamListener);
+        var subscription =
+            controller.stream.listen(expectAsync1(([_]) {}, count: 0));
+        subscription.onDone(expectAsync1(([_]) {}));
         thing.testManageStreamController(controller);
         expect(controller.isClosed, isFalse);
         await thing.dispose();
@@ -167,9 +164,9 @@ void main() {
     group('manageStreamSubscription', () {
       test('should cancel subscription when parent is disposed', () async {
         var controller = new StreamController();
-        controller.onCancel = expectAsync(([_]) {}, count: 1);
-        var subscription = controller.stream
-            .listen(expectAsync((_) {}, count: 0) as StreamListener);
+        controller.onCancel = expectAsync1(([_]) {});
+        var subscription =
+            controller.stream.listen(expectAsync1((_) {}, count: 0));
         thing.testManageStreamSubscription(subscription);
         await thing.dispose();
         controller.add(null);
