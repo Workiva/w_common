@@ -49,10 +49,7 @@ class _ObservableTimer implements Timer {
   _ObservableTimer(Duration duration, void callback()) {
     _timer = new Timer(duration, () {
       callback();
-
-      if (!_didConclude.isCompleted) {
-        _didConclude.complete();
-      }
+      _didConclude.complete();
     });
   }
 
@@ -66,7 +63,6 @@ class _ObservableTimer implements Timer {
   @override
   void cancel() {
     _timer.cancel();
-
     if (!_didConclude.isCompleted) {
       _didConclude.complete();
     }
@@ -217,7 +213,6 @@ class Disposable implements _Disposable, DisposableManagerV2 {
         .then(_completeDisposeFuture);
   }
 
-  /// Creates a [Timer] instance that will be cancelled if active upon disposal.
   @mustCallSuper
   @override
   Timer getManagedTimer(Duration duration, void callback()) {
@@ -226,7 +221,6 @@ class Disposable implements _Disposable, DisposableManagerV2 {
     return timer;
   }
 
-  /// Creates a periodic [Timer] that will be cancelled if active upon disposal.
   @mustCallSuper
   @override
   Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer)) {

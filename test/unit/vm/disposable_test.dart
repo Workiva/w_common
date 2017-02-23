@@ -50,6 +50,13 @@ void main() {
         expect(await harness.didCancelTimer, isFalse);
         expect(await harness.didCompleteTimer, isTrue);
       });
+
+      test('should return a timer that can call cancel multiple times', () {
+        expect(() {
+          timer.cancel();
+          timer.cancel();
+        }, returnsNormally);
+      });
     });
 
     group('getManagedPeriodicTimer', () {
@@ -69,14 +76,22 @@ void main() {
         expect(await harness.didCompleteTimer, isFalse);
       });
 
-      test('disposing should have no effect on timer after it has completed',
-          () async {
+      test(
+          'disposing should have no effect on timer after it has cancelled by'
+          ' the consumer', () async {
         await harness.didConclude;
         expect(timer.isActive, isFalse);
 
         await thing.dispose();
         expect(await harness.didCancelTimer, isFalse);
         expect(await harness.didCompleteTimer, isTrue);
+      });
+
+      test('should return a timer that can call cancel multiple times', () {
+        expect(() {
+          timer.cancel();
+          timer.cancel();
+        }, returnsNormally);
       });
     });
 
