@@ -12,4 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:async';
+
 typedef void StreamListener([dynamic payload]);
+typedef void TimerHarnessCallback();
+typedef void TimerHarnessPeriodicCallback(Timer timer);

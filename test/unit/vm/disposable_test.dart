@@ -17,43 +17,8 @@ import 'dart:async';
 import 'package:test/test.dart';
 import 'package:w_common/disposable.dart';
 
+import '../stubs.dart';
 import '../typedefs.dart';
-
-class DisposableThing extends Object with Disposable {
-  bool wasOnDisposeCalled = false;
-
-  void testManageDisposable(Disposable thing) {
-    manageDisposable(thing);
-  }
-
-  void testManageDisposer(Disposer disposer) {
-    manageDisposer(disposer);
-  }
-
-  void testManageStreamController(StreamController controller) {
-    manageStreamController(controller);
-  }
-
-  void testManageStreamSubscription(StreamSubscription subscription) {
-    manageStreamSubscription(subscription);
-  }
-
-  @override
-  Future<Null> onDispose() {
-    expect(isDisposed, isFalse);
-    expect(isDisposing, isTrue);
-    expect(isDisposedOrDisposing, isTrue);
-    wasOnDisposeCalled = true;
-    var future = new Future<Null>(() => null);
-    future.then((_) async {
-      await new Future(() {}); // Give it a chance to update state.
-      expect(isDisposed, isTrue);
-      expect(isDisposing, isFalse);
-      expect(isDisposedOrDisposing, isTrue);
-    });
-    return future;
-  }
-}
 
 void main() {
   group('Disposable', () {
@@ -61,6 +26,60 @@ void main() {
 
     setUp(() {
       thing = new DisposableThing();
+    });
+
+    group('getManagedTimer', () {
+      TimerHarness harness;
+      Timer timer;
+
+      setUp(() {
+        harness = new TimerHarness();
+        timer = thing.getManagedTimer(harness.duration, harness.getCallback());
+      });
+
+      test('should cancel timer if disposed before completion', () async {
+        expect(timer.isActive, isTrue);
+        await thing.dispose();
+        expect(await harness.didCancelTimer, isTrue);
+        expect(await harness.didCompleteTimer, isFalse);
+      });
+
+      test('disposing should have no effect on timer after it has completed',
+          () async {
+        await harness.didConclude;
+        expect(timer.isActive, isFalse);
+        await thing.dispose();
+        expect(await harness.didCancelTimer, isFalse);
+        expect(await harness.didCompleteTimer, isTrue);
+      });
+    });
+
+    group('getManagedPeriodicTimer', () {
+      TimerHarness harness;
+      Timer timer;
+
+      setUp(() {
+        harness = new TimerHarness();
+        timer = thing.getManagedPeriodicTimer(
+            harness.duration, harness.getPeriodicCallback());
+      });
+
+      test('should cancel timer if disposed before completion', () async {
+        expect(timer.isActive, isTrue);
+        await thing.dispose();
+        expect(await harness.didCancelTimer, isTrue);
+        expect(await harness.didCompleteTimer, isFalse);
+      });
+
+      test('disposing should have no effect on timer after it has completed',
+          () async {
+        await harness.didConclude;
+        expect(timer.isActive, isFalse);
+
+        await thing.dispose();
+        expect(await harness.didCancelTimer, isFalse);
+        expect(await harness.didCompleteTimer, isTrue);
+      });
     });
 
     group('onDispose', () {

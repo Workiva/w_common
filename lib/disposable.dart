@@ -45,6 +45,14 @@ class _InternalDisposable implements _Disposable {
 /// When new management methods are to be added, they should be added
 /// here first, then implemented in [Disposable].
 abstract class DisposableManager {
+  /// Creates a [Timer] instance that will be cancelled if active upon disposal.
+  @mustCallSuper
+  Timer getManagedTimer(Duration duration, void callback());
+
+  /// Creates a periodic [Timer] that will be cancelled if active upon disposal.
+  @mustCallSuper
+  Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer));
+
   void manageDisposable(Disposable disposable);
   void manageDisposer(Disposer disposer);
   void manageStreamController(StreamController controller);
@@ -102,7 +110,7 @@ typedef Future<dynamic> Disposer();
 ///
 /// Cleanup will then be automatically performed when the containing
 /// object is disposed. If returning a future is inconvenient or
-/// otherwise undesireable, you may also return `null` explicitly.
+/// otherwise undesirable, you may also return `null` explicitly.
 ///
 /// Implementing the [onDispose] method is entirely optional and is only
 /// necessary if there is cleanup required that is not covered by one of
@@ -192,6 +200,32 @@ class Disposable implements _Disposable, DisposableManager {
         .then(_completeDisposeFuture);
   }
 
+  /// Creates a [Timer] instance that will be cancelled if active upon disposal.
+  @mustCallSuper
+  @override
+  Timer getManagedTimer(Duration duration, void callback()) {
+    _InternalDisposable disposable;
+    var timer = new Timer(duration, () {
+      _internalDisposables.remove(disposable);
+      callback();
+    });
+
+    disposable = new _InternalDisposable(() async => timer.cancel());
+    _internalDisposables.add(disposable);
+
+    return timer;
+  }
+
+  /// Creates a periodic [Timer] that will be cancelled if active upon disposal.
+  @mustCallSuper
+  @override
+  Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer)) {
+    var timer = new Timer.periodic(duration, callback);
+    _internalDisposables
+        .add(new _InternalDisposable(() async => timer.cancel()));
+    return timer;
+  }
+
   /// Automatically dispose another object when this object is disposed.
   ///
   /// The parameter may not be `null`.
@@ -250,8 +284,8 @@ class Disposable implements _Disposable, DisposableManager {
     return null;
   }
 
-  void _throwIfNull(dynamic subscription, String name) {
-    if (subscription == null) {
+  void _throwIfNull(dynamic argument, String name) {
+    if (argument == null) {
       throw new ArgumentError.notNull(name);
     }
   }
