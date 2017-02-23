@@ -53,9 +53,24 @@ abstract class DisposableManager {
   @mustCallSuper
   Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer));
 
+  /// Automatically dispose another object when this object is disposed.
+  ///
+  /// The parameter may not be `null`.
   void manageDisposable(Disposable disposable);
+
+  /// Automatically handle arbitrary disposals using a callback.
+  ///
+  /// The parameter may not be `null`.
   void manageDisposer(Disposer disposer);
+
+  /// Automatically cancel a stream controller when this object is disposed.
+  ///
+  /// The parameter may not be `null`.
   void manageStreamController(StreamController controller);
+
+  /// Automatically cancel a stream subscription when this object is disposed.
+  ///
+  /// The parameter may not be `null`.
   void manageStreamSubscription(StreamSubscription subscription);
 }
 
@@ -226,9 +241,6 @@ class Disposable implements _Disposable, DisposableManager {
     return timer;
   }
 
-  /// Automatically dispose another object when this object is disposed.
-  ///
-  /// The parameter may not be `null`.
   @mustCallSuper
   @override
   void manageDisposable(Disposable disposable) {
@@ -236,9 +248,6 @@ class Disposable implements _Disposable, DisposableManager {
     _internalDisposables.add(disposable);
   }
 
-  /// Automatically handle arbitrary disposals using a callback.
-  ///
-  /// The parameter may not be `null`.
   @mustCallSuper
   @override
   void manageDisposer(Disposer disposer) {
@@ -246,9 +255,6 @@ class Disposable implements _Disposable, DisposableManager {
     _internalDisposables.add(new _InternalDisposable(disposer));
   }
 
-  /// Automatically cancel a stream controller when this object is disposed.
-  ///
-  /// The parameter may not be `null`.
   @mustCallSuper
   @override
   void manageStreamController(StreamController controller) {
@@ -261,9 +267,6 @@ class Disposable implements _Disposable, DisposableManager {
     }));
   }
 
-  /// Automatically cancel a stream subscription when this object is disposed.
-  ///
-  /// The parameter may not be `null`.
   @mustCallSuper
   @override
   void manageStreamSubscription(StreamSubscription subscription) {
