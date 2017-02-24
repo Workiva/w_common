@@ -58,16 +58,4 @@ abstract class DisposableManagerV2 implements DisposableManager {
 
   /// Creates a periodic [Timer] that will be cancelled if active upon disposal.
   Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer));
-
-  @override
-  void manageDisposable(Disposable disposable);
-
-  @override
-  void manageDisposer(Disposer disposer);
-
-  @override
-  void manageStreamController(StreamController controller);
-
-  @override
-  void manageStreamSubscription(StreamSubscription subscription);
 }

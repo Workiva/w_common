@@ -35,7 +35,6 @@ void main() {
 
         expect(thing.invalid, isTrue);
 
-        // ignore: unawaited_futures
         onValidation.then(expectAsync1((ValidationStatus status) {
           expect(status, equals(ValidationStatus.cancelled));
         }));
@@ -45,15 +44,13 @@ void main() {
         expect(thing.invalid, isFalse);
       });
 
-      test('calls validate, eventually', () async {
+      test('calls validate, eventually', () {
         Future onValidation = thing.invalidate();
 
-        // ignore: unawaited_futures
         onValidation.then(expectAsync1((ValidationStatus status) {
           expect(status, equals(ValidationStatus.complete));
         }));
 
-        // ignore: STRONG_MODE_DOWN_CAST_COMPOSITE
         thing.onValidate.listen(expectAsync1((_) {}));
       });
     });
