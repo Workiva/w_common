@@ -15,45 +15,8 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
-import 'package:w_common/disposable.dart';
 
-import '../typedefs.dart';
-
-class DisposableThing extends Object with Disposable {
-  bool wasOnDisposeCalled = false;
-
-  void testManageDisposable(Disposable thing) {
-    manageDisposable(thing);
-  }
-
-  void testManageDisposer(Disposer disposer) {
-    manageDisposer(disposer);
-  }
-
-  void testManageStreamController(StreamController controller) {
-    manageStreamController(controller);
-  }
-
-  void testManageStreamSubscription(StreamSubscription subscription) {
-    manageStreamSubscription(subscription);
-  }
-
-  @override
-  Future<Null> onDispose() {
-    expect(isDisposed, isFalse);
-    expect(isDisposing, isTrue);
-    expect(isDisposedOrDisposing, isTrue);
-    wasOnDisposeCalled = true;
-    var future = new Future<Null>(() => null);
-    future.then((_) async {
-      await new Future(() {}); // Give it a chance to update state.
-      expect(isDisposed, isTrue);
-      expect(isDisposing, isFalse);
-      expect(isDisposedOrDisposing, isTrue);
-    });
-    return future;
-  }
-}
+import '../stubs.dart';
 
 void main() {
   group('Disposable', () {
@@ -61,6 +24,75 @@ void main() {
 
     setUp(() {
       thing = new DisposableThing();
+    });
+
+    group('getManagedTimer', () {
+      TimerHarness harness;
+      Timer timer;
+
+      setUp(() {
+        harness = new TimerHarness();
+        timer = thing.getManagedTimer(harness.duration, harness.getCallback());
+      });
+
+      test('should cancel timer if disposed before completion', () async {
+        expect(timer.isActive, isTrue);
+        await thing.dispose();
+        expect(await harness.didCancelTimer, isTrue);
+        expect(await harness.didCompleteTimer, isFalse);
+      });
+
+      test('disposing should have no effect on timer after it has completed',
+          () async {
+        await harness.didConclude;
+        expect(timer.isActive, isFalse);
+        await thing.dispose();
+        expect(await harness.didCancelTimer, isFalse);
+        expect(await harness.didCompleteTimer, isTrue);
+      });
+
+      test('should return a timer that can call cancel multiple times', () {
+        expect(() {
+          timer.cancel();
+          timer.cancel();
+        }, returnsNormally);
+      });
+    });
+
+    group('getManagedPeriodicTimer', () {
+      TimerHarness harness;
+      Timer timer;
+
+      setUp(() {
+        harness = new TimerHarness();
+        timer = thing.getManagedPeriodicTimer(
+            harness.duration, harness.getPeriodicCallback());
+      });
+
+      test('should cancel timer if disposed before completion', () async {
+        expect(timer.isActive, isTrue);
+        await thing.dispose();
+        expect(await harness.didCancelTimer, isTrue);
+        expect(await harness.didCompleteTimer, isFalse);
+      });
+
+      test(
+          'disposing should have no effect on timer after it has cancelled by'
+          ' the consumer', () async {
+        await harness.didConclude;
+        expect(timer.isActive, isFalse);
+
+        await thing.dispose();
+        expect(await harness.didCancelTimer, isFalse);
+        expect(await harness.didCompleteTimer, isTrue);
+      });
+
+      test('should return a timer that can call cancel multiple times', () {
+        expect(() {
+          timer.cancel();
+          timer.cancel();
+        }, returnsNormally);
+      });
     });
 
     group('onDispose', () {
@@ -89,15 +121,14 @@ void main() {
       test(
           'should call callback and accept null return value'
           'when parent is disposed', () async {
-        thing.testManageDisposer(expectAsync(() => null, count: 1) as Disposer);
+        thing.testManageDisposer(expectAsync0(() => null));
         await thing.dispose();
       });
 
       test(
           'should call callback and accept Future return value'
           'when parent is disposed', () async {
-        thing.testManageDisposer(
-            expectAsync(() => new Future(() {}), count: 1) as Disposer);
+        thing.testManageDisposer(expectAsync0(() => new Future(() {})));
         await thing.dispose();
       });
 
@@ -118,9 +149,9 @@ void main() {
       test('should close a single-subscription stream when parent is disposed',
           () async {
         var controller = new StreamController();
-        var subscription = controller.stream
-            .listen(expectAsync(([_]) {}, count: 0) as StreamListener);
-        subscription.onDone(expectAsync(([_]) {}, count: 1) as StreamListener);
+        var subscription =
+            controller.stream.listen(expectAsync1(([_]) {}, count: 0));
+        subscription.onDone(expectAsync1(([_]) {}));
         thing.testManageStreamController(controller);
         expect(controller.isClosed, isFalse);
         await thing.dispose();
@@ -148,9 +179,9 @@ void main() {
     group('manageStreamSubscription', () {
       test('should cancel subscription when parent is disposed', () async {
         var controller = new StreamController();
-        controller.onCancel = expectAsync(([_]) {}, count: 1);
-        var subscription = controller.stream
-            .listen(expectAsync((_) {}, count: 0) as StreamListener);
+        controller.onCancel = expectAsync1(([_]) {});
+        var subscription =
+            controller.stream.listen(expectAsync1((_) {}, count: 0));
         thing.testManageStreamSubscription(subscription);
         await thing.dispose();
         controller.add(null);
