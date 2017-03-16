@@ -19,7 +19,7 @@ import 'package:w_common/disposable.dart';
 
 import 'typedefs.dart';
 
-class DisposableThing extends Object with Disposable {
+class DisposableThing extends Disposable {
   bool wasOnDisposeCalled = false;
 
   void testManageDisposable(Disposable thing) {
