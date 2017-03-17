@@ -22,22 +22,6 @@ import 'typedefs.dart';
 class DisposableThing extends Disposable {
   bool wasOnDisposeCalled = false;
 
-  void testManageDisposable(Disposable thing) {
-    manageDisposable(thing);
-  }
-
-  void testManageDisposer(Disposer disposer) {
-    manageDisposer(disposer);
-  }
-
-  void testManageStreamController(StreamController controller) {
-    manageStreamController(controller);
-  }
-
-  void testManageStreamSubscription(StreamSubscription subscription) {
-    manageStreamSubscription(subscription);
-  }
-
   @override
   Future<Null> onDispose() {
     expect(isDisposed, isFalse);

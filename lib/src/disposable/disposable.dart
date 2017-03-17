@@ -255,15 +255,20 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   @override
   Completer<T> manageCompleter<T>(Completer<T> completer) {
     _throwOnInvalidCall('manageCompleter', 'completer', completer);
+
     var disposable = new _InternalDisposable(() async {
       if (!completer.isCompleted) {
         completer.completeError(new ObjectDisposedException());
       }
     });
     _internalDisposables.add(disposable);
-    completer.future.then((_) {
+
+    completer.future.catchError((e) {
+      _internalDisposables.remove(disposable);
+    }).then((_) {
       _internalDisposables.remove(disposable);
     });
+
     return completer;
   }
 
