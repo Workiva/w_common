@@ -232,7 +232,16 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   @mustCallSuper
   @override
   Future<T> getManagedDelayedFuture<T>(Duration duration, T callback()) {
-    return null;
+    var completer = new Completer<T>();
+    var timer =
+        new _ObservableTimer(duration, () => completer.complete(callback()));
+    var disposable = new _InternalDisposable(() async {
+      timer.cancel();
+      completer.completeError(new ObjectDisposedException());
+    });
+    _internalDisposables.add(disposable);
+    timer.didConclude.then((Null _) => _internalDisposables.remove(disposable));
+    return completer.future;
   }
 
   @mustCallSuper
