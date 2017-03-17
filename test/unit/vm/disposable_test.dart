@@ -28,6 +28,25 @@ void main() {
       thing = new DisposableThing();
     });
 
+    group('getManagedDelayedFuture', () {
+      test('should complete after specified duration', () async {
+        var start = new DateTime.now().millisecondsSinceEpoch;
+        await thing.getManagedDelayedFuture(
+            new Duration(milliseconds: 10), () => null);
+        var end = new DateTime.now().millisecondsSinceEpoch;
+        expect(end - start, greaterThanOrEqualTo(10));
+      });
+
+      test('should complete with an error on premature dispose', () {
+        var future =
+            thing.getManagedDelayedFuture(new Duration(days: 1), () => null);
+        future.catchError((e) {
+          expect(e, new isInstanceOf<ObjectDisposedException>());
+        });
+        thing.dispose();
+      });
+    });
+
     group('getManagedTimer', () {
       TimerHarness harness;
       Timer timer;
@@ -130,6 +149,27 @@ void main() {
         expect(() => callback(argument), throwsStateError);
       });
     }
+
+    group('awaitBeforeDispose', () {
+      test('should wait for the future to complete before disposing', () async {
+        var completer = new Completer();
+        var awaitedFuture = thing.awaitBeforeDispose(completer.future);
+        var disposeFuture = thing.dispose().then((_) {
+          expect(thing.isDisposing, isFalse,
+              reason: 'isDisposing post-complete');
+          expect(thing.isDisposed, isTrue, reason: 'isDisposed post-complete');
+        });
+        await new Future(() {});
+        expect(thing.isDisposing, isTrue, reason: 'isDisposing pre-complete');
+        expect(thing.isDisposed, isFalse, reason: 'isDisposed pre-complete');
+        completer.complete();
+        // It's simpler to do this than ignore a bunch of lints.
+        await Future.wait([awaitedFuture, disposeFuture]);
+      });
+
+      testManageMethod('waitBeforeDispose',
+          (argument) => thing.awaitBeforeDispose(argument), new Future(() {}));
+    });
 
     group('manageCompleter', () {
       test('should complete with an error when parent is disposed', () {
