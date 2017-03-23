@@ -19,24 +19,8 @@ import 'package:w_common/disposable.dart';
 
 import 'typedefs.dart';
 
-class DisposableThing extends Object with Disposable {
+class DisposableThing extends Disposable {
   bool wasOnDisposeCalled = false;
-
-  void testManageDisposable(Disposable thing) {
-    manageDisposable(thing);
-  }
-
-  void testManageDisposer(Disposer disposer) {
-    manageDisposer(disposer);
-  }
-
-  void testManageStreamController(StreamController controller) {
-    manageStreamController(controller);
-  }
-
-  void testManageStreamSubscription(StreamSubscription subscription) {
-    manageStreamSubscription(subscription);
-  }
 
   @override
   Future<Null> onDispose() {

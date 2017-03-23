@@ -164,10 +164,11 @@ typedef Future<dynamic> Disposer();
 /// without explicit reference to [Disposable]. To do this, we use
 /// composition to include the [Disposable] machinery without changing
 /// the public interface of our class or polluting its lifecycle.
-class Disposable implements _Disposable, DisposableManagerV2 {
+class Disposable implements _Disposable, DisposableManagerV3 {
+  List<Future<dynamic>> _awaitableFutures = <Future<dynamic>>[];
   Completer<Null> _didDispose = new Completer<Null>();
+  List<_Disposable> _internalDisposables = <_Disposable>[];
   bool _isDisposing = false;
-  List<_Disposable> _internalDisposables = [];
 
   /// A [Future] that will complete when this object has been disposed.
   Future<Null> get didDispose => _didDispose.future;
@@ -189,6 +190,19 @@ class Disposable implements _Disposable, DisposableManagerV2 {
   /// and will become `false` once the [didDispose] future completes.
   bool get isDisposing => _isDisposing;
 
+  @mustCallSuper
+  @override
+  Future<T> awaitBeforeDispose<T>(Future<T> future) {
+    _throwOnInvalidCall('awaitBeforeDispose', 'future', future);
+    _awaitableFutures.add(future);
+    future.then((_) {
+      _awaitableFutures.remove(future);
+    }).catchError((_) {
+      _awaitableFutures.remove(future);
+    });
+    return future;
+  }
+
   /// Dispose of the object, cleaning up to prevent memory leaks.
   @override
   Future<Null> dispose() async {
@@ -200,17 +214,34 @@ class Disposable implements _Disposable, DisposableManagerV2 {
     }
     _isDisposing = true;
 
-    List<Future> futures = []
+    List<Future<dynamic>> futures = []
       ..addAll(_internalDisposables.map((disposable) => disposable.dispose()))
       ..add(onDispose());
-
     _internalDisposables = [];
+
+    futures.addAll(_awaitableFutures);
+    _awaitableFutures = [];
 
     // We need to filter out nulls because a subscription cancel
     // method is allowed to return a plain old null value.
     return Future
         .wait(futures.where((future) => future != null))
         .then(_completeDisposeFuture);
+  }
+
+  @mustCallSuper
+  @override
+  Future<T> getManagedDelayedFuture<T>(Duration duration, T callback()) {
+    var completer = new Completer<T>();
+    var timer =
+        new _ObservableTimer(duration, () => completer.complete(callback()));
+    var disposable = new _InternalDisposable(() async {
+      timer.cancel();
+      completer.completeError(new ObjectDisposedException());
+    });
+    _internalDisposables.add(disposable);
+    timer.didConclude.then((Null _) => _internalDisposables.remove(disposable));
+    return completer.future;
   }
 
   @mustCallSuper
@@ -231,22 +262,43 @@ class Disposable implements _Disposable, DisposableManagerV2 {
 
   @mustCallSuper
   @override
+  Completer<T> manageCompleter<T>(Completer<T> completer) {
+    _throwOnInvalidCall('manageCompleter', 'completer', completer);
+
+    var disposable = new _InternalDisposable(() async {
+      if (!completer.isCompleted) {
+        completer.completeError(new ObjectDisposedException());
+      }
+    });
+    _internalDisposables.add(disposable);
+
+    completer.future.catchError((e) {
+      _internalDisposables.remove(disposable);
+    }).then((_) {
+      _internalDisposables.remove(disposable);
+    });
+
+    return completer;
+  }
+
+  @mustCallSuper
+  @override
   void manageDisposable(Disposable disposable) {
-    _throwIfNull(disposable, 'disposable');
+    _throwOnInvalidCall('manageDisposable', 'disposable', disposable);
     _internalDisposables.add(disposable);
   }
 
   @mustCallSuper
   @override
   void manageDisposer(Disposer disposer) {
-    _throwIfNull(disposer, 'disposer');
+    _throwOnInvalidCall('manageDisposer', 'disposer', disposer);
     _internalDisposables.add(new _InternalDisposable(disposer));
   }
 
   @mustCallSuper
   @override
   void manageStreamController(StreamController controller) {
-    _throwIfNull(controller, 'controller');
+    _throwOnInvalidCall('manageStreamController', 'controller', controller);
     _internalDisposables.add(new _InternalDisposable(() {
       if (!controller.hasListener) {
         controller.stream.listen((_) {});
@@ -258,7 +310,8 @@ class Disposable implements _Disposable, DisposableManagerV2 {
   @mustCallSuper
   @override
   void manageStreamSubscription(StreamSubscription subscription) {
-    _throwIfNull(subscription, 'subscription');
+    _throwOnInvalidCall(
+        'manageStreamSubscription', 'subscription', subscription);
     _internalDisposables
         .add(new _InternalDisposable(() => subscription.cancel()));
   }
@@ -269,12 +322,6 @@ class Disposable implements _Disposable, DisposableManagerV2 {
     return null;
   }
 
-  Null _completeDisposeFuture(List<dynamic> _) {
-    _didDispose.complete();
-    _isDisposing = false;
-    return null;
-  }
-
   void _addObservableTimerDisposable(_ObservableTimer timer) {
     _InternalDisposable disposable =
         new _InternalDisposable(() async => timer.cancel());
@@ -282,9 +329,23 @@ class Disposable implements _Disposable, DisposableManagerV2 {
     timer.didConclude.then((Null _) => _internalDisposables.remove(disposable));
   }
 
-  void _throwIfNull(dynamic argument, String name) {
-    if (argument == null) {
-      throw new ArgumentError.notNull(name);
+  Null _completeDisposeFuture(List<dynamic> _) {
+    _didDispose.complete();
+    _isDisposing = false;
+    return null;
+  }
+
+  void _throwOnInvalidCall(
+      String methodName, String parameterName, dynamic parameterValue) {
+    if (parameterValue == null) {
+      throw new ArgumentError.notNull(parameterName);
+    }
+    if (isDisposing) {
+      throw new StateError('$methodName not allowed, object is disposing');
+    }
+    if (isDisposed) {
+      throw new StateError(
+          '$methodName not allowed, object is already disposed');
     }
   }
 }

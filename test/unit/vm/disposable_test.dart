@@ -16,6 +16,8 @@ import 'dart:async';
 
 import 'package:test/test.dart';
 
+import 'package:w_common/disposable.dart';
+
 import '../stubs.dart';
 
 void main() {
@@ -24,6 +26,25 @@ void main() {
 
     setUp(() {
       thing = new DisposableThing();
+    });
+
+    group('getManagedDelayedFuture', () {
+      test('should complete after specified duration', () async {
+        var start = new DateTime.now().millisecondsSinceEpoch;
+        await thing.getManagedDelayedFuture(
+            new Duration(milliseconds: 10), () => null);
+        var end = new DateTime.now().millisecondsSinceEpoch;
+        expect(end - start, greaterThanOrEqualTo(10));
+      });
+
+      test('should complete with an error on premature dispose', () {
+        var future =
+            thing.getManagedDelayedFuture(new Duration(days: 1), () => null);
+        future.catchError((e) {
+          expect(e, new isInstanceOf<ObjectDisposedException>());
+        });
+        thing.dispose();
+      });
     });
 
     group('getManagedTimer', () {
@@ -103,44 +124,112 @@ void main() {
       });
     });
 
+    void testManageMethod(
+        String methodName, callback(dynamic argument), dynamic argument,
+        {bool doesCallbackReturn: true}) {
+      if (doesCallbackReturn) {
+        test('should return the argument', () {
+          expect(callback(argument), same(argument));
+        });
+      }
+
+      test('should throw if called with a null argument', () {
+        expect(() => callback(null), throwsArgumentError);
+      });
+
+      test('should throw if object is disposing', () async {
+        thing.manageDisposer(() async {
+          expect(() => callback(argument), throwsStateError);
+        });
+        await thing.dispose();
+      });
+
+      test('should throw if object has been disposed', () async {
+        await thing.dispose();
+        expect(() => callback(argument), throwsStateError);
+      });
+    }
+
+    group('awaitBeforeDispose', () {
+      test('should wait for the future to complete before disposing', () async {
+        var completer = new Completer();
+        var awaitedFuture = thing.awaitBeforeDispose(completer.future);
+        var disposeFuture = thing.dispose().then((_) {
+          expect(thing.isDisposing, isFalse,
+              reason: 'isDisposing post-complete');
+          expect(thing.isDisposed, isTrue, reason: 'isDisposed post-complete');
+        });
+        await new Future(() {});
+        expect(thing.isDisposing, isTrue, reason: 'isDisposing pre-complete');
+        expect(thing.isDisposed, isFalse, reason: 'isDisposed pre-complete');
+        completer.complete();
+        // It's simpler to do this than ignore a bunch of lints.
+        await Future.wait([awaitedFuture, disposeFuture]);
+      });
+
+      testManageMethod('waitBeforeDispose',
+          (argument) => thing.awaitBeforeDispose(argument), new Future(() {}));
+    });
+
+    group('manageCompleter', () {
+      test('should complete with an error when parent is disposed', () {
+        var completer = new Completer<Null>();
+        completer.future.catchError(expectAsync1((exception) {
+          expect(exception, new isInstanceOf<ObjectDisposedException>());
+        }));
+        thing.manageCompleter(completer);
+        thing.dispose();
+      });
+
+      test('should be unmanaged after completion', () {
+        var completer = new Completer<Null>();
+        thing.manageCompleter(completer);
+        completer.complete(null);
+        expect(() => thing.dispose(), returnsNormally);
+      });
+
+      testManageMethod('manageCompleter',
+          (argument) => thing.manageCompleter(argument), new Completer<Null>());
+    });
+
     group('manageDisposable', () {
       test('should dispose child when parent is disposed', () async {
         var childThing = new DisposableThing();
-        thing.testManageDisposable(childThing);
+        thing.manageDisposable(childThing);
         expect(childThing.isDisposed, isFalse);
         await thing.dispose();
         expect(childThing.isDisposed, isTrue);
       });
 
-      test('should throw if called with a null argument', () {
-        expect(() => thing.testManageDisposable(null), throwsArgumentError);
-      });
+      testManageMethod('manageDisposable',
+          (argument) => thing.manageDisposable(argument), new DisposableThing(),
+          doesCallbackReturn: false);
     });
 
     group('manageDisposer', () {
       test(
           'should call callback and accept null return value'
           'when parent is disposed', () async {
-        thing.testManageDisposer(expectAsync0(() => null));
+        thing.manageDisposer(expectAsync0(() => null));
         await thing.dispose();
       });
 
       test(
           'should call callback and accept Future return value'
           'when parent is disposed', () async {
-        thing.testManageDisposer(expectAsync0(() => new Future(() {})));
+        thing.manageDisposer(expectAsync0(() => new Future(() {})));
         await thing.dispose();
       });
 
-      test('should throw if called with a null argument', () {
-        expect(() => thing.testManageDisposer(null), throwsArgumentError);
-      });
+      testManageMethod('manageDisposer',
+          (argument) => thing.manageDisposer(argument), () async => null,
+          doesCallbackReturn: false);
     });
 
     group('manageStreamController', () {
       test('should close a broadcast stream when parent is disposed', () async {
         var controller = new StreamController.broadcast();
-        thing.testManageStreamController(controller);
+        thing.manageStreamController(controller);
         expect(controller.isClosed, isFalse);
         await thing.dispose();
         expect(controller.isClosed, isTrue);
@@ -152,7 +241,7 @@ void main() {
         var subscription =
             controller.stream.listen(expectAsync1(([_]) {}, count: 0));
         subscription.onDone(expectAsync1(([_]) {}));
-        thing.testManageStreamController(controller);
+        thing.manageStreamController(controller);
         expect(controller.isClosed, isFalse);
         await thing.dispose();
         expect(controller.isClosed, isTrue);
@@ -164,16 +253,17 @@ void main() {
           'should close a single-subscription stream with no listener'
           'when parent is disposed', () async {
         var controller = new StreamController();
-        thing.testManageStreamController(controller);
+        thing.manageStreamController(controller);
         expect(controller.isClosed, isFalse);
         await thing.dispose();
         expect(controller.isClosed, isTrue);
       });
 
-      test('should throw if called with a null argument', () {
-        expect(
-            () => thing.testManageStreamController(null), throwsArgumentError);
-      });
+      testManageMethod(
+          'manageStreamController',
+          (argument) => thing.manageStreamController(argument),
+          new StreamController(),
+          doesCallbackReturn: false);
     });
 
     group('manageStreamSubscription', () {
@@ -182,17 +272,20 @@ void main() {
         controller.onCancel = expectAsync1(([_]) {});
         var subscription =
             controller.stream.listen(expectAsync1((_) {}, count: 0));
-        thing.testManageStreamSubscription(subscription);
+        thing.manageStreamSubscription(subscription);
         await thing.dispose();
         controller.add(null);
         await subscription.cancel();
         await controller.close();
       });
 
-      test('should throw if called with a null argument', () {
-        expect(() => thing.testManageStreamSubscription(null),
-            throwsArgumentError);
-      });
+      var controller = new StreamController();
+      testManageMethod(
+          'manageStreamSubscription',
+          (argument) => thing.manageStreamSubscription(argument),
+          controller.stream.listen((_) {}),
+          doesCallbackReturn: false);
+      controller.close();
     });
   });
 }

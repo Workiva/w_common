@@ -52,10 +52,65 @@ abstract class DisposableManager {
 ///
 /// When new management methods are to be added, they should be added
 /// here first, then implemented in [Disposable].
+@deprecated
 abstract class DisposableManagerV2 implements DisposableManager {
-  /// Creates a [Timer] instance that will be cancelled if active upon disposal.
+  /// Creates a [Timer] instance that will be cancelled if active
+  /// upon disposal.
   Timer getManagedTimer(Duration duration, void callback());
 
-  /// Creates a periodic [Timer] that will be cancelled if active upon disposal.
+  /// Creates a periodic [Timer] that will be cancelled if active
+  /// upon disposal.
   Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer));
 }
+
+abstract class DisposableManagerV3 implements DisposableManagerV2 {
+  /// Add [future] to a list of futures that will be awaited before the
+  /// object is disposed.
+  ///
+  /// For example, a long-running network request might use
+  /// a [Disposable] instance when it returns. If we started to dispose
+  /// while the request was pending, upon returning the request's callback
+  /// would throw. We can avoid this by waiting on the request's future.
+  ///
+  ///      class MyApi extends Object with Disposable {
+  ///        MyHelper helper;
+  ///
+  ///        MyApi() {
+  ///          helper = manageDisposable(new MyHelper());
+  ///        }
+  ///
+  ///        Future makeRequest(String message) {
+  ///          return waitBeforeDispose(
+  ///              helper.sendRequest(onSuccess: (response) {
+  ///            // If the `MyApi` instance was disposed while the request
+  ///            // was pending, this would normally result in an exception
+  ///            // being thrown. But instead, the dispose process will wait
+  ///            // for the request to complete before disposing of `helper'.
+  ///            helper.handleResponse(message, response);
+  ///          }))
+  ///        }
+  ///      }
+  Future<T> awaitBeforeDispose<T>(Future<T> future);
+
+  /// Creates a [Future] that will complete, with the value
+  /// returned by [callback], after the given amount of time has elapsed.
+  ///
+  /// If the object is disposed before the time has elapsed the future
+  /// will complete with an [ObjectDisposedException] error.
+  Future<T> getManagedDelayedFuture<T>(Duration duration, T callback());
+
+  /// Ensure that a completer is completed when the object is disposed.
+  ///
+  /// If the completer has not been completed by the time the object
+  /// is disposed, it will be completed with an [ObjectDisposedException]
+  /// error.
+  Completer<T> manageCompleter<T>(Completer<T> completer);
+}
+
+/// Exception thrown when an operation cannot be completed because the
+/// disposable object upon which it depended has been disposed.
+///
+/// For example, if a managed delayed future hasn't completed by the time
+/// the object managing it is disposed, the future will complete with
+/// an instance of this exception.
+class ObjectDisposedException implements Exception {}
