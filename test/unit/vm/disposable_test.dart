@@ -201,6 +201,18 @@ void main() {
         expect(childThing.isDisposed, isTrue);
       });
 
+      test('should remove disposable from internal collection if disposed',
+          () async {
+        var disposable = new DisposeCounter();
+
+        // Manage the disposable child and dispose of it independently
+        thing.manageDisposable(disposable);
+        await disposable.dispose();
+        await thing.dispose();
+
+        expect(disposable.disposeCount, 1);
+      });
+
       testManageMethod('manageDisposable',
           (argument) => thing.manageDisposable(argument), new DisposableThing(),
           doesCallbackReturn: false);

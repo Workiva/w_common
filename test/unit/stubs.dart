@@ -39,6 +39,15 @@ class DisposableThing extends Disposable {
   }
 }
 
+class DisposeCounter extends Disposable {
+  int disposeCount = 0;
+  @override
+  Future<Null> dispose() {
+    disposeCount++;
+    return super.dispose();
+  }
+}
+
 class TimerHarness {
   bool _didCancelTimer = true;
   Completer<bool> _didCancelTimerCompleter;

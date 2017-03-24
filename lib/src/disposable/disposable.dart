@@ -286,6 +286,7 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   void manageDisposable(Disposable disposable) {
     _throwOnInvalidCall('manageDisposable', 'disposable', disposable);
     _internalDisposables.add(disposable);
+    disposable.didDispose.then((_) => _internalDisposables.remove(disposable));
   }
 
   @mustCallSuper
