@@ -14,6 +14,7 @@
 
 import 'dart:async';
 
+import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'package:w_common/disposable.dart';
@@ -201,6 +202,20 @@ void main() {
         expect(childThing.isDisposed, isTrue);
       });
 
+      test('should remove disposable from internal collection if disposed',
+          () async {
+        var disposedCompleter = new Completer<Null>();
+        var disposable = new MockDisposable();
+        when(disposable.didDispose).thenReturn(disposedCompleter.future);
+
+        // Manage the disposable child and dispose of it independently
+        thing.manageDisposable(disposable);
+        disposedCompleter.complete();
+        await thing.dispose();
+
+        verifyNever(disposable.dispose());
+      });
+
       testManageMethod('manageDisposable',
           (argument) => thing.manageDisposable(argument), new DisposableThing(),
           doesCallbackReturn: false);
@@ -235,9 +250,20 @@ void main() {
         expect(controller.isClosed, isTrue);
       });
 
+      test(
+          'closing the controller independently removes from internal collection',
+          () async {
+        var controller = new StreamController.broadcast();
+        thing.manageStreamController(controller);
+
+        await controller.close();
+
+        await thing.dispose();
+      });
+
       test('should close a single-subscription stream when parent is disposed',
           () async {
-        var controller = new StreamController();
+        var controller = new StreamController.broadcast();
         var subscription =
             controller.stream.listen(expectAsync1(([_]) {}, count: 0));
         subscription.onDone(expectAsync1(([_]) {}));

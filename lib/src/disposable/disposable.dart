@@ -286,6 +286,7 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   void manageDisposable(Disposable disposable) {
     _throwOnInvalidCall('manageDisposable', 'disposable', disposable);
     _internalDisposables.add(disposable);
+    disposable.didDispose.then((_) => _internalDisposables.remove(disposable));
   }
 
   @mustCallSuper
@@ -299,12 +300,11 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   @override
   void manageStreamController(StreamController controller) {
     _throwOnInvalidCall('manageStreamController', 'controller', controller);
-    _internalDisposables.add(new _InternalDisposable(() {
-      if (!controller.hasListener) {
-        controller.stream.listen((_) {});
-      }
-      return controller.close();
-    }));
+    var disposable = new _InternalDisposable(() => controller.close());
+    controller.stream.listen((_) {}, onDone: () {
+      _internalDisposables.remove(disposable);
+    });
+    _internalDisposables.add(disposable);
   }
 
   @mustCallSuper
