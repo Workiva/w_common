@@ -247,20 +247,9 @@ void main() {
         expect(controller.isClosed, isTrue);
       });
 
-      test(
-          'closing the controller independently removes from internal collection',
-          () async {
-        var controller = new StreamController.broadcast();
-        thing.manageStreamController(controller);
-
-        await controller.close();
-
-        await thing.dispose();
-      });
-
       test('should close a single-subscription stream when parent is disposed',
           () async {
-        var controller = new StreamController.broadcast();
+        var controller = new StreamController();
         var subscription =
             controller.stream.listen(expectAsync1(([_]) {}, count: 0));
         subscription.onDone(expectAsync1(([_]) {}));

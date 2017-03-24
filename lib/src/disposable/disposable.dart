@@ -300,11 +300,12 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   @override
   void manageStreamController(StreamController controller) {
     _throwOnInvalidCall('manageStreamController', 'controller', controller);
-    var disposable = new _InternalDisposable(() => controller.close());
-    controller.stream.listen((_) {}, onDone: () {
-      _internalDisposables.remove(disposable);
-    });
-    _internalDisposables.add(disposable);
+    _internalDisposables.add(new _InternalDisposable(() {
+      if (!controller.hasListener) {
+        controller.stream.listen((_) {});
+      }
+      return controller.close();
+    }));
   }
 
   @mustCallSuper
