@@ -14,7 +14,6 @@
 
 import 'dart:async';
 
-import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'package:w_common/disposable.dart';
@@ -204,16 +203,14 @@ void main() {
 
       test('should remove disposable from internal collection if disposed',
           () async {
-        var disposedCompleter = new Completer<Null>();
-        var disposable = new MockDisposable();
-        when(disposable.didDispose).thenReturn(disposedCompleter.future);
+        var disposable = new DisposeCounter();
 
         // Manage the disposable child and dispose of it independently
         thing.manageDisposable(disposable);
-        disposedCompleter.complete();
+        await disposable.dispose();
         await thing.dispose();
 
-        verifyNever(disposable.dispose());
+        expect(disposable.disposeCount, 1);
       });
 
       testManageMethod('manageDisposable',
