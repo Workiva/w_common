@@ -262,8 +262,8 @@ void main() {
       });
 
       test(
-          'should complete normally for a single-subscription stream with '
-          'a listener that has been closed when parent is disposed', () async {
+          'should allow subscriptions for a single-subscription stream to be '
+          'cancelled after parent has been disposed', () async {
         var controller = new StreamController();
         var sub = controller.stream.listen(expectAsync1((_) {}, count: 0));
         thing.manageStreamController(controller);

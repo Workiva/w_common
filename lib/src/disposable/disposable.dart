@@ -30,10 +30,10 @@ class _InternalDisposable implements _Disposable {
 
   @override
   Future<Null> dispose() {
-    var disposeFuture = _disposer();
+    var disposeFuture = _disposer != null ? _disposer() : null;
     _disposer = null;
     if (disposeFuture == null) {
-      return new Future(() => null);
+      return new Future.value();
     }
     return disposeFuture.then((_) => null);
   }
@@ -304,20 +304,22 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     // subscription is subsequently canceled, the `done` future will
     // complete, but there is no other way for us to tell that this
     // is what has happened. If we then listen to the stream (since
-    // closing a stream that was never listen-to throws) we'll get
-    // an exception. This workaround allows us to "know" when a
+    // closing a stream that was never listened to never completes) we'll
+    // get an exception. This workaround allows us to "know" when a
     // subscription has been canceled so we don't bother trying to
     // listen to the stream before closing it.
     bool isDone = false;
-    controller.done.then((_) {
-      isDone = true;
-    });
-    _internalDisposables.add(new _InternalDisposable(() {
+    var disposable = new _InternalDisposable(() {
       if (!controller.hasListener && !controller.isClosed && !isDone) {
         controller.stream.listen((_) {});
       }
       return controller.close();
-    }));
+    });
+    controller.done.then((_) {
+      isDone = true;
+      disposable.dispose();
+    });
+    _internalDisposables.add(disposable);
   }
 
   @mustCallSuper
