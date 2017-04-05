@@ -317,6 +317,7 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     });
     controller.done.then((_) {
       isDone = true;
+      _internalDisposables.remove(disposable);
       disposable.dispose();
     });
     _internalDisposables.add(disposable);
