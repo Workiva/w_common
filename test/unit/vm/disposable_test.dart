@@ -262,8 +262,29 @@ void main() {
       });
 
       test(
-          'should close a single-subscription stream with no listener'
-          'when parent is disposed', () async {
+          'should complete normally for a single-subscription stream with '
+          'a listener that has been closed when parent is disposed', () async {
+        var controller = new StreamController();
+        var sub = controller.stream.listen(expectAsync1((_) {}, count: 0));
+        thing.manageStreamController(controller);
+        await controller.close();
+        await thing.dispose();
+        await sub.cancel();
+      });
+
+      test(
+          'should complete normally for a single-subscription stream with a '
+          'canceled listener when parent is disposed', () async {
+        var controller = new StreamController();
+        var sub = controller.stream.listen(expectAsync1((_) {}, count: 0));
+        thing.manageStreamController(controller);
+        await sub.cancel();
+        await thing.dispose();
+      });
+
+      test(
+          'should close a single-subscription stream that never had a '
+          'listener when parent is disposed', () async {
         var controller = new StreamController();
         thing.manageStreamController(controller);
         expect(controller.isClosed, isFalse);

@@ -300,8 +300,20 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   @override
   void manageStreamController(StreamController controller) {
     _throwOnInvalidCall('manageStreamController', 'controller', controller);
+    // If a single-subscription stream has a subscription and that
+    // subscription is subsequently canceled, the `done` future will
+    // complete, but there is no other way for us to tell that this
+    // is what has happened. If we then listen to the stream (since
+    // closing a stream that was never listen-to throws) we'll get
+    // an exception. This workaround allows us to "know" when a
+    // subscription has been canceled so we don't bother trying to
+    // listen to the stream before closing it.
+    bool isDone = false;
+    controller.done.then((_) {
+      isDone = true;
+    });
     _internalDisposables.add(new _InternalDisposable(() {
-      if (!controller.hasListener) {
+      if (!controller.hasListener && !controller.isClosed && !isDone) {
         controller.stream.listen((_) {});
       }
       return controller.close();
