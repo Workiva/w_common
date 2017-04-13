@@ -16,9 +16,9 @@
 ///
 /// Implementing this class will enable a class to be serialized using the
 /// JSON.encode method.
-// ignore: one_member_abstracts
 abstract class JsonSerializable {
-  /// Returns a map representing the serialized class.
+  /// Returns a map representing the serialized class
+  /// or deserialized a map into a class
   ///
   ///   @override
   ///   Map<String, dynamic> toJson() {
@@ -26,5 +26,12 @@ abstract class JsonSerializable {
   ///     fieldMap['context'] = _context;
   ///     return fieldMap;
   ///   }
+  ///
+  ///   ExampleSerializable.fromJson(Map<String, dynamic> json): super.fromJson(json) {
+  ///     context = json['context'];
+  ///   }
+
+  JsonSerializable();
+  JsonSerializable.fromJson(Map<String, dynamic> json);
   Map<String, dynamic> toJson();
 }

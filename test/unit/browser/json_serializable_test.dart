@@ -20,6 +20,11 @@ import 'package:w_common/json_serializable.dart';
 class ExampleSerializable extends JsonSerializable {
   Map context = new Map();
 
+  ExampleSerializable();
+  ExampleSerializable.fromJson(Map<String, dynamic> json): super.fromJson(json) {
+    context = json['context'];
+  }
+
   @override
   Map<String, dynamic> toJson() {
     Map<String, dynamic> fieldMap = {};
@@ -35,6 +40,15 @@ void main() {
       testSerializable.context['child'] = 'childName';
       expect(
           JSON.encode(testSerializable), '{"context":{"child":"childName"}}');
+    });
+
+    test('example object can be properly deserialized', () async {
+      Map<String, dynamic> json = new Map();
+      json['context'] = {'child': 'childname'};
+
+      ExampleSerializable testSerializable = new ExampleSerializable.fromJson(json);
+
+      expect(testSerializable.context['child'], 'childname');
     });
   });
 }
