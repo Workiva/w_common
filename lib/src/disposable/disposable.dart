@@ -214,7 +214,8 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     }
     _isDisposing = true;
 
-    if (awaitAnimationFrame) await new Future.delayed(new Duration(milliseconds: 17));
+    if (awaitAnimationFrame)
+      await new Future.delayed(new Duration(milliseconds: 17));
 
     List<Future<dynamic>> futures = []
       ..addAll(_internalDisposables.map((disposable) => disposable.dispose()))
