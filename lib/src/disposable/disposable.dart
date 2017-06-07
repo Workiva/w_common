@@ -205,7 +205,7 @@ class Disposable implements _Disposable, DisposableManagerV3 {
 
   /// Dispose of the object, cleaning up to prevent memory leaks.
   @override
-  Future<Null> dispose() async {
+  Future<Null> dispose({bool awaitAnimationFrame: false}) async {
     if (isDisposed) {
       return null;
     }
@@ -213,6 +213,9 @@ class Disposable implements _Disposable, DisposableManagerV3 {
       return didDispose;
     }
     _isDisposing = true;
+
+    if (awaitAnimationFrame)
+      await new Future.delayed(new Duration(milliseconds: 17));
 
     List<Future<dynamic>> futures = []
       ..addAll(_internalDisposables.map((disposable) => disposable.dispose()))

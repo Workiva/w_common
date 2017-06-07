@@ -42,7 +42,7 @@ class DisposableThing extends Disposable {
 class DisposeCounter extends Disposable {
   int disposeCount = 0;
   @override
-  Future<Null> dispose() {
+  Future<Null> dispose({bool awaitAnimationFrame: false}) {
     disposeCount++;
     return super.dispose();
   }
