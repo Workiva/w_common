@@ -41,6 +41,11 @@ abstract class DisposableManager {
 
   /// Automatically cancel a stream subscription when this object is disposed.
   ///
+  /// This method should not be used for subscriptions that will be canceled
+  /// manually by the consumer because we have no way of knowing when a
+  /// subscription is canceled, so we will hold on to the reference until the
+  /// parent object is disposed.
+  ///
   /// The parameter may not be `null`.
   void manageStreamSubscription(StreamSubscription subscription);
 }
