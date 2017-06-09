@@ -192,6 +192,23 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   /// A [Future] that will complete when this object has been disposed.
   Future<Null> get didDispose => _didDispose.future;
 
+  /// The total size of the disposal tree rooted at the current Disposable
+  /// instance.
+  ///
+  /// This should only be used for debugging and profiling as it can incur
+  /// a significant performance penalty if the tree is large.
+  int get disposalTreeSize {
+    int size = 1;
+    for (var disposable in _internalDisposables) {
+      if (disposable is Disposable) {
+        size += disposable.disposalTreeSize;
+      } else {
+        size++;
+      }
+    }
+    return size;
+  }
+
   /// Whether this object has been disposed.
   bool get isDisposed => _didDispose.isCompleted;
 
