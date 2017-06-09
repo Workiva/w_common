@@ -14,6 +14,7 @@
 
 import 'dart:async';
 
+import 'dart:collection';
 import 'package:meta/meta.dart';
 
 import 'package:w_common/src/disposable/disposable_manager.dart';
@@ -165,9 +166,9 @@ typedef Future<dynamic> Disposer();
 /// composition to include the [Disposable] machinery without changing
 /// the public interface of our class or polluting its lifecycle.
 class Disposable implements _Disposable, DisposableManagerV3 {
-  List<Future<dynamic>> _awaitableFutures = <Future<dynamic>>[];
+  final Set<Future> _awaitableFutures = new HashSet<Future>();
   Completer<Null> _didDispose = new Completer<Null>();
-  List<_Disposable> _internalDisposables = <_Disposable>[];
+  final Set<_Disposable> _internalDisposables = new HashSet<_Disposable>();
   bool _isDisposing = false;
 
   /// A [Future] that will complete when this object has been disposed.
@@ -196,9 +197,13 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     _throwOnInvalidCall('awaitBeforeDispose', 'future', future);
     _awaitableFutures.add(future);
     future.then((_) {
-      _awaitableFutures.remove(future);
+      if (!isDisposedOrDisposing) {
+        _awaitableFutures.remove(future);
+      }
     }).catchError((_) {
-      _awaitableFutures.remove(future);
+      if (!isDisposedOrDisposing) {
+        _awaitableFutures.remove(future);
+      }
     });
     return future;
   }
@@ -214,19 +219,17 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     }
     _isDisposing = true;
 
-    List<Future<dynamic>> futures = []
-      ..addAll(_internalDisposables.map((disposable) => disposable.dispose()))
-      ..add(onDispose());
-    _internalDisposables = [];
+    await Future.wait(_awaitableFutures);
+    _awaitableFutures.clear();
 
-    futures.addAll(_awaitableFutures);
-    _awaitableFutures = [];
+    for (var disposable in _internalDisposables) {
+      await disposable.dispose();
+    }
+    _internalDisposables.clear();
 
-    // We need to filter out nulls because a subscription cancel
-    // method is allowed to return a plain old null value.
-    return Future
-        .wait(futures.where((future) => future != null))
-        .then(_completeDisposeFuture);
+    await onDispose();
+
+    _completeDisposeFuture();
   }
 
   @mustCallSuper
@@ -240,7 +243,11 @@ class Disposable implements _Disposable, DisposableManagerV3 {
       completer.completeError(new ObjectDisposedException());
     });
     _internalDisposables.add(disposable);
-    timer.didConclude.then((Null _) => _internalDisposables.remove(disposable));
+    timer.didConclude.then((Null _) {
+      if (!isDisposedOrDisposing) {
+        _internalDisposables.remove(disposable);
+      }
+    });
     return completer.future;
   }
 
@@ -273,9 +280,13 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     _internalDisposables.add(disposable);
 
     completer.future.catchError((e) {
-      _internalDisposables.remove(disposable);
+      if (!isDisposedOrDisposing) {
+        _internalDisposables.remove(disposable);
+      }
     }).then((_) {
-      _internalDisposables.remove(disposable);
+      if (!isDisposedOrDisposing) {
+        _internalDisposables.remove(disposable);
+      }
     });
 
     return completer;
@@ -286,7 +297,11 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   void manageDisposable(Disposable disposable) {
     _throwOnInvalidCall('manageDisposable', 'disposable', disposable);
     _internalDisposables.add(disposable);
-    disposable.didDispose.then((_) => _internalDisposables.remove(disposable));
+    disposable.didDispose.then((_) {
+      if (!isDisposedOrDisposing) {
+        _internalDisposables.remove(disposable);
+      }
+    });
   }
 
   @mustCallSuper
@@ -317,7 +332,9 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     });
     controller.done.then((_) {
       isDone = true;
-      _internalDisposables.remove(disposable);
+      if (!isDisposedOrDisposing) {
+        _internalDisposables.remove(disposable);
+      }
       disposable.dispose();
     });
     _internalDisposables.add(disposable);
@@ -342,13 +359,16 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     _InternalDisposable disposable =
         new _InternalDisposable(() async => timer.cancel());
     _internalDisposables.add(disposable);
-    timer.didConclude.then((Null _) => _internalDisposables.remove(disposable));
+    timer.didConclude.then((Null _) {
+      if (!isDisposedOrDisposing) {
+        _internalDisposables.remove(disposable);
+      }
+    });
   }
 
-  Null _completeDisposeFuture(List<dynamic> _) {
+  void _completeDisposeFuture() {
     _didDispose.complete();
     _isDisposing = false;
-    return null;
   }
 
   void _throwOnInvalidCall(
