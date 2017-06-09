@@ -13,10 +13,12 @@
 // limitations under the License.
 
 import 'dart:async';
-
 import 'dart:collection';
+
+import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
+import 'package:uuid/uuid.dart';
 import 'package:w_common/src/disposable/disposable_manager.dart';
 
 // ignore: one_member_abstracts
@@ -166,8 +168,24 @@ typedef Future<dynamic> Disposer();
 /// composition to include the [Disposable] machinery without changing
 /// the public interface of our class or polluting its lifecycle.
 class Disposable implements _Disposable, DisposableManagerV3 {
+  static bool _debugMode = false;
+  static Logger _logger;
+  static Uuid _uuid = new Uuid();
+
+  static void disableDebugMode() {
+    _debugMode = false;
+    _logger.clearListeners();
+    _logger = null;
+  }
+
+  static void enableDebugMode() {
+    _debugMode = true;
+    _logger = new Logger('Disposable');
+  }
+
   final Set<Future> _awaitableFutures = new HashSet<Future>();
   Completer<Null> _didDispose = new Completer<Null>();
+  String _guid = _uuid.v4();
   final Set<_Disposable> _internalDisposables = new HashSet<_Disposable>();
   bool _isDisposing = false;
 
@@ -211,6 +229,8 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   /// Dispose of the object, cleaning up to prevent memory leaks.
   @override
   Future<Null> dispose() async {
+    _logDispose();
+
     if (isDisposed) {
       return null;
     }
@@ -271,6 +291,7 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   @override
   Completer<T> manageCompleter<T>(Completer<T> completer) {
     _throwOnInvalidCall('manageCompleter', 'completer', completer);
+    _logManageMessage('completer', completer);
 
     var disposable = new _InternalDisposable(() async {
       if (!completer.isCompleted) {
@@ -281,10 +302,12 @@ class Disposable implements _Disposable, DisposableManagerV3 {
 
     completer.future.catchError((e) {
       if (!isDisposedOrDisposing) {
+        _logUnmanageMessage('completer', completer);
         _internalDisposables.remove(disposable);
       }
     }).then((_) {
       if (!isDisposedOrDisposing) {
+        _logUnmanageMessage('completer', completer);
         _internalDisposables.remove(disposable);
       }
     });
@@ -296,9 +319,12 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   @override
   void manageDisposable(Disposable disposable) {
     _throwOnInvalidCall('manageDisposable', 'disposable', disposable);
+    _logManageMessage('disposable', disposable);
+
     _internalDisposables.add(disposable);
     disposable.didDispose.then((_) {
       if (!isDisposedOrDisposing) {
+        _logUnmanageMessage('disposable', disposable);
         _internalDisposables.remove(disposable);
       }
     });
@@ -308,6 +334,8 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   @override
   void manageDisposer(Disposer disposer) {
     _throwOnInvalidCall('manageDisposer', 'disposer', disposer);
+    _logManageMessage('disposer', disposer);
+
     _internalDisposables.add(new _InternalDisposable(disposer));
   }
 
@@ -323,20 +351,26 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     // get an exception. This workaround allows us to "know" when a
     // subscription has been canceled so we don't bother trying to
     // listen to the stream before closing it.
+    _logManageMessage('stream controller', controller);
+
     bool isDone = false;
+
     var disposable = new _InternalDisposable(() {
       if (!controller.hasListener && !controller.isClosed && !isDone) {
         controller.stream.listen((_) {});
       }
       return controller.close();
     });
+
     controller.done.then((_) {
       isDone = true;
       if (!isDisposedOrDisposing) {
+        _logUnmanageMessage('stream controller', controller);
         _internalDisposables.remove(disposable);
       }
       disposable.dispose();
     });
+
     _internalDisposables.add(disposable);
   }
 
@@ -345,6 +379,8 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   void manageStreamSubscription(StreamSubscription subscription) {
     _throwOnInvalidCall(
         'manageStreamSubscription', 'subscription', subscription);
+    _logManageMessage('stream subscription', subscription);
+
     _internalDisposables
         .add(new _InternalDisposable(() => subscription.cancel()));
   }
@@ -369,6 +405,27 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   void _completeDisposeFuture() {
     _didDispose.complete();
     _isDisposing = false;
+    if (_debugMode) {
+      _logger.info('Disposed object $_guid');
+    }
+  }
+
+  void _logDispose() {
+    if (_debugMode) {
+      _logger.info('Disposing object $_guid of type $runtimeType');
+    }
+  }
+
+  void _logUnmanageMessage(String type, Object target) {
+    if (_debugMode) {
+      _logger.info('Object $_guid unmanaging $type ${target.hashCode}');
+    }
+  }
+
+  void _logManageMessage(String type, Object target) {
+    if (_debugMode) {
+      _logger.info('Object $_guid managing $type ${target.hashCode}');
+    }
   }
 
   void _throwOnInvalidCall(
