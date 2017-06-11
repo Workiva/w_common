@@ -24,6 +24,7 @@ Future main(List<String> args) async {
 
   config.format
     ..directories = [
+      'example/',
       'lib/',
       'test/',
       'tool/',
