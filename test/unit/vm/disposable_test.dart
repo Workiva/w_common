@@ -42,7 +42,9 @@ void main() {
             .catchError((_) {}); // Because we dispose prematurely.
         thing.getManagedPeriodicTimer(new Duration(days: 1), (_) {});
         expect(thing.disposalTreeSize, 8);
-        thing.dispose();
+        thing.dispose().then(expectAsync1((_) {
+          expect(thing.disposalTreeSize, 1);
+        }));
       });
 
       test('should count nested objects', () {
@@ -50,7 +52,9 @@ void main() {
         nestedThing.manageDisposable(new DisposableThing());
         thing.manageDisposable(nestedThing);
         expect(thing.disposalTreeSize, 3);
-        thing.dispose();
+        thing.dispose().then(expectAsync1((_) {
+          expect(thing.disposalTreeSize, 1);
+        }));
       });
     });
 
