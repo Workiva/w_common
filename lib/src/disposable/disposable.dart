@@ -252,6 +252,11 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   /// Dispose of the object, cleaning up to prevent memory leaks.
   @override
   Future<Null> dispose() async {
+    int startTime;
+    if (_debugMode) {
+      startTime = new DateTime.now().millisecondsSinceEpoch;
+    }
+
     _logDispose();
 
     if (isDisposed) {
@@ -273,6 +278,12 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     await onDispose();
 
     _completeDisposeFuture();
+
+    if (_debugMode) {
+      var endTime = new DateTime.now().millisecondsSinceEpoch;
+      _logger.info(
+          '$runtimeType $hashCode took ${(endTime - startTime) / 1000} seconds to dispose');
+    }
   }
 
   @mustCallSuper

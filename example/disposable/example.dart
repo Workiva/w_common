@@ -64,12 +64,8 @@ void main() {
   });
 
   disposeButton.onClick.listen((_) {
-    var startTime = new DateTime.now().millisecondsSinceEpoch;
     treeRoot.dispose().then((_) {
-      var endTime = new DateTime.now().millisecondsSinceEpoch;
-      var delta = endTime - startTime;
       addToOutput('Disposable tree size: ${treeRoot.disposalTreeSize}');
-      addToOutput('Disposable took ${delta / 1000} seconds to dispose');
       outputBox.scrollTo(0, outputBox.scrollHeight);
       treeRoot = null;
     });
