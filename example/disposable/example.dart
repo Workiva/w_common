@@ -8,6 +8,16 @@ int childCount;
 int treeDepth;
 StreamController controller;
 
+ButtonElement createButton = querySelector('#create-button');
+ButtonElement disposeButton = querySelector('#dispose-button');
+InputElement childCountField = querySelector('#child-count-field');
+InputElement treeDepthField = querySelector('#tree-depth-field');
+TextAreaElement outputBox = querySelector('#output-box');
+
+void addToOutput(String output) {
+  outputBox.value += output + '\n';
+}
+
 Disposable createDisposableTree(int depth) {
   var child = new Disposable();
 
@@ -29,16 +39,11 @@ Disposable createDisposableTree(int depth) {
 
 void main() {
   Logger.root.onRecord.listen((LogRecord rec) {
-    print('${rec.level.name}: ${rec.time}: ${rec.message}');
+    addToOutput('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
   Logger.root.level = Level.INFO;
 
   Disposable.enableDebugMode();
-
-  ButtonElement createButton = querySelector('#create-button');
-  ButtonElement disposeButton = querySelector('#dispose-button');
-  InputElement childCountField = querySelector('#child-count-field');
-  InputElement treeDepthField = querySelector('#tree-depth-field');
 
   Disposable treeRoot;
 
@@ -54,12 +59,18 @@ void main() {
     controller = new StreamController.broadcast();
 
     treeRoot = createDisposableTree(treeDepth);
-    print('Disposable tree size: ${treeRoot.disposalTreeSize}');
+    addToOutput('Disposable tree size: ${treeRoot.disposalTreeSize}');
+    outputBox.scrollTo(0, outputBox.scrollHeight);
   });
 
   disposeButton.onClick.listen((_) {
+    var startTime = new DateTime.now().millisecondsSinceEpoch;
     treeRoot.dispose().then((_) {
-      print('Disposable tree size: ${treeRoot.disposalTreeSize}');
+      var endTime = new DateTime.now().millisecondsSinceEpoch;
+      var delta = endTime - startTime;
+      addToOutput('Disposable tree size: ${treeRoot.disposalTreeSize}');
+      addToOutput('Disposable took ${delta / 1000} seconds to dispose');
+      outputBox.scrollTo(0, outputBox.scrollHeight);
       treeRoot = null;
     });
   });
