@@ -252,9 +252,9 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   /// Dispose of the object, cleaning up to prevent memory leaks.
   @override
   Future<Null> dispose() async {
-    int startTime;
+    Stopwatch stopwatch;
     if (_debugMode) {
-      startTime = new DateTime.now().millisecondsSinceEpoch;
+      stopwatch = new Stopwatch();
     }
 
     _logDispose();
@@ -280,9 +280,9 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     _completeDisposeFuture();
 
     if (_debugMode) {
-      var endTime = new DateTime.now().millisecondsSinceEpoch;
+      stopwatch.stop();
       _logger.info(
-          '$runtimeType $hashCode took ${(endTime - startTime) / 1000} seconds to dispose');
+          '$runtimeType $hashCode took ${stopwatch.elapsed.inSeconds} seconds to dispose');
     }
   }
 
