@@ -9,10 +9,12 @@ environment:
 
 dependencies:
   meta: ^1.0.4
+  transformer_utils: ^0.1.1
 
 dev_dependencies:
   coverage: ^0.7.2
   dart_dev: ^1.7.2
   dart_style: ^0.2.16
   dartdoc: ^0.9.0
+  mockito: ^2.0.2
   test: ^0.12.4
