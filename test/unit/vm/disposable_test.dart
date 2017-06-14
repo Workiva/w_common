@@ -28,6 +28,36 @@ void main() {
       thing = new DisposableThing();
     });
 
+    group('disposalTreeSize', () {
+      test('should count all managed objects', () {
+        var controller = new StreamController();
+        var subscription = controller.stream.listen((_) {});
+        thing.manageStreamController(controller);
+        thing.manageStreamSubscription(subscription);
+        thing.manageDisposable(new DisposableThing());
+        thing.manageCompleter(new Completer());
+        thing.getManagedTimer(new Duration(days: 1), () {});
+        thing
+            .getManagedDelayedFuture(new Duration(days: 1), () {})
+            .catchError((_) {}); // Because we dispose prematurely.
+        thing.getManagedPeriodicTimer(new Duration(days: 1), (_) {});
+        expect(thing.disposalTreeSize, 8);
+        thing.dispose().then(expectAsync1((_) {
+          expect(thing.disposalTreeSize, 1);
+        }));
+      });
+
+      test('should count nested objects', () {
+        var nestedThing = new DisposableThing();
+        nestedThing.manageDisposable(new DisposableThing());
+        thing.manageDisposable(nestedThing);
+        expect(thing.disposalTreeSize, 3);
+        thing.dispose().then(expectAsync1((_) {
+          expect(thing.disposalTreeSize, 1);
+        }));
+      });
+    });
+
     group('getManagedDelayedFuture', () {
       test('should complete after specified duration', () async {
         var start = new DateTime.now().millisecondsSinceEpoch;

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disposable Example</title>
+    <style>
+        body {
+            font: 11pt/15pt 'segoe ui', verdana, arial;
+            margin: auto;
+            max-width: 850px;
+        }
+        
+        button {
+            padding: 6px 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Disposable Example</h1>
+    <label for="tree-depth-field">
+        Tree depth (careful, remember it's exponential)
+        <input id="tree-depth-field" value="3" type="text" />
+    </label>
+    <label for="child-count-field">
+        Child count
+        <input id="child-count-field" value="5" type="text" />
+    </label>
+    <button id="create-button">Create</button>
+    <button id="dispose-button">Dispose</button>
+</body>
+
+<script type="application/dart" src="example.dart"></script>
+<script src="packages/browser/dart.js"></script>
+
+</html>
