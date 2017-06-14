@@ -12,11 +12,6 @@ ButtonElement createButton = querySelector('#create-button');
 ButtonElement disposeButton = querySelector('#dispose-button');
 InputElement childCountField = querySelector('#child-count-field');
 InputElement treeDepthField = querySelector('#tree-depth-field');
-TextAreaElement outputBox = querySelector('#output-box');
-
-void addToOutput(String output) {
-  outputBox.value += output + '\n';
-}
 
 Disposable createDisposableTree(int depth) {
   var child = new Disposable();
@@ -39,7 +34,7 @@ Disposable createDisposableTree(int depth) {
 
 void main() {
   Logger.root.onRecord.listen((LogRecord rec) {
-    addToOutput('${rec.level.name}: ${rec.time}: ${rec.message}');
+    print('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
   Logger.root.level = Level.INFO;
 
@@ -59,14 +54,12 @@ void main() {
     controller = new StreamController.broadcast();
 
     treeRoot = createDisposableTree(treeDepth);
-    addToOutput('Disposable tree size: ${treeRoot.disposalTreeSize}');
-    outputBox.scrollTo(0, outputBox.scrollHeight);
+    print('Disposable tree size: ${treeRoot.disposalTreeSize}');
   });
 
   disposeButton.onClick.listen((_) {
     treeRoot.dispose().then((_) {
-      addToOutput('Disposable tree size: ${treeRoot.disposalTreeSize}');
-      outputBox.scrollTo(0, outputBox.scrollHeight);
+      print('Disposable tree size: ${treeRoot.disposalTreeSize}');
       treeRoot = null;
     });
   });

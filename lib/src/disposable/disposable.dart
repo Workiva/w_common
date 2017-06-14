@@ -254,7 +254,7 @@ class Disposable implements _Disposable, DisposableManagerV3 {
   Future<Null> dispose() async {
     Stopwatch stopwatch;
     if (_debugMode) {
-      stopwatch = new Stopwatch();
+      stopwatch = new Stopwatch()..start();
     }
 
     _logDispose();
@@ -282,7 +282,7 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     if (_debugMode) {
       stopwatch.stop();
       _logger.info(
-          '$runtimeType $hashCode took ${stopwatch.elapsed.inSeconds} seconds to dispose');
+          '$runtimeType $hashCode took ${stopwatch.elapsedMicroseconds / 1000000.0} seconds to dispose');
     }
   }
 
