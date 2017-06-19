@@ -169,10 +169,17 @@ void transformLibraryToImportDartAsync(
       directive.uri.stringValue == 'dart:async');
   if (hasDartAsyncImport) return;
 
+  // If this file is a part (meaning the imports are defined in a separate,
+  // parent file), then nothing can be done.
+  final isPartOf =
+      unit.directives.any((directive) => directive is PartOfDirective);
+  if (isPartOf) return;
+
   // We know there must be at least one import because either Disposable or
   // something that extends Disposable must be imported.
-  final firstImport =
-      unit.directives.firstWhere((directive) => directive is ImportDirective);
+  final firstImport = unit.directives.firstWhere(
+      (directive) => directive is ImportDirective,
+      orElse: () => null);
 
   final sourceFile = transformedFile.sourceFile;
   transformedFile.insert(

@@ -244,6 +244,13 @@ void main() {
       expect(transformedFile.isModified, isFalse);
     });
 
+    test('should do nothing if the file is a "part"', () {
+      setUpAndTransform('''
+        part of another_library;
+      ''');
+      expect(transformedFile.isModified, isFalse);
+    });
+
     test('should import dart:async if missing', () {
       setUpAndTransform('''
         library some_library;
