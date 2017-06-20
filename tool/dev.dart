@@ -23,7 +23,7 @@ Future main(List<String> args) async {
   config.analyze.entryPoints = ['lib/', 'test/unit/', 'tool/'];
 
   config.format
-    ..directories = [
+    ..paths = [
       'example/',
       'lib/',
       'test/',
