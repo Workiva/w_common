@@ -8,7 +8,6 @@ import './invalidation_mixin_test.dart' as invalidation_mixin_test;
 import './json_serializable_test.dart' as json_serializable_test;
 import 'package:test/test.dart';
 
-
 void main() {
   disposable_test.main();
   invalidation_mixin_test.main();
