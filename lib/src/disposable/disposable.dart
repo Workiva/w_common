@@ -14,6 +14,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:html';
 
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
@@ -427,6 +428,28 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     return null;
   }
 
+  void subscribeToDocumentEvent(String event, EventListener callback,
+      {bool useCapture: null, EventTarget documentObject: null}) {
+    if (documentObject == null) {
+      documentObject = document;
+    }
+    _subscribeToEvent(documentObject, event, callback, useCapture);
+  }
+
+  void subscribeToDomElementEvent(
+      Element element, String event, EventListener callback,
+      {bool useCapture: null}) {
+    _subscribeToEvent(element, event, callback, useCapture);
+  }
+
+  void subscribeToWindowEvent(String event, EventListener callback,
+      {bool useCapture: null, EventTarget windowObject: null}) {
+    if (windowObject == null) {
+      windowObject = window;
+    }
+    _subscribeToEvent(windowObject, event, callback, useCapture);
+  }
+
   void _addObservableTimerDisposable(_ObservableTimer timer) {
     _InternalDisposable disposable =
         new _InternalDisposable(() async => timer.cancel());
@@ -464,6 +487,17 @@ class Disposable implements _Disposable, DisposableManagerV3 {
       _logger.info(
           '$runtimeType $hashCode managing ${target.runtimeType} ${target.hashCode}');
     }
+  }
+
+  void _subscribeToEvent(EventTarget eventTarget, String event,
+      EventListener callback, bool useCapture) {
+    eventTarget.addEventListener(event, callback, useCapture);
+
+    var disposable = new _InternalDisposable(() {
+      eventTarget.removeEventListener(event, callback, useCapture);
+    });
+
+    _internalDisposables.add(disposable);
   }
 
   void _throwOnInvalidCall(

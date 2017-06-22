@@ -13,8 +13,10 @@
 // limitations under the License.
 
 import 'dart:async';
+import 'dart:html';
 
 import 'package:test/test.dart';
+import 'package:mockito/mockito.dart';
 
 import 'package:w_common/disposable.dart';
 
@@ -350,5 +352,69 @@ void main() {
           doesCallbackReturn: false);
       controller.close();
     });
+
+    group('Event subscription helper methods', () {
+      test(
+          'subscribeToDocumentEvent should remove same listener when thing is disposed',
+          () async {
+        var document = new MockEventTarget();
+        var event = 'event';
+        EventListener callback = (_) {};
+        var useCapture = true;
+
+        thing.subscribeToDocumentEvent(event, callback,
+            documentObject: document, useCapture: useCapture);
+        verify(document.addEventListener(event, callback, useCapture));
+        await thing.dispose();
+        verify(document.removeEventListener(event, callback, useCapture));
+      });
+
+      test(
+          'subscribeToDomElementEvent should remove listener when thing is disposed',
+          () async {
+        var element = new Element.div();
+        int numberOfEventCallbacks = 0;
+        EventListener callback = (_) {
+          numberOfEventCallbacks++;
+        };
+        var event = new Event('event');
+        var shouldNotListenEvent = new Event('shouldNotListenEvent');
+
+        thing.subscribeToDomElementEvent(element, 'event', callback);
+        expect(numberOfEventCallbacks, equals(0));
+
+        element.dispatchEvent(shouldNotListenEvent);
+        element.dispatchEvent(event);
+        expect(numberOfEventCallbacks, equals(1));
+
+        await thing.dispose();
+
+        element.dispatchEvent(event);
+        expect(numberOfEventCallbacks, equals(1));
+
+        thing.subscribeToDomElementEvent(element, 'event', callback);
+        element.dispatchEvent(event);
+        element.dispatchEvent(event);
+        element.dispatchEvent(shouldNotListenEvent);
+        expect(numberOfEventCallbacks, equals(3));
+      });
+
+      test(
+          'subscribeToWindowEvent should remove same listener when thing is disposed',
+          () async {
+        var window = new MockEventTarget();
+        var event = 'event';
+        EventListener callback = (_) {};
+        var useCapture = true;
+
+        thing.subscribeToWindowEvent(event, callback,
+            windowObject: window, useCapture: useCapture);
+        verify(window.addEventListener(event, callback, useCapture));
+        await thing.dispose();
+        verify(window.removeEventListener(event, callback, useCapture));
+      });
+    });
   });
 }
+
+class MockEventTarget extends Mock implements EventTarget {}
