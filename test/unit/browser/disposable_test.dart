@@ -354,36 +354,60 @@ void main() {
     });
 
     group('Event subscription helper methods', () {
-      test(
-          'subscribeToDocumentEvent should remove same listener when thing is disposed',
-          () async {
-        var document = new MockEventTarget();
-        var event = 'event';
-        EventListener callback = (_) {};
-        var useCapture = true;
+      group('events on global singleton', () {
+        String eventName;
+        bool useCapture;
+        EventListener callback;
 
-        thing.subscribeToDocumentEvent(event, callback,
-            documentObject: document, useCapture: useCapture);
-        verify(document.addEventListener(event, callback, useCapture));
-        await thing.dispose();
-        verify(document.removeEventListener(event, callback, useCapture));
+        setUp(() {
+          callback = (_) {};
+          eventName = 'event';
+          useCapture = true;
+        });
+
+        test(
+            'subscribeToDocumentEvent should remove same listener when thing is disposed',
+            () async {
+          var document = new MockEventTarget();
+
+          thing.subscribeToDocumentEvent(eventName, callback,
+              documentObject: document, useCapture: useCapture);
+          verify(document.addEventListener(eventName, callback, useCapture));
+          await thing.dispose();
+          verify(document.removeEventListener(eventName, callback, useCapture));
+        });
+
+        test(
+            'subscribeToWindowEvent should remove same listener when thing is disposed',
+            () async {
+          var window = new MockEventTarget();
+
+          thing.subscribeToWindowEvent(eventName, callback,
+              windowObject: window, useCapture: useCapture);
+          verify(window.addEventListener(eventName, callback, useCapture));
+          await thing.dispose();
+          verify(window.removeEventListener(eventName, callback, useCapture));
+        });
       });
 
       test(
           'subscribeToDomElementEvent should remove listener when thing is disposed',
           () async {
         var element = new Element.div();
+        var event = new Event('event');
+        var eventName = 'event';
         int numberOfEventCallbacks = 0;
-        EventListener callback = (_) {
+        EventListener eventCallback = (_) {
           numberOfEventCallbacks++;
         };
-        var event = new Event('event');
         var shouldNotListenEvent = new Event('shouldNotListenEvent');
 
-        thing.subscribeToDomElementEvent(element, 'event', callback);
+        thing.subscribeToDomElementEvent(element, eventName, eventCallback);
         expect(numberOfEventCallbacks, equals(0));
 
         element.dispatchEvent(shouldNotListenEvent);
+        expect(numberOfEventCallbacks, equals(0));
+
         element.dispatchEvent(event);
         expect(numberOfEventCallbacks, equals(1));
 
@@ -392,26 +416,17 @@ void main() {
         element.dispatchEvent(event);
         expect(numberOfEventCallbacks, equals(1));
 
-        thing.subscribeToDomElementEvent(element, 'event', callback);
+        thing.subscribeToDomElementEvent(element, eventName, eventCallback);
+        expect(numberOfEventCallbacks, equals(1));
+
         element.dispatchEvent(event);
+        expect(numberOfEventCallbacks, equals(2));
+
         element.dispatchEvent(event);
+        expect(numberOfEventCallbacks, equals(3));
+
         element.dispatchEvent(shouldNotListenEvent);
         expect(numberOfEventCallbacks, equals(3));
-      });
-
-      test(
-          'subscribeToWindowEvent should remove same listener when thing is disposed',
-          () async {
-        var window = new MockEventTarget();
-        var event = 'event';
-        EventListener callback = (_) {};
-        var useCapture = true;
-
-        thing.subscribeToWindowEvent(event, callback,
-            windowObject: window, useCapture: useCapture);
-        verify(window.addEventListener(event, callback, useCapture));
-        await thing.dispose();
-        verify(window.removeEventListener(event, callback, useCapture));
       });
     });
   });
