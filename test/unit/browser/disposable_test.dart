@@ -13,8 +13,10 @@
 // limitations under the License.
 
 import 'dart:async';
+import 'dart:html';
 
 import 'package:test/test.dart';
+import 'package:mockito/mockito.dart';
 
 import 'package:w_common/disposable.dart';
 
@@ -350,5 +352,84 @@ void main() {
           doesCallbackReturn: false);
       controller.close();
     });
+
+    group('Event subscription helper methods', () {
+      group('events on global singleton', () {
+        String eventName;
+        bool useCapture;
+        EventListener callback;
+
+        setUp(() {
+          callback = (_) {};
+          eventName = 'event';
+          useCapture = true;
+        });
+
+        test(
+            'subscribeToDocumentEvent should remove same listener when thing is disposed',
+            () async {
+          var document = new MockEventTarget();
+
+          thing.subscribeToDocumentEvent(eventName, callback,
+              documentObject: document, useCapture: useCapture);
+          verify(document.addEventListener(eventName, callback, useCapture));
+          await thing.dispose();
+          verify(document.removeEventListener(eventName, callback, useCapture));
+        });
+
+        test(
+            'subscribeToWindowEvent should remove same listener when thing is disposed',
+            () async {
+          var window = new MockEventTarget();
+
+          thing.subscribeToWindowEvent(eventName, callback,
+              windowObject: window, useCapture: useCapture);
+          verify(window.addEventListener(eventName, callback, useCapture));
+          await thing.dispose();
+          verify(window.removeEventListener(eventName, callback, useCapture));
+        });
+      });
+
+      test(
+          'subscribeToDomElementEvent should remove listener when thing is disposed',
+          () async {
+        var element = new Element.div();
+        var event = new Event('event');
+        var eventName = 'event';
+        int numberOfEventCallbacks = 0;
+        EventListener eventCallback = (_) {
+          numberOfEventCallbacks++;
+        };
+        var shouldNotListenEvent = new Event('shouldNotListenEvent');
+
+        thing.subscribeToDomElementEvent(element, eventName, eventCallback);
+        expect(numberOfEventCallbacks, equals(0));
+
+        element.dispatchEvent(shouldNotListenEvent);
+        expect(numberOfEventCallbacks, equals(0));
+
+        element.dispatchEvent(event);
+        expect(numberOfEventCallbacks, equals(1));
+
+        await thing.dispose();
+
+        element.dispatchEvent(event);
+        expect(numberOfEventCallbacks, equals(1));
+
+        thing.subscribeToDomElementEvent(element, eventName, eventCallback);
+        expect(numberOfEventCallbacks, equals(1));
+
+        element.dispatchEvent(event);
+        expect(numberOfEventCallbacks, equals(2));
+
+        element.dispatchEvent(event);
+        expect(numberOfEventCallbacks, equals(3));
+
+        element.dispatchEvent(shouldNotListenEvent);
+        expect(numberOfEventCallbacks, equals(3));
+      });
+    });
   });
 }
+
+class MockEventTarget extends Mock implements EventTarget {}
