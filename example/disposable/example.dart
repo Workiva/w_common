@@ -4,32 +4,21 @@ import 'dart:html';
 import 'package:logging/logging.dart';
 import 'package:w_common/disposable.dart';
 
-int childCount;
-int treeDepth;
-StreamController controller;
+class TreeNode extends Disposable {
+  TreeNode(int depth, int childCount) {
+    manageStreamController(new StreamController.broadcast());
+    manageStreamSubscription(document.onDoubleClick.listen(_onDoubleClick));
 
-ButtonElement createButton = querySelector('#create-button');
-ButtonElement disposeButton = querySelector('#dispose-button');
-InputElement childCountField = querySelector('#child-count-field');
-InputElement treeDepthField = querySelector('#tree-depth-field');
-
-Disposable createDisposableTree(int depth) {
-  var child = new Disposable();
-
-  for (int i = 0; i < childCount; i++) {
-    child.manageStreamController(new StreamController());
-    child.manageStreamSubscription(controller.stream.listen((_) {}));
+    if (depth > 0) {
+      for (int i = 0; i < childCount; i++) {
+        manageDisposable(new TreeNode(depth - 1, childCount));
+      }
+    }
   }
 
-  if (depth == 0) {
-    return child;
+  void _onDoubleClick(MouseEvent _) {
+    print('document double clicked');
   }
-
-  for (int i = 0; i < childCount; i++) {
-    child.manageDisposable(createDisposableTree(depth - 1));
-  }
-
-  return child;
 }
 
 void main() {
@@ -40,20 +29,22 @@ void main() {
 
   Disposable.enableDebugMode();
 
-  Disposable treeRoot;
+  ButtonElement createButton = querySelector('#create-button');
+  ButtonElement disposeButton = querySelector('#dispose-button');
+  InputElement childCountField = querySelector('#child-count-field');
+  InputElement treeDepthField = querySelector('#tree-depth-field');
+
+  TreeNode treeRoot;
 
   createButton.onClick.listen((_) {
-    controller?.close();
-
     if (treeRoot != null) {
       window.alert('Dispose before creating a new tree');
     }
 
-    childCount = int.parse(childCountField.value);
-    treeDepth = int.parse(treeDepthField.value);
-    controller = new StreamController.broadcast();
+    int childCount = int.parse(childCountField.value);
+    int treeDepth = int.parse(treeDepthField.value);
 
-    treeRoot = createDisposableTree(treeDepth);
+    treeRoot = new TreeNode(treeDepth, childCount);
     print('Disposable tree size: ${treeRoot.disposalTreeSize}');
   });
 
