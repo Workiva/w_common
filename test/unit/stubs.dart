@@ -15,11 +15,11 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
-import 'package:w_common/disposable.dart';
+import 'package:w_common/disposable_vm.dart';
 
-import 'typedefs.dart';
+import './typedefs.dart';
 
-class DisposableThing extends Disposable {
+abstract class StubDisposable implements Disposable {
   bool wasOnDisposeCalled = false;
 
   @override

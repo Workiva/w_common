@@ -12,5 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export 'package:w_common/src/disposable/disposable.dart';
-export 'package:w_common/src/disposable/disposable_manager.dart';
+/// This entry point has been split into separate VM and browser entry points;
+/// use disposable_vm.dart or disposable_browser.dart instead.
+@deprecated
+export 'package:w_common/src/disposable/disposable_vm.dart'
+    show Disposable, Disposer;
+export 'package:w_common/src/disposable_manager/disposable_manager_vm.dart'
+    show
+        DisposableManager,
+        DisposableManagerV2,
+        DisposableManagerV3,
+        ObjectDisposedException;

@@ -17,10 +17,10 @@ import 'dart:html';
 
 import 'package:test/test.dart';
 import 'package:mockito/mockito.dart';
-
-import 'package:w_common/disposable.dart';
+import 'package:w_common/disposable_browser.dart';
 
 import '../stubs.dart';
+import './browser_stubs.dart';
 
 void main() {
   group('Disposable', () {

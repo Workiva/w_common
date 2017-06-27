@@ -18,6 +18,7 @@ import 'package:test/test.dart';
 
 import 'package:w_common/disposable_vm.dart';
 
+import './vm_stubs.dart';
 import '../stubs.dart';
 
 void main() {

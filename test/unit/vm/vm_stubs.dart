@@ -12,13 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export 'disposable_vm.dart'
-    show
-        Disposable,
-        DisposableManager,
-        DisposableManagerV2,
-        DisposableManagerV3,
-        ObjectDisposedException;
-export 'func.dart' show Func;
-export 'invalidation_mixin.dart' show InvalidationMixin, ValidationStatus;
-export 'json_serializable.dart' show JsonSerializable;
+import 'package:w_common/disposable_vm.dart';
+
+import '../stubs.dart';
+
+class DisposableThing extends Disposable with StubDisposable {}

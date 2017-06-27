@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export 'disposable_vm.dart'
+export 'disposable_browser.dart'
     show
         Disposable,
         DisposableManager,
