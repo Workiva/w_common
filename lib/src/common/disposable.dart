@@ -14,22 +14,21 @@
 
 import 'dart:async';
 import 'dart:collection';
-import 'dart:html';
 
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
-import 'package:w_common/src/disposable/disposable_manager.dart';
+import 'package:w_common/src/common/disposable_manager.dart';
 
 // ignore: one_member_abstracts
 abstract class _Disposable {
   Future<Null> dispose();
 }
 
-class _InternalDisposable implements _Disposable {
+class InternalDisposable implements _Disposable {
   Disposer _disposer;
 
-  _InternalDisposable(this._disposer);
+  InternalDisposable(this._disposer);
 
   @override
   Future<Null> dispose() {
@@ -293,7 +292,7 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     var completer = new Completer<T>();
     var timer =
         new _ObservableTimer(duration, () => completer.complete(callback()));
-    var disposable = new _InternalDisposable(() async {
+    var disposable = new InternalDisposable(() async {
       timer.cancel();
       completer.completeError(new ObjectDisposedException());
     });
@@ -330,7 +329,7 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     _throwOnInvalidCall('manageCompleter', 'completer', completer);
     _logManageMessage(completer);
 
-    var disposable = new _InternalDisposable(() async {
+    var disposable = new InternalDisposable(() async {
       if (!completer.isCompleted) {
         completer.completeError(new ObjectDisposedException());
       }
@@ -373,7 +372,7 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     _throwOnInvalidCall('manageDisposer', 'disposer', disposer);
     _logManageMessage(disposer);
 
-    _internalDisposables.add(new _InternalDisposable(disposer));
+    _internalDisposables.add(new InternalDisposable(disposer));
   }
 
   @mustCallSuper
@@ -392,7 +391,7 @@ class Disposable implements _Disposable, DisposableManagerV3 {
 
     bool isDone = false;
 
-    var disposable = new _InternalDisposable(() {
+    var disposable = new InternalDisposable(() {
       if (!controller.hasListener && !controller.isClosed && !isDone) {
         controller.stream.listen((_) {});
       }
@@ -419,7 +418,7 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     _logManageMessage(subscription);
 
     _internalDisposables
-        .add(new _InternalDisposable(() => subscription.cancel()));
+        .add(new InternalDisposable(() => subscription.cancel()));
   }
 
   /// Callback to allow arbitrary cleanup on dispose.
@@ -428,49 +427,9 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     return null;
   }
 
-  /// Adds an event listener to the document object and removes the event
-  /// listener upon disposal.
-  ///
-  /// If using this method, you cannot manually use the `removeEventListener`
-  /// method on the document singleton to remove the listener. At this point
-  /// the only way to remove the listener is to use the [dispose] method.
-  void subscribeToDocumentEvent(String event, EventListener callback,
-      {bool useCapture, EventTarget documentObject}) {
-    if (documentObject == null) {
-      documentObject = document;
-    }
-    _subscribeToEvent(documentObject, event, callback, useCapture);
-  }
-
-  /// Adds an event listener to the element object and removes the event
-  /// listener upon disposal.
-  ///
-  /// If using this method, you cannot manually use the `removeEventListener`
-  /// method on the element to remove the listener. At this point the only way
-  /// to remove the listener is to use the [dispose] method.
-  void subscribeToDomElementEvent(
-      Element element, String event, EventListener callback,
-      {bool useCapture}) {
-    _subscribeToEvent(element, event, callback, useCapture);
-  }
-
-  /// Adds an event listener to the window object and removes the event
-  /// listener upon disposal.
-  ///
-  /// If using this method, you cannot manually use the `removeEventListener`
-  /// method on the window singleton to remove the listener. At this point
-  /// the only way to remove the listener is to use the [dispose] method.
-  void subscribeToWindowEvent(String event, EventListener callback,
-      {bool useCapture, EventTarget windowObject}) {
-    if (windowObject == null) {
-      windowObject = window;
-    }
-    _subscribeToEvent(windowObject, event, callback, useCapture);
-  }
-
   void _addObservableTimerDisposable(_ObservableTimer timer) {
-    _InternalDisposable disposable =
-        new _InternalDisposable(() async => timer.cancel());
+    InternalDisposable disposable =
+        new InternalDisposable(() async => timer.cancel());
     _internalDisposables.add(disposable);
     timer.didConclude.then((Null _) {
       if (!isDisposedOrDisposing) {
@@ -507,17 +466,6 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     }
   }
 
-  void _subscribeToEvent(EventTarget eventTarget, String event,
-      EventListener callback, bool useCapture) {
-    eventTarget.addEventListener(event, callback, useCapture);
-
-    var disposable = new _InternalDisposable(() {
-      eventTarget.removeEventListener(event, callback, useCapture);
-    });
-
-    _internalDisposables.add(disposable);
-  }
-
   void _throwOnInvalidCall(
       String methodName, String parameterName, dynamic parameterValue) {
     if (parameterValue == null) {
@@ -531,4 +479,13 @@ class Disposable implements _Disposable, DisposableManagerV3 {
           '$methodName not allowed, object is already disposed');
     }
   }
+}
+
+// TODO: Refactor so that we don't have to use this hacky solution to access
+// _internalDisposables from our browser Disposable class. Our original thought
+// was to use a factory to return an implementation class, but because consumers
+// use Disposable as a mixin, we can't give it a constructor.
+void addInternalDisposable(
+    Disposable disposable, InternalDisposable internalDisposable) {
+  disposable._internalDisposables.add(internalDisposable);
 }

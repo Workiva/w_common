@@ -12,12 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This entry point is deprecated in favor of consumers importing the specific
-// pieces of w_common they want to use.
-@deprecated
-library w_common;
+import 'package:w_common/disposable_browser.dart';
 
-export 'disposable.dart';
-export 'func.dart' show Func;
-export 'invalidation_mixin.dart' show InvalidationMixin, ValidationStatus;
-export 'json_serializable.dart' show JsonSerializable;
+import '../stubs.dart';
+
+class DisposableThing extends Disposable with StubDisposable {}

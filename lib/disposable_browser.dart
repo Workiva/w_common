@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This entry point is deprecated in favor of consumers importing the specific
-// pieces of w_common they want to use.
-@deprecated
-library w_common;
-
-export 'disposable.dart';
-export 'func.dart' show Func;
-export 'invalidation_mixin.dart' show InvalidationMixin, ValidationStatus;
-export 'json_serializable.dart' show JsonSerializable;
+export 'package:w_common/src/common/disposable_manager.dart'
+    show
+        DisposableManager,
+        DisposableManagerV2,
+        DisposableManagerV3,
+        ObjectDisposedException;
+export 'package:w_common/src/browser/disposable_browser.dart' show Disposable;
+export 'package:w_common/src/common/disposable.dart' show Disposer;
