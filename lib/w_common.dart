@@ -12,8 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This entry point is deprecated in favor of consumers importing the specific
-// pieces of w_common they want to use.
+/// Deprecated: 1.6.0
+/// To be removed: 2.0.0
+///
+/// This entry point is deprecated in favor of consumers importing the specific
+/// pieces of w_common they want to use. For example, to leverage the disposable
+/// classes:
+///
+///     import 'package:w_common/disposable.dart';
 @deprecated
 library w_common;
 
