@@ -12,13 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export 'disposable_browser.dart'
-    show
-        Disposable,
-        DisposableManager,
-        DisposableManagerV2,
-        DisposableManagerV3,
-        ObjectDisposedException;
+export 'disposable_browser.dart';
 export 'func.dart' show Func;
 export 'invalidation_mixin.dart' show InvalidationMixin, ValidationStatus;
 export 'json_serializable.dart' show JsonSerializable;

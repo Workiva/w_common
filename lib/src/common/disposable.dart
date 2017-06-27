@@ -18,7 +18,7 @@ import 'dart:collection';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
-import 'package:w_common/src/disposable_manager/disposable_manager_vm.dart';
+import 'package:w_common/src/common/disposable_manager.dart';
 
 // ignore: one_member_abstracts
 abstract class _Disposable {

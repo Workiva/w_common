@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export 'package:w_common/src/disposable_manager/disposable_manager_vm.dart'
+export 'package:w_common/src/common/disposable_manager.dart'
     show
         DisposableManager,
         DisposableManagerV2,
         DisposableManagerV3,
         ObjectDisposedException;
-export 'package:w_common/src/disposable/disposable_browser.dart'
-    show Disposable;
+export 'package:w_common/src/browser/disposable_browser.dart' show Disposable;
+export 'package:w_common/src/common/disposable.dart' show Disposer;

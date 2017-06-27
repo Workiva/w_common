@@ -15,7 +15,7 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
-import 'package:w_common/disposable_vm.dart';
+import 'package:w_common/disposable.dart';
 
 import './typedefs.dart';
 

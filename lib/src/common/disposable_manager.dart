@@ -14,7 +14,7 @@
 
 import 'dart:async';
 
-import 'package:w_common/disposable_vm.dart';
+import 'package:w_common/src/common/disposable.dart';
 
 /// Managers for disposable members.
 ///

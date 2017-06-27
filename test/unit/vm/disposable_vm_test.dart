@@ -16,10 +16,10 @@ import 'dart:async';
 
 import 'package:test/test.dart';
 
-import 'package:w_common/disposable_vm.dart';
+import 'package:w_common/disposable.dart';
 
-import './vm_stubs.dart';
 import '../stubs.dart';
+import './vm_stubs.dart';
 
 void main() {
   group('Disposable', () {
