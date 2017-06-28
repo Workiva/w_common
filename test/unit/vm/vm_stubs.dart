@@ -16,4 +16,4 @@ import 'package:w_common/disposable.dart';
 
 import '../stubs.dart';
 
-class DisposableThing extends Disposable with StubDisposable {}
+class VMDisposable extends Object with Disposable, StubDisposable {}

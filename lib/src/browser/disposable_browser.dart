@@ -12,11 +12,191 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:async';
 import 'dart:html';
+
+import 'package:meta/meta.dart';
+import 'package:w_common/func.dart';
 
 import 'package:w_common/src/common/disposable.dart' as disposable_common;
 
-class Disposable extends disposable_common.Disposable {
+class _InnerDisposable extends disposable_common.Disposable {
+  Func<Future<Null>> onDisposeHandler;
+
+  @override
+  Future<Null> onDispose() {
+    return onDisposeHandler();
+  }
+}
+
+/// Allows the creation of managed objects, including helpers for common
+/// patterns.
+///
+/// There are four ways to consume this class: as a mixin, a base class,
+/// an interface, and a concrete class used as a proxy. All should work
+/// fine but the first is the simplest and most powerful. Using the class
+/// as an interface will require significant effort.
+///
+/// In the case below, the class is used as a mixin. This provides both
+/// default implementations and flexibility since it does not occupy
+/// a spot in the class hierarchy.
+///
+/// Helper methods, such as [manageStreamSubscription] allow certain
+/// cleanup to be automated. Managed subscriptions will be automatically
+/// canceled when [dispose] is called on the object.
+///
+///      class MyDisposable extends Object with Disposable {
+///        StreamController _controller = new StreamController();
+///
+///        MyDisposable(Stream someStream) {
+///          manageStreamSubscription(someStream.listen((_) => print('some stream')));
+///          manageStreamController(_controller);
+///        }
+///
+///        Future<Null> onDispose() {
+///          // Other cleanup
+///        }
+///      }
+///
+/// The [manageDisposer] helper allows you to clean up arbitrary objects
+/// on dispose so that you can avoid keeping track of them yourself. To
+/// use it, simply provide a callback that returns a [Future] of any
+/// kind. For example:
+///
+///      class MyDisposable extends Object with Disposable {
+///        StreamController _controller = new StreamController();
+///
+///        MyDisposable() {
+///          var thing = new ThingThatRequiresCleanup();
+///          manageDisposer(() {
+///            thing.cleanUp();
+///            return new Future(() {});
+///          });
+///        }
+///      }
+///
+/// Cleanup will then be automatically performed when the containing
+/// object is disposed. If returning a future is inconvenient or
+/// otherwise undesirable, you may also return `null` explicitly.
+///
+/// Implementing the [onDispose] method is entirely optional and is only
+/// necessary if there is cleanup required that is not covered by one of
+/// the helpers.
+///
+/// It is possible to schedule a callback to be called after the object
+/// is disposed for purposes of further, external, cleanup or bookkeeping
+/// (for example, you might want to remove any objects that are disposed
+/// from a cache). To do this, use the [didDispose] future:
+///
+///      var myDisposable = new MyDisposable();
+///      myDisposable.didDispose.then((_) {
+///        // External cleanup
+///      });
+///
+/// Below is an example of using the class as a concrete proxy.
+///
+///      class MyLifecycleThing implements DisposableManager {
+///        Disposable _disposable = new Disposable();
+///
+///        MyLifecycleThing() {
+///          _disposable.manageStreamSubscription(someStream.listen(() => null));
+///        }
+///
+///        @override
+///        void manageStreamSubscription(StreamSubscription sub) {
+///          _disposable.manageStreamSubscription(sub);
+///        }
+///
+///        // ...more methods
+///
+///        Future<Null> unload() async {
+///          await _disposable.dispose();
+///        }
+///      }
+///
+/// In this case, we want `MyLifecycleThing` to have its own lifecycle
+/// without explicit reference to [Disposable]. To do this, we use
+/// composition to include the [Disposable] machinery without changing
+/// the public interface of our class or polluting its lifecycle.
+class Disposable implements disposable_common.Disposable {
+  /// Disables logging enabled by [enableDebugMode].
+  static void disableDebugMode() =>
+      disposable_common.Disposable.disableDebugMode();
+
+  /// Causes messages to be logged for various lifecycle and management events.
+  ///
+  /// This should only be used for debugging and profiling as it can result
+  /// in a huge number of messages being generated.
+  static void enableDebugMode() =>
+      disposable_common.Disposable.enableDebugMode();
+
+  final _InnerDisposable _disposable = new _InnerDisposable();
+
+  @override
+  Future<Null> get didDispose => _disposable.didDispose;
+
+  @override
+  int get disposalTreeSize => _disposable.disposalTreeSize;
+
+  @override
+  bool get isDisposed => _disposable.isDisposed;
+
+  @override
+  bool get isDisposedOrDisposing => _disposable.isDisposedOrDisposing;
+
+  @override
+  bool get isDisposing => _disposable.isDisposing;
+
+  @override
+  Future<T> awaitBeforeDispose<T>(Future<T> future) => _disposable
+      .awaitBeforeDispose(future);
+
+  @override
+  Future<Null> dispose() {
+    _disposable.onDisposeHandler = this.onDispose;
+    return _disposable.dispose();
+  }
+
+  @override
+  Future<T> getManagedDelayedFuture<T>(Duration duration, T callback()) =>
+      _disposable.getManagedDelayedFuture(duration, callback);
+
+  @override
+  Timer getManagedPeriodicTimer(
+          Duration duration, void callback(Timer timer)) =>
+      _disposable.getManagedPeriodicTimer(duration, callback);
+
+  @override
+  Timer getManagedTimer(Duration duration, void callback()) =>
+      _disposable.getManagedTimer(duration, callback);
+
+  @override
+  Completer<T> manageCompleter<T>(Completer<T> completer) => _disposable
+      .manageCompleter(completer);
+
+  @override
+  void manageDisposable(disposable_common.Disposable disposable) =>
+      _disposable.manageDisposable(disposable);
+
+  @override
+  void manageDisposer(disposable_common.Disposer disposer) =>
+      _disposable.manageDisposer(disposer);
+
+  @override
+  void manageStreamController(StreamController controller) =>
+      _disposable.manageStreamController(controller);
+
+  @override
+  void manageStreamSubscription(StreamSubscription subscription) =>
+      _disposable.manageStreamSubscription(subscription);
+
+  /// Callback to allow arbitrary cleanup on dispose.
+  @protected
+  @override
+  Future<Null> onDispose() async {
+    return null;
+  }
+
   /// Adds an event listener to the document object and removes the event
   /// listener upon disposal.
   ///
@@ -60,11 +240,8 @@ class Disposable extends disposable_common.Disposable {
   void _subscribeToEvent(EventTarget eventTarget, String event,
       EventListener callback, bool useCapture) {
     eventTarget.addEventListener(event, callback, useCapture);
-
-    var disposable = new disposable_common.InternalDisposable(() {
+    _disposable.manageDisposer(() {
       eventTarget.removeEventListener(event, callback, useCapture);
     });
-
-    disposable_common.addInternalDisposable(this, disposable);
   }
 }

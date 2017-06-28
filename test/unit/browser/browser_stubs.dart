@@ -12,8 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:html';
+
+import 'package:mockito/mockito.dart';
 import 'package:w_common/disposable_browser.dart';
 
 import '../stubs.dart';
 
-class DisposableThing extends Disposable with StubDisposable {}
+class BrowserDisposable extends Object with Disposable, StubDisposable {}
+
+class MockEventTarget extends Mock implements EventTarget {}
