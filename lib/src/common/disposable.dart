@@ -245,6 +245,9 @@ class Disposable implements _Disposable, DisposableManagerV3, LeakFlagger {
   /// and will become `false` once the [didDispose] future completes.
   bool get isDisposing => _isDisposing;
 
+  @override
+  bool get isLeakFlagSet => _leakFlag != null;
+
   @mustCallSuper
   @override
   Future<T> awaitBeforeDispose<T>(Future<T> future) {

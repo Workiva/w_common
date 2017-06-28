@@ -115,6 +115,14 @@ abstract class DisposableManagerV3 implements DisposableManagerV2 {
 /// An interface that allows a class to flag potential leaks by marking
 /// itself with a particular class when it is disposed.
 abstract class LeakFlagger {
+  /// Whether the leak flag for this object has been set.
+  ///
+  /// The flag should only be set in debug mode. If debug mode is
+  /// on, the flag should be set at the end of the disposal process.
+  /// At this point, the object is expected to be eligible for
+  /// garbage collection.
+  bool get isLeakFlagSet;
+
   /// Flag the object as having been disposed in a way that allows easier
   /// profiling.
   ///

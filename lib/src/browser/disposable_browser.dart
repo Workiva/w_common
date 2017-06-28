@@ -148,6 +148,9 @@ class Disposable implements disposable_common.Disposable {
   bool get isDisposing => _disposable.isDisposing;
 
   @override
+  bool get isLeakFlagSet => _disposable.isLeakFlagSet;
+
+  @override
   Future<T> awaitBeforeDispose<T>(Future<T> future) => _disposable
       .awaitBeforeDispose(future);
 
