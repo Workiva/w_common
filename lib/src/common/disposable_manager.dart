@@ -123,7 +123,7 @@ abstract class LeakFlagger {
   ///
   /// Consumers can search a heap snapshot for the `LeakFlag` class to
   /// see all instances of the flag.
-  void flagLeak(String description);
+  void flagLeak([String description]);
 }
 
 /// Exception thrown when an operation cannot be completed because the

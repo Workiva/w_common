@@ -228,9 +228,6 @@ class Disposable implements _Disposable, DisposableManagerV3, LeakFlagger {
     return size;
   }
 
-  /// The description of the currently-set leak flag.
-  String get leakFlagDescription => _leakFlag.description;
-
   /// Whether this object has been disposed.
   bool get isDisposed => _didDispose.isCompleted;
 
@@ -301,13 +298,15 @@ class Disposable implements _Disposable, DisposableManagerV3, LeakFlagger {
           '$runtimeType $hashCode took ${stopwatch.elapsedMicroseconds / 1000000.0} seconds to dispose');
     }
 
-    flagLeak(runtimeType.toString());
+    if (_debugMode) {
+      flagLeak();
+    }
   }
 
   @mustCallSuper
   @override
-  void flagLeak(String description) {
-    _leakFlag = new LeakFlag(description);
+  void flagLeak([String description]) {
+    _leakFlag = new LeakFlag(description ?? runtimeType.toString());
   }
 
   @mustCallSuper
