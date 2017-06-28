@@ -300,6 +300,8 @@ class Disposable implements _Disposable, DisposableManagerV3, LeakFlagger {
       _logger.info(
           '$runtimeType $hashCode took ${stopwatch.elapsedMicroseconds / 1000000.0} seconds to dispose');
     }
+
+    flagLeak(runtimeType.toString());
   }
 
   @mustCallSuper
