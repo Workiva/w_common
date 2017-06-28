@@ -17,22 +17,21 @@ import 'dart:html';
 import 'package:test/test.dart';
 import 'package:mockito/mockito.dart';
 
+import '../disposable_common.dart';
 import './browser_stubs.dart';
 
 void main() {
   group('Browser Disposable', () {
-    DisposableThing thing;
-
-    setUp(() {
-      thing = new DisposableThing();
-    });
+    testCommonDisposable(() => new BrowserDisposable());
 
     group('events on global singleton', () {
+      BrowserDisposable disposable;
       String eventName;
       bool useCapture;
       EventListener callback;
 
       setUp(() {
+        disposable = new BrowserDisposable();
         callback = (_) {};
         eventName = 'event';
         useCapture = true;
@@ -43,10 +42,10 @@ void main() {
           () async {
         var document = new MockEventTarget();
 
-        thing.subscribeToDocumentEvent(eventName, callback,
+        disposable.subscribeToDocumentEvent(eventName, callback,
             documentObject: document, useCapture: useCapture);
         verify(document.addEventListener(eventName, callback, useCapture));
-        await thing.dispose();
+        await disposable.dispose();
         verify(document.removeEventListener(eventName, callback, useCapture));
       });
 
@@ -55,53 +54,49 @@ void main() {
           () async {
         var window = new MockEventTarget();
 
-        thing.subscribeToWindowEvent(eventName, callback,
+        disposable.subscribeToWindowEvent(eventName, callback,
             windowObject: window, useCapture: useCapture);
         verify(window.addEventListener(eventName, callback, useCapture));
-        await thing.dispose();
+        await disposable.dispose();
         verify(window.removeEventListener(eventName, callback, useCapture));
       });
     });
 
-    test(
-        'subscribeToDomElementEvent should remove listener when thing is disposed',
-        () async {
-      var element = new Element.div();
-      var event = new Event('event');
-      var eventName = 'event';
-      int numberOfEventCallbacks = 0;
-      EventListener eventCallback = (_) {
-        numberOfEventCallbacks++;
-      };
-      var shouldNotListenEvent = new Event('shouldNotListenEvent');
+    group('events on DOM element', () {
+      BrowserDisposable disposable;
 
-      thing.subscribeToDomElementEvent(element, eventName, eventCallback);
-      expect(numberOfEventCallbacks, equals(0));
+      setUp(() {
+        disposable = new BrowserDisposable();
+      });
 
-      element.dispatchEvent(shouldNotListenEvent);
-      expect(numberOfEventCallbacks, equals(0));
+      test(
+          'subscribeToDomElementEvent should remove listener when thing is disposed',
+          () async {
+        var element = new Element.div();
+        var event = new Event('event');
+        var eventName = 'event';
+        int numberOfEventCallbacks = 0;
+        EventListener eventCallback = (_) {
+          numberOfEventCallbacks++;
+        };
+        var shouldNotListenEvent = new Event('shouldNotListenEvent');
 
-      element.dispatchEvent(event);
-      expect(numberOfEventCallbacks, equals(1));
+        disposable.subscribeToDomElementEvent(
+            element, eventName, eventCallback);
+        expect(numberOfEventCallbacks, equals(0));
 
-      await thing.dispose();
+        element.dispatchEvent(shouldNotListenEvent);
+        expect(numberOfEventCallbacks, equals(0));
 
-      element.dispatchEvent(event);
-      expect(numberOfEventCallbacks, equals(1));
+        element.dispatchEvent(event);
+        expect(numberOfEventCallbacks, equals(1));
 
-      thing.subscribeToDomElementEvent(element, eventName, eventCallback);
-      expect(numberOfEventCallbacks, equals(1));
+        await disposable.dispose();
+        numberOfEventCallbacks = 0;
 
-      element.dispatchEvent(event);
-      expect(numberOfEventCallbacks, equals(2));
-
-      element.dispatchEvent(event);
-      expect(numberOfEventCallbacks, equals(3));
-
-      element.dispatchEvent(shouldNotListenEvent);
-      expect(numberOfEventCallbacks, equals(3));
+        element.dispatchEvent(event);
+        expect(numberOfEventCallbacks, equals(0));
+      });
     });
   });
 }
-
-class MockEventTarget extends Mock implements EventTarget {}

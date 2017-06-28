@@ -77,13 +77,13 @@ class _ObservableTimer implements Timer {
 /// A function that, when called, disposes of one or more objects.
 typedef Future<dynamic> Disposer();
 
-/// Allows the creation of managed objects, including helpers for common patterns.
+/// Allows the creation of managed objects, including helpers for common
+/// patterns.
 ///
 /// There are four ways to consume this class: as a mixin, a base class,
 /// an interface, and a concrete class used as a proxy. All should work
-/// fine but the first is the simplest
-/// and most powerful. Using the class as an interface will require
-/// significant effort.
+/// fine but the first is the simplest and most powerful. Using the class
+/// as an interface will require significant effort.
 ///
 /// In the case below, the class is used as a mixin. This provides both
 /// default implementations and flexibility since it does not occupy
@@ -479,13 +479,4 @@ class Disposable implements _Disposable, DisposableManagerV3 {
           '$methodName not allowed, object is already disposed');
     }
   }
-}
-
-// TODO: Refactor so that we don't have to use this hacky solution to access
-// _internalDisposables from our browser Disposable class. Our original thought
-// was to use a factory to return an implementation class, but because consumers
-// use Disposable as a mixin, we can't give it a constructor.
-void addInternalDisposable(
-    Disposable disposable, InternalDisposable internalDisposable) {
-  disposable._internalDisposables.add(internalDisposable);
 }
