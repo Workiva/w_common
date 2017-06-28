@@ -74,6 +74,17 @@ class _ObservableTimer implements Timer {
   bool get isActive => _timer.isActive;
 }
 
+/// A class used as a marker for potential memory leaks.
+class LeakFlag {
+  final String description;
+
+  LeakFlag(this.description);
+
+  @override
+  String toString() =>
+      description == null ? 'LeakFlag' : 'LeakFlag: $description';
+}
+
 /// A function that, when called, disposes of one or more objects.
 typedef Future<dynamic> Disposer();
 
@@ -166,9 +177,11 @@ typedef Future<dynamic> Disposer();
 /// without explicit reference to [Disposable]. To do this, we use
 /// composition to include the [Disposable] machinery without changing
 /// the public interface of our class or polluting its lifecycle.
-class Disposable implements _Disposable, DisposableManagerV3 {
+class Disposable implements _Disposable, DisposableManagerV3, LeakFlagger {
   static bool _debugMode = false;
   static Logger _logger;
+
+  LeakFlag _leakFlag;
 
   /// Disables logging enabled by [enableDebugMode].
   static void disableDebugMode() {
@@ -214,6 +227,9 @@ class Disposable implements _Disposable, DisposableManagerV3 {
     }
     return size;
   }
+
+  /// The description of the currently-set leak flag.
+  String get leakFlagDescription => _leakFlag.description;
 
   /// Whether this object has been disposed.
   bool get isDisposed => _didDispose.isCompleted;
@@ -284,6 +300,12 @@ class Disposable implements _Disposable, DisposableManagerV3 {
       _logger.info(
           '$runtimeType $hashCode took ${stopwatch.elapsedMicroseconds / 1000000.0} seconds to dispose');
     }
+  }
+
+  @mustCallSuper
+  @override
+  void flagLeak(String description) {
+    _leakFlag = new LeakFlag(description);
   }
 
   @mustCallSuper

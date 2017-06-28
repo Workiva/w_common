@@ -148,6 +148,9 @@ class Disposable implements disposable_common.Disposable {
   bool get isDisposing => _disposable.isDisposing;
 
   @override
+  String get leakFlagDescription => _disposable.leakFlagDescription;
+
+  @override
   Future<T> awaitBeforeDispose<T>(Future<T> future) => _disposable
       .awaitBeforeDispose(future);
 
@@ -155,6 +158,11 @@ class Disposable implements disposable_common.Disposable {
   Future<Null> dispose() {
     _disposable.onDisposeHandler = this.onDispose;
     return _disposable.dispose();
+  }
+
+  @override
+  void flagLeak(String description) {
+    _disposable.flagLeak(description);
   }
 
   @override

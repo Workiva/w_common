@@ -112,6 +112,20 @@ abstract class DisposableManagerV3 implements DisposableManagerV2 {
   Completer<T> manageCompleter<T>(Completer<T> completer);
 }
 
+/// An interface that allows a class to flag potential leaks by marking
+/// itself with a particular class when it is disposed.
+abstract class LeakFlagger {
+  /// Flag the object as having been disposed in a way that allows easier
+  /// profiling.
+  ///
+  /// The leak flag is only set after disposal, so most instances found
+  /// in a heap snapshot will indicate memory leaks.
+  ///
+  /// Consumers can search a heap snapshot for the `LeakFlag` class to
+  /// see all instances of the flag.
+  void flagLeak(String description);
+}
+
 /// Exception thrown when an operation cannot be completed because the
 /// disposable object upon which it depended has been disposed.
 ///
