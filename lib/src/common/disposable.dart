@@ -301,15 +301,15 @@ class Disposable implements _Disposable, DisposableManagerV3, LeakFlagger {
           '$runtimeType $hashCode took ${stopwatch.elapsedMicroseconds / 1000000.0} seconds to dispose');
     }
 
-    if (_debugMode) {
-      flagLeak();
-    }
+    flagLeak();
   }
 
   @mustCallSuper
   @override
   void flagLeak([String description]) {
-    _leakFlag = new LeakFlag(description ?? runtimeType.toString());
+    if (_debugMode) {
+      _leakFlag = new LeakFlag(description ?? runtimeType.toString());
+    }
   }
 
   @mustCallSuper
