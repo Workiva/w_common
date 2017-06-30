@@ -344,4 +344,35 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         doesCallbackReturn: false);
     controller.close();
   });
+
+  group('flagLeak', () {
+    test('should set the leak flag when debug mode is on', () {
+      Disposable.enableDebugMode();
+      expect(disposable.isLeakFlagSet, isFalse);
+      disposable.flagLeak();
+      expect(disposable.isLeakFlagSet, isTrue);
+      Disposable.disableDebugMode();
+    });
+
+    test('should not set the leak flag when debug mode is off', () {
+      expect(disposable.isLeakFlagSet, isFalse);
+      disposable.flagLeak();
+      expect(disposable.isLeakFlagSet, isFalse);
+    });
+
+    test('should set the leak flag on dispose when debug mode is on', () async {
+      Disposable.enableDebugMode();
+      expect(disposable.isLeakFlagSet, isFalse);
+      await disposable.dispose();
+      expect(disposable.isLeakFlagSet, isTrue);
+      Disposable.disableDebugMode();
+    });
+
+    test('should not set the leak flag on dispose when debug mode is off',
+        () async {
+      expect(disposable.isLeakFlagSet, isFalse);
+      await disposable.dispose();
+      expect(disposable.isLeakFlagSet, isFalse);
+    });
+  });
 }
