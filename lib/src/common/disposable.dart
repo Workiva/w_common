@@ -286,7 +286,7 @@ class Disposable implements _Disposable, DisposableManagerV3, LeakFlagger {
     await Future.wait(_awaitableFutures);
     _awaitableFutures.clear();
 
-    for (var disposable in _internalDisposables) {
+    for (var disposable in _internalDisposables.toList()) {
       await disposable.dispose();
     }
     _internalDisposables.clear();
