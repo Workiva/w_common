@@ -61,18 +61,19 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       disposable.dispose();
     });
 
-    test('should throw during disposal', () {
+    test('should throw during disposal', () async {
       var completer = new Completer();
+      // ignore: unawaited_futures
       disposable.awaitBeforeDispose(completer.future);
+      // ignore: unawaited_futures
       disposable.dispose();
-      new Future(() {}).then((_) {
-        expect(disposable.isDisposing, isTrue);
-        expect(
-            () => disposable.getManagedDelayedFuture(
-                new Duration(seconds: 10), () => null),
-            throwsStateError);
-        completer.complete();
-      });
+      await new Future(() {});
+      expect(disposable.isDisposing, isTrue);
+      expect(
+          () => disposable.getManagedDelayedFuture(
+              new Duration(seconds: 10), () => null),
+          throwsStateError);
+      completer.complete();
     });
 
     test('should throw after disposal', () async {
@@ -118,18 +119,19 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       }, returnsNormally);
     });
 
-    test('should throw during disposal', () {
+    test('should throw during disposal', () async {
       var completer = new Completer();
+      // ignore: unawaited_futures
       disposable.awaitBeforeDispose(completer.future);
+      // ignore: unawaited_futures
       disposable.dispose();
-      new Future(() {}).then((_) {
-        expect(disposable.isDisposing, isTrue);
-        expect(
-            () => disposable.getManagedTimer(
-                new Duration(seconds: 10), () => null),
-            throwsStateError);
-        completer.complete();
-      });
+      await new Future(() {});
+      expect(disposable.isDisposing, isTrue);
+      expect(
+          () =>
+              disposable.getManagedTimer(new Duration(seconds: 10), () => null),
+          throwsStateError);
+      completer.complete();
     });
 
     test('should throw after disposal', () async {
@@ -177,18 +179,19 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       }, returnsNormally);
     });
 
-    test('should throw during disposal', () {
+    test('should throw during disposal', () async {
       var completer = new Completer();
+      // ignore: unawaited_futures
       disposable.awaitBeforeDispose(completer.future);
+      // ignore: unawaited_futures
       disposable.dispose();
-      new Future(() {}).then((_) {
-        expect(disposable.isDisposing, isTrue);
-        expect(
-            () => disposable.getManagedPeriodicTimer(
-                new Duration(seconds: 10), (_) => null),
-            throwsStateError);
-        completer.complete();
-      });
+      await new Future(() {});
+      expect(disposable.isDisposing, isTrue);
+      expect(
+          () => disposable.getManagedPeriodicTimer(
+              new Duration(seconds: 10), (_) => null),
+          throwsStateError);
+      completer.complete();
     });
 
     test('should throw after disposal', () async {
