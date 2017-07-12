@@ -307,7 +307,7 @@ class Disposable implements _Disposable, DisposableManagerV3, LeakFlagger {
   @mustCallSuper
   @override
   void flagLeak([String description]) {
-    if (_debugMode && _leakFlag != null) {
+    if (_debugMode && _leakFlag == null) {
       _leakFlag = new LeakFlag(description ?? runtimeType.toString());
     }
   }
