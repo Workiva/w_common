@@ -9,6 +9,58 @@ import 'stubs.dart';
 void testCommonDisposable(Func<StubDisposable> disposableFactory) {
   StubDisposable disposable;
 
+  void testManageMethod(
+      String methodName, callback(dynamic argument), dynamic argument,
+      {bool doesCallbackReturn: true}) {
+    if (doesCallbackReturn) {
+      test('should return the argument', () {
+        expect(callback(argument), same(argument));
+      });
+    }
+
+    test('should throw if called with a null argument', () {
+      expect(() => callback(null), throwsArgumentError);
+    });
+
+    test('should throw if object is disposing', () async {
+      disposable.manageDisposer(() async {
+        expect(() => callback(argument), throwsStateError);
+      });
+      await disposable.dispose();
+    });
+
+    test('should throw if object has been disposed', () async {
+      await disposable.dispose();
+      expect(() => callback(argument), throwsStateError);
+    });
+  }
+
+  void testManageMethod2(
+      String methodName,
+      callback(dynamic argument, dynamic secondArgument),
+      dynamic argument,
+      dynamic secondArgument) {
+    test('should throw if called with a null argument', () {
+      expect(() => callback(null, secondArgument), throwsArgumentError);
+    });
+
+    test('should throw if called with a null argument', () {
+      expect(() => callback(argument, null), throwsArgumentError);
+    });
+
+    test('should throw if object is disposing', () async {
+      disposable.manageDisposer(() async {
+        expect(() => callback(argument, secondArgument), throwsStateError);
+      });
+      await disposable.dispose();
+    });
+
+    test('should throw if object has been disposed', () async {
+      await disposable.dispose();
+      expect(() => callback(argument, secondArgument), throwsStateError);
+    });
+  }
+
   setUp(() {
     disposable = disposableFactory();
   });
@@ -60,6 +112,56 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       });
       disposable.dispose();
     });
+  });
+
+  group('getManagedStreamSubscription', () {
+    test('should cancel subscription when parent is disposed', () async {
+      var controller = new StreamController();
+      controller.onCancel = expectAsync1(([_]) {}, count: 1);
+      disposable.getManagedStreamSubscription(
+          controller.stream, expectAsync1((_) {}, count: 0));
+      await disposable.dispose();
+      controller.add(null);
+      await controller.close();
+    });
+
+    test('should not throw if stream subscription is canceled after disposal',
+        () async {
+      var controller = new StreamController<Null>();
+      StreamSubscription<Null> subscription = disposable
+          .getManagedStreamSubscription<Null>(controller.stream, (_) {});
+      await disposable.dispose();
+      expect(() async => await subscription.cancel(), returnsNormally);
+      await controller.close();
+    });
+
+    test(
+        'should remove references when stream subscription is closed before disposal',
+        () async {
+      var previousTreeSize = disposable.disposalTreeSize;
+      var controller = new StreamController<Null>();
+      StreamSubscription<Null> subscription = disposable
+          .getManagedStreamSubscription<Null>(controller.stream, (_) {});
+
+      expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
+
+      await subscription.cancel();
+      await new Future(() {});
+
+      expect(disposable.isDisposed, isFalse);
+      expect(disposable.disposalTreeSize, equals(previousTreeSize));
+
+      await controller.close();
+    });
+
+    var controller = new StreamController();
+    testManageMethod2(
+        'getManagedStreamSubscription',
+        (argument, secondArgument) =>
+            disposable.getManagedStreamSubscription(argument, secondArgument),
+        controller.stream,
+        (_) {});
+    controller.close();
   });
 
   group('getManagedTimer', () {
@@ -139,32 +241,6 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       expect(disposable.wasOnDisposeCalled, isTrue);
     });
   });
-
-  void testManageMethod(
-      String methodName, callback(dynamic argument), dynamic argument,
-      {bool doesCallbackReturn: true}) {
-    if (doesCallbackReturn) {
-      test('should return the argument', () {
-        expect(callback(argument), same(argument));
-      });
-    }
-
-    test('should throw if called with a null argument', () {
-      expect(() => callback(null), throwsArgumentError);
-    });
-
-    test('should throw if object is disposing', () async {
-      disposable.manageDisposer(() async {
-        expect(() => callback(argument), throwsStateError);
-      });
-      await disposable.dispose();
-    });
-
-    test('should throw if object has been disposed', () async {
-      await disposable.dispose();
-      expect(() => callback(argument), throwsStateError);
-    });
-  }
 
   group('awaitBeforeDispose', () {
     test('should wait for the future to complete before disposing', () async {
