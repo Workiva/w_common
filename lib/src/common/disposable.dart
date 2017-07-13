@@ -19,6 +19,7 @@ import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
 import 'package:w_common/src/common/disposable_manager.dart';
+import 'package:w_common/src/common/managed_stream_subscrption.dart';
 
 // ignore: one_member_abstracts
 abstract class _Disposable {
@@ -177,7 +178,7 @@ typedef Future<dynamic> Disposer();
 /// without explicit reference to [Disposable]. To do this, we use
 /// composition to include the [Disposable] machinery without changing
 /// the public interface of our class or polluting its lifecycle.
-class Disposable implements _Disposable, DisposableManagerV3, LeakFlagger {
+class Disposable implements _Disposable, DisposableManagerV4, LeakFlagger {
   static bool _debugMode = false;
   static Logger _logger;
 
@@ -351,6 +352,32 @@ class Disposable implements _Disposable, DisposableManagerV3, LeakFlagger {
 
   @mustCallSuper
   @override
+  StreamSubscription<T> getManagedStreamSubscription<T>(
+      Stream<T> stream, void onData(T event)) {
+    _throwOnInvalidCall2('awaitBeforeDispose', 'future', stream, onData);
+    var managedStreamSubscription =
+        new ManagedStreamSubscription(stream, onData);
+    _logManageMessage(managedStreamSubscription);
+
+    var disposable = new InternalDisposable(() async {
+      _logUnmanageMessage(managedStreamSubscription);
+      await managedStreamSubscription.cancel();
+    });
+
+    _internalDisposables.add(disposable);
+
+    managedStreamSubscription.didCancel.then((_) {
+      if (!isDisposedOrDisposing) {
+        _logUnmanageMessage(disposable);
+        _internalDisposables.remove(disposable);
+      }
+    });
+
+    return managedStreamSubscription;
+  }
+
+  @mustCallSuper
+  @override
   Completer<T> manageCompleter<T>(Completer<T> completer) {
     _throwOnInvalidCall('manageCompleter', 'completer', completer);
     _logManageMessage(completer);
@@ -436,6 +463,7 @@ class Disposable implements _Disposable, DisposableManagerV3, LeakFlagger {
     _internalDisposables.add(disposable);
   }
 
+  @deprecated
   @mustCallSuper
   @override
   void manageStreamSubscription(StreamSubscription subscription) {
@@ -504,5 +532,13 @@ class Disposable implements _Disposable, DisposableManagerV3, LeakFlagger {
       throw new StateError(
           '$methodName not allowed, object is already disposed');
     }
+  }
+
+  void _throwOnInvalidCall2(String methodName, String parameterName,
+      dynamic parameterValue, dynamic secondParameterValue) {
+    if (secondParameterValue == null) {
+      throw new ArgumentError.notNull(parameterName);
+    }
+    _throwOnInvalidCall(methodName, parameterName, parameterValue);
   }
 }

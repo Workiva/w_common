@@ -184,6 +184,11 @@ class Disposable implements disposable_common.Disposable {
       _disposable.getManagedTimer(duration, callback);
 
   @override
+  StreamSubscription<T> getManagedStreamSubscription<T>(
+          Stream<T> stream, void onData(T event)) =>
+      _disposable.getManagedStreamSubscription(stream, onData);
+
+  @override
   Completer<T> manageCompleter<T>(Completer<T> completer) => _disposable
       .manageCompleter(completer);
 
