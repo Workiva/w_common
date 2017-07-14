@@ -144,11 +144,11 @@ abstract class DisposableManagerV3 implements DisposableManagerV2 {
 abstract class DisposableManagerV4 implements DisposableManagerV3 {
   /// Automatically cancel a stream subscription when this object is disposed.
   ///
-  /// If the returned stream subscription is managed manually (i.e. canceled
-  /// before disposal of the parent object) [Disposable] will properly manage the
-  /// internal reference.
+  /// If the returned `StreamSubscription` is cancelled manually (i.e. canceled
+  /// before disposal of the parent object) [Disposable] will clean up the
+  /// internal reference allowing the subscription to be garbage collected.
   ///
-  /// Neither parameter may not be `null`.
+  /// Neither parameter may be `null`.
   StreamSubscription<T> getManagedStreamSubscription<T>(
       Stream<T> stream, void onData(T event));
 }

@@ -354,7 +354,8 @@ class Disposable implements _Disposable, DisposableManagerV4, LeakFlagger {
   @override
   StreamSubscription<T> getManagedStreamSubscription<T>(
       Stream<T> stream, void onData(T event)) {
-    _throwOnInvalidCall2('awaitBeforeDispose', 'future', stream, onData);
+    _throwOnInvalidCall2(
+        'getManagedStreamSubscription', 'stream', 'onData', stream, onData);
     var managedStreamSubscription =
         new ManagedStreamSubscription(stream, onData);
     _logManageMessage(managedStreamSubscription);
@@ -534,10 +535,14 @@ class Disposable implements _Disposable, DisposableManagerV4, LeakFlagger {
     }
   }
 
-  void _throwOnInvalidCall2(String methodName, String parameterName,
-      dynamic parameterValue, dynamic secondParameterValue) {
+  void _throwOnInvalidCall2(
+      String methodName,
+      String parameterName,
+      String secondParameterName,
+      dynamic parameterValue,
+      dynamic secondParameterValue) {
     if (secondParameterValue == null) {
-      throw new ArgumentError.notNull(parameterName);
+      throw new ArgumentError.notNull(secondParameterName);
     }
     _throwOnInvalidCall(methodName, parameterName, parameterValue);
   }

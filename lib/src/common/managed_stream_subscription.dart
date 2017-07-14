@@ -1,7 +1,11 @@
 import 'dart:async';
 
-/// An implementation of StreamSubscription that provides a didCancel future.
-class ManagedStreamSubscription<T> extends StreamSubscription<T> {
+/// An implementation of `StreamSubscription` that provides a [didCancel] future.
+///
+/// The [didCancel] future is used to provide an anchor point for removing
+/// internal references to `StreamSubscriptions` if consumers manually cancel the
+/// subscription. This class is not publicly exported.
+class ManagedStreamSubscription<T> implements StreamSubscription<T> {
   final StreamSubscription<T> _subscription;
 
   Completer<Null> _didCancel = new Completer();
@@ -13,11 +17,12 @@ class ManagedStreamSubscription<T> extends StreamSubscription<T> {
   Future<E> asFuture<E>([E futureValue]) => _subscription.asFuture(futureValue);
 
   @override
-  Future<Null> cancel() async {
-    await _subscription.cancel();
-    if (!_didCancel.isCompleted) {
-      _didCancel.complete(null);
-    }
+  Future<Null> cancel() {
+    return (_subscription.cancel() ?? new Future(() {})).then((_) {
+      if (!_didCancel.isCompleted) {
+        _didCancel.complete(null);
+      }
+    });
   }
 
   Future<Null> get didCancel => _didCancel.future;
