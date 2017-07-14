@@ -22,7 +22,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
   Future<Null> cancel() {
     return (_subscription.cancel() ?? new Future(() {})).then((_) {
       if (!_didCancel.isCompleted) {
-        _didCancel.complete(null);
+        _didCancel.complete();
       }
     });
   }
@@ -33,7 +33,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
   bool get isPaused => _subscription.isPaused;
 
   @override
-  void onData(void handleData(_)) => _subscription.onData(handleData);
+  void onData(void handleData(T _)) => _subscription.onData(handleData);
 
   @override
   void onDone(void handleDone()) => _subscription.onDone(handleDone);
