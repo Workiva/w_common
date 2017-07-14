@@ -142,15 +142,19 @@ abstract class DisposableManagerV3 implements DisposableManagerV2 {
 /// When new management methods are to be added, they should be added
 /// here first, then implemented in [Disposable].
 abstract class DisposableManagerV4 implements DisposableManagerV3 {
-  /// Automatically cancel a stream subscription when this object is disposed.
+  /// Returns a [StreamSubscription] which handles events from the stream using
+  /// the provided [onData], [onError] and [onDone] handlers.
+  ///
+  /// Consult documentation for Stream.listen for more info.
   ///
   /// If the returned `StreamSubscription` is cancelled manually (i.e. canceled
   /// before disposal of the parent object) [Disposable] will clean up the
   /// internal reference allowing the subscription to be garbage collected.
   ///
   /// Neither parameter may be `null`.
-  StreamSubscription<T> getManagedStreamSubscription<T>(
-      Stream<T> stream, void onData(T event));
+  StreamSubscription<T> listenToStream<T>(
+      Stream<T> stream, void onData(T event),
+      {Function onError, void onDone(), bool cancelOnError});
 }
 
 /// An interface that allows a class to flag potential leaks by marking

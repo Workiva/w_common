@@ -118,7 +118,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test('should cancel subscription when parent is disposed', () async {
       var controller = new StreamController();
       controller.onCancel = expectAsync1(([_]) {}, count: 1);
-      disposable.getManagedStreamSubscription(
+      disposable.listenToStream(
           controller.stream, expectAsync1((_) {}, count: 0));
       await disposable.dispose();
       controller.add(null);
@@ -128,8 +128,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test('should not throw if stream subscription is canceled after disposal',
         () async {
       var controller = new StreamController<Null>();
-      StreamSubscription<Null> subscription = disposable
-          .getManagedStreamSubscription<Null>(controller.stream, (_) {});
+      StreamSubscription<Null> subscription =
+          disposable.listenToStream<Null>(controller.stream, (_) {});
       await disposable.dispose();
       expect(() async => await subscription.cancel(), returnsNormally);
       await controller.close();
@@ -140,8 +140,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         () async {
       var previousTreeSize = disposable.disposalTreeSize;
       var controller = new StreamController<Null>();
-      StreamSubscription<Null> subscription = disposable
-          .getManagedStreamSubscription<Null>(controller.stream, (_) {});
+      StreamSubscription<Null> subscription =
+          disposable.listenToStream<Null>(controller.stream, (_) {});
 
       expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
 
@@ -158,7 +158,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     testManageMethod2(
         'getManagedStreamSubscription',
         (argument, secondArgument) =>
-            disposable.getManagedStreamSubscription(argument, secondArgument),
+            disposable.listenToStream(argument, secondArgument),
         controller.stream,
         (_) {});
     controller.close();

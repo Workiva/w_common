@@ -10,8 +10,10 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
 
   Completer<Null> _didCancel = new Completer();
 
-  ManagedStreamSubscription(Stream<T> stream, void onData(T))
-      : _subscription = stream.listen(onData);
+  ManagedStreamSubscription(Stream<T> stream, void onData(T),
+      {Function onError, void onDone(), bool cancelOnError})
+      : _subscription = stream.listen(onData,
+            onError: onError, onDone: onDone, cancelOnError: cancelOnError);
 
   @override
   Future<E> asFuture<E>([E futureValue]) => _subscription.asFuture(futureValue);
