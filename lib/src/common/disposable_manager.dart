@@ -21,7 +21,7 @@ import 'package:w_common/src/common/disposable.dart';
 /// This interface allows consumers to exercise more control over how
 /// disposal is implemented for their classes.
 ///
-/// Use DisposableManagerV2 instead.
+/// Deprecated: Use DisposableManagerV4 instead.
 @deprecated
 abstract class DisposableManager {
   /// Automatically dispose another object when this object is disposed.
@@ -47,6 +47,13 @@ abstract class DisposableManager {
   /// parent object is disposed.
   ///
   /// The parameter may not be `null`.
+  ///
+  /// Deprecated: 1.7.0
+  /// To be removed: 2.0.0
+  ///
+  /// Use getManagedStreamSubscription instead. One will need to
+  /// update to DisposableManagerV4 for this.
+  @deprecated
   void manageStreamSubscription(StreamSubscription subscription);
 }
 
@@ -57,6 +64,8 @@ abstract class DisposableManager {
 ///
 /// When new management methods are to be added, they should be added
 /// here first, then implemented in [Disposable].
+///
+/// Deprecated: Use DisposableManagerV4 instead.
 @deprecated
 abstract class DisposableManagerV2 implements DisposableManager {
   /// Creates a [Timer] instance that will be cancelled if active
@@ -68,6 +77,19 @@ abstract class DisposableManagerV2 implements DisposableManager {
   Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer));
 }
 
+/// Managers for disposable members.
+///
+/// This interface allows consumers to exercise more control over how
+/// disposal is implemented for their classes.
+///
+/// When new management methods are to be added, they should be added
+/// here first, then implemented in [Disposable].
+///
+/// Deprecated: 1.7.0
+/// To be removed: 2.0.0
+///
+/// Use DisposableManagerV4 instead.
+@deprecated
 abstract class DisposableManagerV3 implements DisposableManagerV2 {
   /// Add [future] to a list of futures that will be awaited before the
   /// object is disposed.
@@ -110,6 +132,29 @@ abstract class DisposableManagerV3 implements DisposableManagerV2 {
   /// is disposed, it will be completed with an [ObjectDisposedException]
   /// error.
   Completer<T> manageCompleter<T>(Completer<T> completer);
+}
+
+/// Managers for disposable members.
+///
+/// This interface allows consumers to exercise more control over how
+/// disposal is implemented for their classes.
+///
+/// When new management methods are to be added, they should be added
+/// here first, then implemented in [Disposable].
+abstract class DisposableManagerV4 implements DisposableManagerV3 {
+  /// Returns a [StreamSubscription] which handles events from the stream using
+  /// the provided [onData], [onError] and [onDone] handlers.
+  ///
+  /// Consult documentation for Stream.listen for more info.
+  ///
+  /// If the returned `StreamSubscription` is cancelled manually (i.e. canceled
+  /// before disposal of the parent object) [Disposable] will clean up the
+  /// internal reference allowing the subscription to be garbage collected.
+  ///
+  /// Neither parameter may be `null`.
+  StreamSubscription<T> listenToStream<T>(
+      Stream<T> stream, void onData(T event),
+      {Function onError, void onDone(), bool cancelOnError});
 }
 
 /// An interface that allows a class to flag potential leaks by marking

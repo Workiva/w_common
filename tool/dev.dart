@@ -20,7 +20,9 @@ import 'package:dart_dev/dart_dev.dart'
 Future main(List<String> args) async {
   // https://github.com/Workiva/dart_dev
 
-  config.analyze.entryPoints = ['lib/', 'test/unit/', 'tool/'];
+  config.analyze
+    ..entryPoints = ['lib/', 'test/unit/', 'tool/']
+    ..strong = true;
 
   config.format
     ..paths = [
