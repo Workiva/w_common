@@ -329,8 +329,8 @@ class Disposable implements DisposableManagerV5, LeakFlagger, SimpleDisposable {
   @mustCallSuper
   @override
   Future<T> getManagedDelayedFuture<T>(Duration duration, T callback()) {
-    _throwOnInvalidCall('getManagedDelayedFuture', 'duration', duration);
-    _throwOnInvalidCall('getManagedDelayedFuture', 'callback', callback);
+    _throwOnInvalidCall2(
+        'getManagedDelayedFuture', 'duration', 'callback', duration, callback);
     var completer = new Completer<T>();
     var timer =
         new _ObservableTimer(duration, () => completer.complete(callback()));
@@ -372,8 +372,8 @@ class Disposable implements DisposableManagerV5, LeakFlagger, SimpleDisposable {
   @mustCallSuper
   @override
   Timer getManagedTimer(Duration duration, void callback()) {
-    _throwOnInvalidCall('getManagedTimer', 'duration', duration);
-    _throwOnInvalidCall('getManagedTimer', 'callback', callback);
+    _throwOnInvalidCall2(
+        'getManagedTimer', 'duration', 'callback', duration, callback);
     var timer = new _ObservableTimer(duration, callback);
     _addObservableTimerDisposable(timer);
     return timer;
@@ -382,8 +382,8 @@ class Disposable implements DisposableManagerV5, LeakFlagger, SimpleDisposable {
   @mustCallSuper
   @override
   Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer)) {
-    _throwOnInvalidCall('getManagedPeriodicTimer', 'duration', duration);
-    _throwOnInvalidCall('getManagedPeriodicTimer', 'callback', callback);
+    _throwOnInvalidCall2(
+        'getManagedPeriodicTimer', 'duration', 'callback', duration, callback);
     var timer = new _ObservableTimer.periodic(duration, callback);
     _addObservableTimerDisposable(timer);
     return timer;
