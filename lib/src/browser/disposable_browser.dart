@@ -19,6 +19,7 @@ import 'package:meta/meta.dart';
 import 'package:w_common/func.dart';
 
 import 'package:w_common/src/common/disposable.dart' as disposable_common;
+import 'package:w_common/src/common/disposable_manager.dart';
 
 class _InnerDisposable extends disposable_common.Disposable {
   Func<Future<Null>> onDisposeHandler;
@@ -58,7 +59,7 @@ class _InnerDisposable extends disposable_common.Disposable {
 ///        }
 ///      }
 ///
-/// The [manageDisposer] helper allows you to clean up arbitrary objects
+/// The [getManagedDisposer] helper allows you to clean up arbitrary objects
 /// on dispose so that you can avoid keeping track of them yourself. To
 /// use it, simply provide a callback that returns a [Future] of any
 /// kind. For example:
@@ -68,14 +69,14 @@ class _InnerDisposable extends disposable_common.Disposable {
 ///
 ///        MyDisposable() {
 ///          var thing = new ThingThatRequiresCleanup();
-///          manageDisposer(() {
+///          getManagedDisposer(() {
 ///            thing.cleanUp();
 ///            return new Future(() {});
 ///          });
 ///        }
 ///      }
 ///
-/// Cleanup will then be automatically performed when the containing
+/// Cleanup will then be automatically performed when the parent
 /// object is disposed. If returning a future is inconvenient or
 /// otherwise undesirable, you may also return `null` explicitly.
 ///
@@ -198,14 +199,20 @@ class Disposable implements disposable_common.Disposable {
   void manageDisposable(disposable_common.Disposable disposable) =>
       _disposable.manageDisposable(disposable);
 
+  @deprecated
   @override
   void manageDisposer(disposable_common.Disposer disposer) =>
       _disposable.manageDisposer(disposer);
 
   @override
+  SimpleDisposable getManagedDisposer(disposable_common.Disposer disposer) =>
+      _disposable.getManagedDisposer(disposer);
+
+  @override
   void manageStreamController(StreamController controller) =>
       _disposable.manageStreamController(controller);
 
+  @deprecated
   @override
   void manageStreamSubscription(StreamSubscription subscription) =>
       _disposable.manageStreamSubscription(subscription);
