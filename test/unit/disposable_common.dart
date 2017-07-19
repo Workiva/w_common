@@ -49,7 +49,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     test('should throw if object is disposing', () async {
-      disposable.manageDisposer(() async {
+      disposable.getManagedDisposer(() async {
         expect(() => callback(argument, secondArgument), throwsStateError);
       });
       await disposable.dispose();
@@ -68,9 +68,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
   group('disposalTreeSize', () {
     test('should count all managed objects', () {
       var controller = new StreamController();
-      var subscription = controller.stream.listen((_) {});
       disposable.manageStreamController(controller);
-      disposable.manageStreamSubscription(subscription);
+      disposable.listenToStream(controller.stream, (_) {});
       disposable.manageDisposable(disposableFactory());
       disposable.manageCompleter(new Completer());
       disposable.getManagedTimer(new Duration(days: 1), () {});
