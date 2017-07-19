@@ -11,8 +11,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
   void testManageMethod(
       String methodName, callback(dynamic argument), dynamic argument,
-      {bool doesCallbackReturn: true}) {
-    if (doesCallbackReturn) {
+      {bool doesCallbackReturnArgument: true}) {
+    if (doesCallbackReturnArgument) {
       test('should return the argument', () {
         expect(callback(argument), same(argument));
       });
@@ -387,7 +387,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         'manageDisposable',
         (argument) => disposable.manageDisposable(argument),
         disposableFactory(),
-        doesCallbackReturn: false);
+        doesCallbackReturnArgument: false);
   });
 
   group('manageDisposer', () {
@@ -407,7 +407,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     testManageMethod('manageDisposer',
         (argument) => disposable.manageDisposer(argument), () async => null,
-        doesCallbackReturn: false);
+        doesCallbackReturnArgument: false);
   });
 
   group('manageStreamController', () {
@@ -468,7 +468,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         'manageStreamController',
         (argument) => disposable.manageStreamController(argument),
         new StreamController(),
-        doesCallbackReturn: false);
+        doesCallbackReturnArgument: false);
   });
 
   group('manageStreamSubscription', () {
@@ -489,7 +489,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         'manageStreamSubscription',
         (argument) => disposable.manageStreamSubscription(argument),
         controller.stream.listen((_) {}),
-        doesCallbackReturn: false);
+        doesCallbackReturnArgument: false);
     controller.close();
   });
 
