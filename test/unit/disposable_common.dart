@@ -137,7 +137,58 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
   });
 
-  group('getManagedStreamSubscription', () {
+  group('getManagedDisposer', () {
+    test(
+        'should call callback and accept null return value'
+        'when parent is disposed', () async {
+      disposable.getManagedDisposer(expectAsync0(() => null));
+      await disposable.dispose();
+    });
+
+    test(
+        'should call callback and accept Future return value'
+        'when parent is disposed', () async {
+      disposable.getManagedDisposer(expectAsync0(() => new Future(() {})));
+      await disposable.dispose();
+    });
+
+    test(
+        'should call callback and accept null return value'
+        'when disposed before parent', () async {
+      var simpleDisposable =
+          disposable.getManagedDisposer(expectAsync0(() => null));
+      await simpleDisposable.dispose();
+    });
+
+    test(
+        'should call callback and accept Future return value'
+        'when disposed before parent', () async {
+      var simpleDisposable =
+          disposable.getManagedDisposer(expectAsync0(() => new Future(() {})));
+      await simpleDisposable.dispose();
+    });
+
+    test('should remove references to Disposer when disposed before parent',
+        () async {
+      var previousTreeSize = disposable.disposalTreeSize;
+
+      var simpleDisposable = disposable.getManagedDisposer(() {});
+
+      expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
+
+      await simpleDisposable.dispose();
+      await new Future(() {});
+
+      expect(disposable.isDisposed, isFalse);
+      expect(disposable.disposalTreeSize, equals(previousTreeSize));
+    });
+
+    testManageMethod('getManagedDisposer',
+        (argument) => disposable.getManagedDisposer(argument), () {},
+        doesCallbackReturnArgument: false);
+  });
+
+  group('listenToStream', () {
     test('should cancel subscription when parent is disposed', () async {
       var controller = new StreamController();
       controller.onCancel = expectAsync1(([_]) {}, count: 1);
