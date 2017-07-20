@@ -26,21 +26,17 @@ class InternalDisposable implements SimpleDisposable {
   final Completer<Null> _didDispose = new Completer<Null>();
   bool _isDisposing = false;
 
-  InternalDisposable(this._disposer);
+  InternalDisposable(Disposer disposer)
+      : _disposer = (disposer ?? () => new Future(() {}));
 
   @override
   Future<Null> dispose() {
-    if (isDisposed) {
-      return null;
-    }
-    if (_isDisposing) {
+    if (isDisposedOrDisposing) {
       return didDispose;
     }
     _isDisposing = true;
 
-    var disposeFuture = _disposer != null
-        ? (_disposer() ?? new Future(() {}))
-        : new Future(() {});
+    var disposeFuture = _disposer() ?? new Future(() {});
 
     return disposeFuture.then((_) {
       _disposer = null;
