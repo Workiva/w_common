@@ -26,19 +26,50 @@ abstract class _Disposable {
   Future<Null> dispose();
 }
 
-class InternalDisposable implements _Disposable {
+/// Used to invoke, and remove references to, a [Disposer] before disposal of the
+/// parent object.
+class ManagedDisposer implements _Disposable {
   Disposer _disposer;
+  final Completer<Null> _didDispose = new Completer<Null>();
+  bool _isDisposing = false;
 
-  InternalDisposable(this._disposer);
+  ManagedDisposer(Disposer disposer)
+      : _disposer = (disposer ?? () => new Future(() {}));
 
-  @override
+  /// A [Future] that will complete when this object has been disposed.
+  Future<Null> get didDispose => _didDispose.future;
+
+  /// Whether this object has been disposed.
+  bool get isDisposed => _didDispose.isCompleted;
+
+  /// Whether this object has been disposed or is disposing.
+  ///
+  /// This will become `true` as soon as the [dispose] method is called
+  /// and will remain `true` forever. This is intended as a convenience
+  /// and `object.isDisposedOrDisposing` will always be the same as
+  /// `object.isDisposed || object.isDisposing`.
+  bool get isDisposedOrDisposing => isDisposed || isDisposing;
+
+  /// Whether this object is in the process of being disposed.
+  ///
+  /// This will become `true` as soon as the [dispose] method is called
+  /// and will become `false` once the [didDispose] future completes.
+  bool get isDisposing => _isDisposing;
+
+  /// Dispose of the object, cleaning up to prevent memory leaks.
   Future<Null> dispose() {
-    var disposeFuture = _disposer != null ? _disposer() : null;
-    _disposer = null;
-    if (disposeFuture == null) {
-      return new Future.value();
+    if (isDisposedOrDisposing) {
+      return didDispose;
     }
-    return disposeFuture.then((_) => null);
+    _isDisposing = true;
+
+    var disposeFuture = _disposer() ?? new Future(() {});
+
+    return disposeFuture.then((_) {
+      _disposer = null;
+      _didDispose.complete();
+      _isDisposing = false;
+    });
   }
 }
 
@@ -101,7 +132,7 @@ typedef Future<dynamic> Disposer();
 /// default implementations and flexibility since it does not occupy
 /// a spot in the class hierarchy.
 ///
-/// Helper methods, such as [manageStreamSubscription] allow certain
+/// Helper methods, such as [listenToStream] allow certain
 /// cleanup to be automated. Managed subscriptions will be automatically
 /// canceled when [dispose] is called on the object.
 ///
@@ -109,7 +140,7 @@ typedef Future<dynamic> Disposer();
 ///        StreamController _controller = new StreamController();
 ///
 ///        MyDisposable(Stream someStream) {
-///          manageStreamSubscription(someStream.listen((_) => print('some stream')));
+///          listenToStream(someStream, (_) => print('some stream'));
 ///          manageStreamController(_controller);
 ///        }
 ///
@@ -118,7 +149,7 @@ typedef Future<dynamic> Disposer();
 ///        }
 ///      }
 ///
-/// The [manageDisposer] helper allows you to clean up arbitrary objects
+/// The [getManagedDisposer] helper allows you to clean up arbitrary objects
 /// on dispose so that you can avoid keeping track of them yourself. To
 /// use it, simply provide a callback that returns a [Future] of any
 /// kind. For example:
@@ -128,14 +159,14 @@ typedef Future<dynamic> Disposer();
 ///
 ///        MyDisposable() {
 ///          var thing = new ThingThatRequiresCleanup();
-///          manageDisposer(() {
+///          getManagedDisposer(() {
 ///            thing.cleanUp();
 ///            return new Future(() {});
 ///          });
 ///        }
 ///      }
 ///
-/// Cleanup will then be automatically performed when the containing
+/// Cleanup will then be automatically performed when the parent
 /// object is disposed. If returning a future is inconvenient or
 /// otherwise undesirable, you may also return `null` explicitly.
 ///
@@ -178,7 +209,7 @@ typedef Future<dynamic> Disposer();
 /// without explicit reference to [Disposable]. To do this, we use
 /// composition to include the [Disposable] machinery without changing
 /// the public interface of our class or polluting its lifecycle.
-class Disposable implements _Disposable, DisposableManagerV4, LeakFlagger {
+class Disposable implements _Disposable, DisposableManagerV5, LeakFlagger {
   static bool _debugMode = false;
   static Logger _logger;
 
@@ -298,8 +329,9 @@ class Disposable implements _Disposable, DisposableManagerV4, LeakFlagger {
 
     if (_debugMode) {
       stopwatch.stop();
-      _logger.info(
-          '$runtimeType $hashCode took ${stopwatch.elapsedMicroseconds / 1000000.0} seconds to dispose');
+      _logger
+          .info('$runtimeType $hashCode took ${stopwatch.elapsedMicroseconds /
+          1000000.0} seconds to dispose');
     }
 
     flagLeak();
@@ -316,12 +348,12 @@ class Disposable implements _Disposable, DisposableManagerV4, LeakFlagger {
   @mustCallSuper
   @override
   Future<T> getManagedDelayedFuture<T>(Duration duration, T callback()) {
-    _throwOnInvalidCall('getManagedDelayedFuture', 'duration', duration);
-    _throwOnInvalidCall('getManagedDelayedFuture', 'callback', callback);
+    _throwOnInvalidCall2(
+        'getManagedDelayedFuture', 'duration', 'callback', duration, callback);
     var completer = new Completer<T>();
     var timer =
         new _ObservableTimer(duration, () => completer.complete(callback()));
-    var disposable = new InternalDisposable(() async {
+    var disposable = new ManagedDisposer(() async {
       timer.cancel();
       completer.completeError(new ObjectDisposedException());
     });
@@ -338,9 +370,29 @@ class Disposable implements _Disposable, DisposableManagerV4, LeakFlagger {
 
   @mustCallSuper
   @override
+  ManagedDisposer getManagedDisposer(Disposer disposer) {
+    _throwOnInvalidCall('getManagedDisposer', 'disposer', disposer);
+    _logManageMessage(disposer);
+
+    var disposable = new ManagedDisposer(disposer);
+
+    _internalDisposables.add(disposable);
+
+    disposable.didDispose.then((_) {
+      if (!isDisposedOrDisposing) {
+        _logUnmanageMessage(disposer);
+        _internalDisposables.remove(disposable);
+      }
+    });
+
+    return disposable;
+  }
+
+  @mustCallSuper
+  @override
   Timer getManagedTimer(Duration duration, void callback()) {
-    _throwOnInvalidCall('getManagedTimer', 'duration', duration);
-    _throwOnInvalidCall('getManagedTimer', 'callback', callback);
+    _throwOnInvalidCall2(
+        'getManagedTimer', 'duration', 'callback', duration, callback);
     var timer = new _ObservableTimer(duration, callback);
     _addObservableTimerDisposable(timer);
     return timer;
@@ -349,8 +401,8 @@ class Disposable implements _Disposable, DisposableManagerV4, LeakFlagger {
   @mustCallSuper
   @override
   Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer)) {
-    _throwOnInvalidCall('getManagedPeriodicTimer', 'duration', duration);
-    _throwOnInvalidCall('getManagedPeriodicTimer', 'callback', callback);
+    _throwOnInvalidCall2(
+        'getManagedPeriodicTimer', 'duration', 'callback', duration, callback);
     var timer = new _ObservableTimer.periodic(duration, callback);
     _addObservableTimerDisposable(timer);
     return timer;
@@ -368,7 +420,7 @@ class Disposable implements _Disposable, DisposableManagerV4, LeakFlagger {
         onError: onError, onDone: onDone, cancelOnError: cancelOnError);
     _logManageMessage(managedStreamSubscription);
 
-    var disposable = new InternalDisposable(() async {
+    var disposable = new ManagedDisposer(() async {
       _logUnmanageMessage(managedStreamSubscription);
       await managedStreamSubscription.cancel();
     });
@@ -391,7 +443,7 @@ class Disposable implements _Disposable, DisposableManagerV4, LeakFlagger {
     _throwOnInvalidCall('manageCompleter', 'completer', completer);
     _logManageMessage(completer);
 
-    var disposable = new InternalDisposable(() async {
+    var disposable = new ManagedDisposer(() async {
       if (!completer.isCompleted) {
         completer.completeError(new ObjectDisposedException());
       }
@@ -428,13 +480,14 @@ class Disposable implements _Disposable, DisposableManagerV4, LeakFlagger {
     });
   }
 
+  @deprecated
   @mustCallSuper
   @override
   void manageDisposer(Disposer disposer) {
     _throwOnInvalidCall('manageDisposer', 'disposer', disposer);
     _logManageMessage(disposer);
 
-    _internalDisposables.add(new InternalDisposable(disposer));
+    _internalDisposables.add(new ManagedDisposer(disposer));
   }
 
   @mustCallSuper
@@ -453,7 +506,7 @@ class Disposable implements _Disposable, DisposableManagerV4, LeakFlagger {
 
     bool isDone = false;
 
-    var disposable = new InternalDisposable(() {
+    var disposable = new ManagedDisposer(() {
       if (!controller.hasListener && !controller.isClosed && !isDone) {
         controller.stream.listen((_) {});
       }
@@ -480,8 +533,7 @@ class Disposable implements _Disposable, DisposableManagerV4, LeakFlagger {
         'manageStreamSubscription', 'subscription', subscription);
     _logManageMessage(subscription);
 
-    _internalDisposables
-        .add(new InternalDisposable(() => subscription.cancel()));
+    _internalDisposables.add(new ManagedDisposer(() => subscription.cancel()));
   }
 
   /// Callback to allow arbitrary cleanup on dispose.
@@ -491,8 +543,8 @@ class Disposable implements _Disposable, DisposableManagerV4, LeakFlagger {
   }
 
   void _addObservableTimerDisposable(_ObservableTimer timer) {
-    InternalDisposable disposable =
-        new InternalDisposable(() async => timer.cancel());
+    ManagedDisposer disposable =
+        new ManagedDisposer(() async => timer.cancel());
     _internalDisposables.add(disposable);
     timer.didConclude.then((Null _) {
       if (!isDisposedOrDisposing) {

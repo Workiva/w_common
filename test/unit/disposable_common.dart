@@ -11,8 +11,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
   void testManageMethod(
       String methodName, callback(dynamic argument), dynamic argument,
-      {bool doesCallbackReturn: true}) {
-    if (doesCallbackReturn) {
+      {bool doesCallbackReturnArgument: true}) {
+    if (doesCallbackReturnArgument) {
       test('should return the argument', () {
         expect(callback(argument), same(argument));
       });
@@ -49,7 +49,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     test('should throw if object is disposing', () async {
-      disposable.manageDisposer(() async {
+      disposable.getManagedDisposer(() async {
         expect(() => callback(argument, secondArgument), throwsStateError);
       });
       await disposable.dispose();
@@ -68,9 +68,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
   group('disposalTreeSize', () {
     test('should count all managed objects', () {
       var controller = new StreamController();
-      var subscription = controller.stream.listen((_) {});
       disposable.manageStreamController(controller);
-      disposable.manageStreamSubscription(subscription);
+      disposable.listenToStream(controller.stream, (_) {});
       disposable.manageDisposable(disposableFactory());
       disposable.manageCompleter(new Completer());
       disposable.getManagedTimer(new Duration(days: 1), () {});
@@ -138,7 +137,58 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
   });
 
-  group('getManagedStreamSubscription', () {
+  group('getManagedDisposer', () {
+    test(
+        'should call callback and accept null return value'
+        'when parent is disposed', () async {
+      disposable.getManagedDisposer(expectAsync0(() => null));
+      await disposable.dispose();
+    });
+
+    test(
+        'should call callback and accept Future return value'
+        'when parent is disposed', () async {
+      disposable.getManagedDisposer(expectAsync0(() => new Future(() {})));
+      await disposable.dispose();
+    });
+
+    test(
+        'should call callback and accept null return value'
+        'when disposed before parent', () async {
+      var simpleDisposable =
+          disposable.getManagedDisposer(expectAsync0(() => null));
+      await simpleDisposable.dispose();
+    });
+
+    test(
+        'should call callback and accept Future return value'
+        'when disposed before parent', () async {
+      var simpleDisposable =
+          disposable.getManagedDisposer(expectAsync0(() => new Future(() {})));
+      await simpleDisposable.dispose();
+    });
+
+    test('should remove references to Disposer when disposed before parent',
+        () async {
+      var previousTreeSize = disposable.disposalTreeSize;
+
+      var simpleDisposable = disposable.getManagedDisposer(() {});
+
+      expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
+
+      await simpleDisposable.dispose();
+      await new Future(() {});
+
+      expect(disposable.isDisposed, isFalse);
+      expect(disposable.disposalTreeSize, equals(previousTreeSize));
+    });
+
+    testManageMethod('getManagedDisposer',
+        (argument) => disposable.getManagedDisposer(argument), () {},
+        doesCallbackReturnArgument: false);
+  });
+
+  group('listenToStream', () {
     test('should cancel subscription when parent is disposed', () async {
       var controller = new StreamController();
       controller.onCancel = expectAsync1(([_]) {}, count: 1);
@@ -387,7 +437,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         'manageDisposable',
         (argument) => disposable.manageDisposable(argument),
         disposableFactory(),
-        doesCallbackReturn: false);
+        doesCallbackReturnArgument: false);
   });
 
   group('manageDisposer', () {
@@ -407,7 +457,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     testManageMethod('manageDisposer',
         (argument) => disposable.manageDisposer(argument), () async => null,
-        doesCallbackReturn: false);
+        doesCallbackReturnArgument: false);
   });
 
   group('manageStreamController', () {
@@ -468,7 +518,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         'manageStreamController',
         (argument) => disposable.manageStreamController(argument),
         new StreamController(),
-        doesCallbackReturn: false);
+        doesCallbackReturnArgument: false);
   });
 
   group('manageStreamSubscription', () {
@@ -489,7 +539,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         'manageStreamSubscription',
         (argument) => disposable.manageStreamSubscription(argument),
         controller.stream.listen((_) {}),
-        doesCallbackReturn: false);
+        doesCallbackReturnArgument: false);
     controller.close();
   });
 

@@ -21,7 +21,7 @@ import 'package:w_common/src/common/disposable.dart';
 /// This interface allows consumers to exercise more control over how
 /// disposal is implemented for their classes.
 ///
-/// Deprecated: Use DisposableManagerV4 instead.
+/// Deprecated: Use [DisposableManagerV5] instead.
 @deprecated
 abstract class DisposableManager {
   /// Automatically dispose another object when this object is disposed.
@@ -32,6 +32,13 @@ abstract class DisposableManager {
   /// Automatically handle arbitrary disposals using a callback.
   ///
   /// The parameter may not be `null`.
+  ///
+  /// Deprecated: 1.7.0
+  /// To be removed: 2.0.0
+  ///
+  /// Use `getManagedDisposer` instead. One will need to update to
+  /// [DisposableManagerV5] or above for this.
+  @deprecated
   void manageDisposer(Disposer disposer);
 
   /// Automatically cancel a stream controller when this object is disposed.
@@ -51,8 +58,8 @@ abstract class DisposableManager {
   /// Deprecated: 1.7.0
   /// To be removed: 2.0.0
   ///
-  /// Use getManagedStreamSubscription instead. One will need to
-  /// update to DisposableManagerV4 for this.
+  /// Use `getManagedStreamSubscription` instead. One will need to update to
+  /// [DisposableManagerV4] or above for this.
   @deprecated
   void manageStreamSubscription(StreamSubscription subscription);
 }
@@ -65,7 +72,7 @@ abstract class DisposableManager {
 /// When new management methods are to be added, they should be added
 /// here first, then implemented in [Disposable].
 ///
-/// Deprecated: Use DisposableManagerV4 instead.
+/// Deprecated: Use [DisposableManagerV5] instead.
 @deprecated
 abstract class DisposableManagerV2 implements DisposableManager {
   /// Creates a [Timer] instance that will be cancelled if active
@@ -88,7 +95,7 @@ abstract class DisposableManagerV2 implements DisposableManager {
 /// Deprecated: 1.7.0
 /// To be removed: 2.0.0
 ///
-/// Use DisposableManagerV4 instead.
+/// Use [DisposableManagerV5] instead.
 @deprecated
 abstract class DisposableManagerV3 implements DisposableManagerV2 {
   /// Add [future] to a list of futures that will be awaited before the
@@ -99,7 +106,7 @@ abstract class DisposableManagerV3 implements DisposableManagerV2 {
   /// while the request was pending, upon returning the request's callback
   /// would throw. We can avoid this by waiting on the request's future.
   ///
-  ///      class MyApi extends Object with Disposable {
+  ///      class MyDisposable extends Disposable {
   ///        MyHelper helper;
   ///
   ///        MyApi() {
@@ -141,6 +148,12 @@ abstract class DisposableManagerV3 implements DisposableManagerV2 {
 ///
 /// When new management methods are to be added, they should be added
 /// here first, then implemented in [Disposable].
+///
+/// Deprecated: 1.7.0
+/// To be removed: 2.0.0
+///
+/// Use [DisposableManagerV5] instead.
+@deprecated
 abstract class DisposableManagerV4 implements DisposableManagerV3 {
   /// Returns a [StreamSubscription] which handles events from the stream using
   /// the provided [onData], [onError] and [onDone] handlers.
@@ -155,6 +168,64 @@ abstract class DisposableManagerV4 implements DisposableManagerV3 {
   StreamSubscription<T> listenToStream<T>(
       Stream<T> stream, void onData(T event),
       {Function onError, void onDone(), bool cancelOnError});
+}
+
+/// Managers for disposable members.
+///
+/// This interface allows consumers to exercise more control over how
+/// disposal is implemented for their classes.
+///
+/// When new management methods are to be added, they should be added
+/// here first, then implemented in [Disposable].
+abstract class DisposableManagerV5 implements DisposableManagerV4 {
+  /// Automatically handle arbitrary disposals using a callback.
+  ///
+  /// The passed [Disposer] will be called on disposal of the parent object (the
+  /// parent object is `MyDisposable` in the example below). A [ManagedDisposer]
+  /// is returned in case the [Disposer] should be invoked and cleaned up before
+  /// disposal of the parent object.
+  ///
+  ///      class MyDisposable extends Disposable {
+  ///        void makeRequest() {
+  ///          var request = new Request();
+  ///
+  ///          // This will ensure that cancel is called if MyDisposable is
+  ///          // disposed.
+  ///          var disposable = getManagedDisposer(request.cancel);
+  ///
+  ///          // Evict request if it has not completed within a given time
+  ///          // frame. All internal references will be cleaned up.
+  ///          getManagedTimer(new Duration(minutes: 2), disposable.dispose);
+  ///
+  ///          // ...
+  ///        }
+  ///      }
+  ///
+  /// Note: [Disposable] will store a reference to [disposer] until an explicit
+  /// `dispose` call to either the parent object, or the returned
+  /// [ManagedDisposer]. The reference to [disposer] will prevent the callback
+  /// and anything referenced in the callback from being garbage collected until
+  /// one of these two things happen. These references can be a vector for memory
+  /// leaks. For this reason it is recommended to avoid references in [disposer]
+  /// to objects not created by the parent object. These objects should be
+  /// managed by their parent. At most one would need to manage the parent using
+  /// [manageDisposable].
+  ///
+  /// Example BAD use case: `request` should not be referenced in a [Disposer]
+  /// because `MyDisposable` did not create it.
+  ///
+  ///      class MyDisposable extends Disposable {
+  ///        void addRequest(Request request) {
+  ///          // ...
+  ///
+  ///          // request comes from an external source, the reference held by
+  ///          // this clojure may introduce a memory leak.
+  ///          getManagedDisposer(request.cancel);
+  ///        }
+  ///      }
+  ///
+  /// The parameter may not be `null`.
+  ManagedDisposer getManagedDisposer(Disposer disposer);
 }
 
 /// An interface that allows a class to flag potential leaks by marking

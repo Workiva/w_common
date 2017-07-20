@@ -17,6 +17,9 @@ export 'package:w_common/src/common/disposable_manager.dart'
         DisposableManager,
         DisposableManagerV2,
         DisposableManagerV3,
+        DisposableManagerV4,
+        DisposableManagerV5,
         ObjectDisposedException;
 export 'package:w_common/src/browser/disposable_browser.dart' show Disposable;
-export 'package:w_common/src/common/disposable.dart' show Disposer;
+export 'package:w_common/src/common/disposable.dart'
+    show Disposer, ManagedDisposer;
