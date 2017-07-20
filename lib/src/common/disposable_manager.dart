@@ -257,30 +257,3 @@ abstract class LeakFlagger {
 /// the object managing it is disposed, the future will complete with
 /// an instance of this exception.
 class ObjectDisposedException implements Exception {}
-
-/// Used to invoke, and remove references to, a [Disposer] before disposal of the
-/// parent object.
-abstract class ManagedDisposer {
-  /// A [Future] that will complete when this object has been disposed.
-  Future<Null> get didDispose;
-
-  /// Whether this object has been disposed.
-  bool get isDisposed;
-
-  /// Whether this object has been disposed or is disposing.
-  ///
-  /// This will become `true` as soon as the [dispose] method is called
-  /// and will remain `true` forever. This is intended as a convenience
-  /// and `object.isDisposedOrDisposing` will always be the same as
-  /// `object.isDisposed || object.isDisposing`.
-  bool get isDisposedOrDisposing;
-
-  /// Whether this object is in the process of being disposed.
-  ///
-  /// This will become `true` as soon as the [dispose] method is called
-  /// and will become `false` once the [didDispose] future completes.
-  bool get isDisposing;
-
-  /// Dispose of the object, cleaning up to prevent memory leaks.
-  Future<Null> dispose();
-}

@@ -19,7 +19,6 @@ import 'package:meta/meta.dart';
 import 'package:w_common/func.dart';
 
 import 'package:w_common/src/common/disposable.dart' as disposable_common;
-import 'package:w_common/src/common/disposable_manager.dart';
 
 class _InnerDisposable extends disposable_common.Disposable {
   Func<Future<Null>> onDisposeHandler;
@@ -205,7 +204,8 @@ class Disposable implements disposable_common.Disposable {
       _disposable.manageDisposer(disposer);
 
   @override
-  ManagedDisposer getManagedDisposer(disposable_common.Disposer disposer) =>
+  disposable_common.ManagedDisposer getManagedDisposer(
+          disposable_common.Disposer disposer) =>
       _disposable.getManagedDisposer(disposer);
 
   @override
