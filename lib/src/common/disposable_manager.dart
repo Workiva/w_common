@@ -181,7 +181,7 @@ abstract class DisposableManagerV5 implements DisposableManagerV4 {
   /// Automatically handle arbitrary disposals using a callback.
   ///
   /// The passed [Disposer] will be called on disposal of the parent object (the
-  /// parent object is `MyDisposable` in the example below). A [SimpleDisposable]
+  /// parent object is `MyDisposable` in the example below). A [ManagedDisposer]
   /// is returned in case the [Disposer] should be invoked and cleaned up before
   /// disposal of the parent object.
   ///
@@ -203,7 +203,7 @@ abstract class DisposableManagerV5 implements DisposableManagerV4 {
   ///
   /// Note: [Disposable] will store a reference to [disposer] until an explicit
   /// `dispose` call to either the parent object, or the returned
-  /// [SimpleDisposable]. The reference to [disposer] will prevent the callback
+  /// [ManagedDisposer]. The reference to [disposer] will prevent the callback
   /// and anything referenced in the callback from being garbage collected until
   /// one of these two things happen. These references can be a vector for memory
   /// leaks. For this reason it is recommended to avoid references in [disposer]
@@ -225,7 +225,7 @@ abstract class DisposableManagerV5 implements DisposableManagerV4 {
   ///      }
   ///
   /// The parameter may not be `null`.
-  SimpleDisposable getManagedDisposer(Disposer disposer);
+  ManagedDisposer getManagedDisposer(Disposer disposer);
 }
 
 /// An interface that allows a class to flag potential leaks by marking
@@ -260,7 +260,7 @@ class ObjectDisposedException implements Exception {}
 
 /// Used to invoke, and remove references to, a [Disposer] before disposal of the
 /// parent object.
-abstract class SimpleDisposable {
+abstract class ManagedDisposer {
   /// A [Future] that will complete when this object has been disposed.
   Future<Null> get didDispose;
 

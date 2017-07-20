@@ -21,7 +21,12 @@ import 'package:meta/meta.dart';
 import 'package:w_common/src/common/disposable_manager.dart';
 import 'package:w_common/src/common/managed_stream_subscription.dart';
 
-class InternalDisposable implements SimpleDisposable {
+// ignore: one_member_abstracts
+abstract class _Disposable {
+  Future<Null> dispose();
+}
+
+class InternalDisposable implements _Disposable, ManagedDisposer {
   Disposer _disposer;
   final Completer<Null> _didDispose = new Completer<Null>();
   bool _isDisposing = false;
@@ -194,7 +199,7 @@ typedef Future<dynamic> Disposer();
 /// without explicit reference to [Disposable]. To do this, we use
 /// composition to include the [Disposable] machinery without changing
 /// the public interface of our class or polluting its lifecycle.
-class Disposable implements DisposableManagerV5, LeakFlagger, SimpleDisposable {
+class Disposable implements _Disposable, DisposableManagerV5, LeakFlagger {
   static bool _debugMode = false;
   static Logger _logger;
 
@@ -222,11 +227,10 @@ class Disposable implements DisposableManagerV5, LeakFlagger, SimpleDisposable {
 
   final Set<Future> _awaitableFutures = new HashSet<Future>();
   Completer<Null> _didDispose = new Completer<Null>();
-  final Set<SimpleDisposable> _internalDisposables =
-      new HashSet<SimpleDisposable>();
+  final Set<_Disposable> _internalDisposables = new HashSet<_Disposable>();
   bool _isDisposing = false;
 
-  @override
+  /// A [Future] that will complete when this object has been disposed.
   Future<Null> get didDispose => _didDispose.future;
 
   /// The total size of the disposal tree rooted at the current Disposable
@@ -246,13 +250,21 @@ class Disposable implements DisposableManagerV5, LeakFlagger, SimpleDisposable {
     return size;
   }
 
-  @override
+  /// Whether this object has been disposed.
   bool get isDisposed => _didDispose.isCompleted;
 
-  @override
+  /// Whether this object has been disposed or is disposing.
+  ///
+  /// This will become `true` as soon as the [dispose] method is called
+  /// and will remain `true` forever. This is intended as a convenience
+  /// and `object.isDisposedOrDisposing` will always be the same as
+  /// `object.isDisposed || object.isDisposing`.
   bool get isDisposedOrDisposing => isDisposed || isDisposing;
 
-  @override
+  /// Whether this object is in the process of being disposed.
+  ///
+  /// This will become `true` as soon as the [dispose] method is called
+  /// and will become `false` once the [didDispose] future completes.
   bool get isDisposing => _isDisposing;
 
   @override
@@ -275,6 +287,7 @@ class Disposable implements DisposableManagerV5, LeakFlagger, SimpleDisposable {
     return future;
   }
 
+  /// Dispose of the object, cleaning up to prevent memory leaks.
   @override
   Future<Null> dispose() async {
     Stopwatch stopwatch;
@@ -347,7 +360,7 @@ class Disposable implements DisposableManagerV5, LeakFlagger, SimpleDisposable {
 
   @mustCallSuper
   @override
-  SimpleDisposable getManagedDisposer(Disposer disposer) {
+  ManagedDisposer getManagedDisposer(Disposer disposer) {
     _throwOnInvalidCall('getManagedDisposer', 'disposer', disposer);
     _logManageMessage(disposer);
 
