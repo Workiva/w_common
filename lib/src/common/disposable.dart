@@ -33,8 +33,7 @@ class ManagedDisposer implements _Disposable {
   final Completer<Null> _didDispose = new Completer<Null>();
   bool _isDisposing = false;
 
-  ManagedDisposer(Disposer disposer)
-      : _disposer = (disposer ?? () => new Future(() {}));
+  ManagedDisposer(this._disposer);
 
   /// A [Future] that will complete when this object has been disposed.
   Future<Null> get didDispose => _didDispose.future;
@@ -57,13 +56,17 @@ class ManagedDisposer implements _Disposable {
   bool get isDisposing => _isDisposing;
 
   /// Dispose of the object, cleaning up to prevent memory leaks.
+  @override
   Future<Null> dispose() {
     if (isDisposedOrDisposing) {
       return didDispose;
     }
     _isDisposing = true;
 
-    var disposeFuture = _disposer() ?? new Future(() {});
+    var disposeFuture = _disposer != null
+        ? (_disposer() ?? new Future.value())
+        : new Future.value();
+    _disposer = null;
 
     return disposeFuture.then((_) {
       _disposer = null;
@@ -413,8 +416,7 @@ class Disposable implements _Disposable, DisposableManagerV5, LeakFlagger {
   StreamSubscription<T> listenToStream<T>(
       Stream<T> stream, void onData(T event),
       {Function onError, void onDone(), bool cancelOnError}) {
-    _throwOnInvalidCall2(
-        'getManagedStreamSubscription', 'stream', 'onData', stream, onData);
+    _throwOnInvalidCall2('listenToStream', 'stream', 'onData', stream, onData);
     var managedStreamSubscription = new ManagedStreamSubscription(
         stream, onData,
         onError: onError, onDone: onDone, cancelOnError: cancelOnError);
