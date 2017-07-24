@@ -230,7 +230,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     var controller = new StreamController();
     testManageMethod2(
-        'getManagedStreamSubscription',
+        'listenTOStream',
         (argument, secondArgument) =>
             disposable.listenToStream(argument, secondArgument),
         controller.stream,

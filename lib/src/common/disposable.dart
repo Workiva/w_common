@@ -413,8 +413,7 @@ class Disposable implements _Disposable, DisposableManagerV5, LeakFlagger {
   StreamSubscription<T> listenToStream<T>(
       Stream<T> stream, void onData(T event),
       {Function onError, void onDone(), bool cancelOnError}) {
-    _throwOnInvalidCall2(
-        'getManagedStreamSubscription', 'stream', 'onData', stream, onData);
+    _throwOnInvalidCall2('listenToStream', 'stream', 'onData', stream, onData);
     var managedStreamSubscription = new ManagedStreamSubscription(
         stream, onData,
         onError: onError, onDone: onDone, cancelOnError: cancelOnError);

@@ -58,7 +58,7 @@ abstract class DisposableManager {
   /// Deprecated: 1.7.0
   /// To be removed: 2.0.0
   ///
-  /// Use `getManagedStreamSubscription` instead. One will need to update to
+  /// Use `listenToStream` instead. One will need to update to
   /// [DisposableManagerV4] or above for this.
   @deprecated
   void manageStreamSubscription(StreamSubscription subscription);
