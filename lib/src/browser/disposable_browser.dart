@@ -157,12 +157,13 @@ class Disposable implements disposable_common.Disposable {
   @override
   Future<Null> dispose() {
     _disposable.onDisposeHandler = this.onDispose;
-    return _disposable.dispose().then((_) {
-      // We want the description to be the runtime type of this
-      // object, not the proxy disposable, so we need to reset
-      // the leak flag here.
-      flagLeak(runtimeType.toString());
-    });
+    return _disposable.dispose();
+//    return _disposable.dispose().then((_) {
+//      // We want the description to be the runtime type of this
+//      // object, not the proxy disposable, so we need to reset
+//      // the leak flag here.
+//      flagLeak(runtimeType.toString());
+//    });
   }
 
   @override
