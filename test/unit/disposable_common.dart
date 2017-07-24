@@ -155,28 +155,50 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test(
         'should call callback and accept null return value'
         'when disposed before parent', () async {
-      var simpleDisposable =
+      var managedDisposable =
           disposable.getManagedDisposer(expectAsync0(() => null));
-      await simpleDisposable.dispose();
+      await managedDisposable.dispose();
     });
 
     test(
         'should call callback and accept Future return value'
         'when disposed before parent', () async {
-      var simpleDisposable =
+      var managedDisposable =
           disposable.getManagedDisposer(expectAsync0(() => new Future(() {})));
-      await simpleDisposable.dispose();
+      await managedDisposable.dispose();
+    });
+
+    test(
+        'regression test: for historical reasons dispose should return a '
+        'immediately completing (rather than enqueued) future when a'
+        'Disposer returns null', () async {
+      var testList = <String>[];
+      // ignore: unawaited_futures
+      new Future(() {
+        testList.add('b');
+      });
+
+      var managedDisposable = disposable.getManagedDisposer(() => null);
+
+      // ignore: unawaited_futures
+      managedDisposable.dispose().then((_) {
+        testList.add('a');
+      });
+
+      await new Future(() {});
+
+      expect(testList, equals(['a', 'b']));
     });
 
     test('should remove references to Disposer when disposed before parent',
         () async {
       var previousTreeSize = disposable.disposalTreeSize;
 
-      var simpleDisposable = disposable.getManagedDisposer(() {});
+      var managedDisposable = disposable.getManagedDisposer(() {});
 
       expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
 
-      await simpleDisposable.dispose();
+      await managedDisposable.dispose();
       await new Future(() {});
 
       expect(disposable.isDisposed, isFalse);
