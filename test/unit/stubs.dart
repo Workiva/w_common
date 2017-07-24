@@ -14,6 +14,7 @@
 
 import 'dart:async';
 
+import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:w_common/disposable.dart';
 
@@ -47,6 +48,10 @@ class DisposeCounter extends Disposable {
     return super.dispose();
   }
 }
+
+class MockStreamSubscription extends Mock implements StreamSubscription {}
+
+class MockStream extends Mock implements Stream {}
 
 class TimerHarness {
   bool _didCancelTimer = true;
