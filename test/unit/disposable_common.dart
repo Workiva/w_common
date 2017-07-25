@@ -248,20 +248,19 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         'unwrapped StreamSubscription would have', () async {
       var stream = getNullReturningSubscriptionStream();
 
-      expect(
-          stream
-              .listen((_) {}, onDone: null, onError: null, cancelOnError: false)
-              .cancel(),
-          isNull);
+      var unwrappedSubscription = stream.listen((_) {},
+          onDone: null, onError: null, cancelOnError: false);
 
-      var subscription = disposable.listenToStream(stream, (_) {});
+      expect(unwrappedSubscription.cancel(), isNull);
 
-      expect(subscription.cancel(), isNull);
+      var managedSubscription = disposable.listenToStream(stream, (_) {});
+
+      expect(managedSubscription.cancel(), isNull);
     });
 
     test(
         'should remove references when stream subscription is closed before'
-        'disposal canceling a stream subscription returns null', () async {
+        'disposal when canceling a stream subscription returns null', () async {
       var previousTreeSize = disposable.disposalTreeSize;
 
       var stream = getNullReturningSubscriptionStream();
