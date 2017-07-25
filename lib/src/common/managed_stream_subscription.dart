@@ -20,7 +20,19 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
 
   @override
   Future<Null> cancel() {
-    return (_subscription.cancel() ?? new Future(() {})).then((_) {
+    var result = _subscription.cancel();
+
+    // StreamSubscription.cancel() will return null if no cleanup was necessary.
+    // This behavior is described in the docs as "for historical reasons" so
+    // this may change in the future.
+    if (result == null) {
+      if (!_didCancel.isCompleted) {
+        _didCancel.complete();
+      }
+      return null;
+    }
+
+    return result.then((_) {
       if (!_didCancel.isCompleted) {
         _didCancel.complete();
       }

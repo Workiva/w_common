@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:w_common/disposable.dart';
 import 'package:w_common/func.dart';
@@ -59,6 +60,17 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       await disposable.dispose();
       expect(() => callback(argument, secondArgument), throwsStateError);
     });
+  }
+
+  Stream getNullReturningSubscriptionStream() {
+    var stream = new MockStream();
+    var nullReturningSub = new MockStreamSubscription();
+
+    when(nullReturningSub.cancel()).thenReturn(null);
+    when(stream.listen(any, onDone: any, onError: any, cancelOnError: any))
+        .thenReturn(nullReturningSub);
+
+    return stream;
   }
 
   setUp(() {
@@ -169,9 +181,9 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     test(
-        'regression test: for historical reasons dispose should return a '
-        'immediately completing (rather than enqueued) future when a'
-        'Disposer returns null', () async {
+        'regression test: for historical reasons dispose should return a'
+        'synchronous (immediately completing rather than enqueued) future'
+        'when a Disposer returns null', () async {
       var testList = <String>[];
       // ignore: unawaited_futures
       new Future(() {
@@ -232,7 +244,43 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     test(
-        'should remove references when stream subscription is closed before disposal',
+        'should return ManagedStreamSubscription that returns null when an'
+        'unwrapped StreamSubscription would have', () async {
+      var stream = getNullReturningSubscriptionStream();
+
+      expect(
+          stream
+              .listen((_) {}, onDone: null, onError: null, cancelOnError: false)
+              .cancel(),
+          isNull);
+
+      var subscription = disposable.listenToStream(stream, (_) {});
+
+      expect(subscription.cancel(), isNull);
+    });
+
+    test(
+        'should remove references when stream subscription is closed before'
+        'disposal canceling a stream subscription returns null', () async {
+      var previousTreeSize = disposable.disposalTreeSize;
+
+      var stream = getNullReturningSubscriptionStream();
+
+      StreamSubscription subscription =
+          disposable.listenToStream(stream, (_) {});
+
+      expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
+
+      await subscription.cancel();
+      await new Future(() {});
+
+      expect(disposable.isDisposed, isFalse);
+      expect(disposable.disposalTreeSize, equals(previousTreeSize));
+    });
+
+    test(
+        'should remove references when stream subscription is closed before'
+        'disposal when canceling a stream subscription returns a Future',
         () async {
       var previousTreeSize = disposable.disposalTreeSize;
       var controller = new StreamController<Null>();

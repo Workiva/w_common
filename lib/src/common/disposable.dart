@@ -422,9 +422,9 @@ class Disposable implements _Disposable, DisposableManagerV5, LeakFlagger {
         onError: onError, onDone: onDone, cancelOnError: cancelOnError);
     _logManageMessage(managedStreamSubscription);
 
-    var disposable = new ManagedDisposer(() async {
+    var disposable = new ManagedDisposer(() {
       _logUnmanageMessage(managedStreamSubscription);
-      await managedStreamSubscription.cancel();
+      return managedStreamSubscription.cancel();
     });
 
     _internalDisposables.add(disposable);
