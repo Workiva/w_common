@@ -149,6 +149,34 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
   });
 
+  group('manageAndReturnDisposable', () {
+    void injectDisposable({Disposable injected}) {
+      disposable.injected =
+          injected ?? disposable.manageAndReturnDisposable(disposableFactory());
+    }
+
+    test('should dispose managed disposable', () async {
+      injectDisposable();
+      await disposable.dispose();
+      expect(disposable.injected, isNotNull);
+      expect(disposable.isDisposed, isTrue);
+      expect(disposable.injected.isDisposed, isTrue);
+    });
+
+    test('should not dispose injected variable', () async {
+      injectDisposable(injected: disposableFactory());
+      await disposable.dispose();
+      expect(disposable.injected, isNotNull);
+      expect(disposable.isDisposed, isTrue);
+      expect(disposable.injected.isDisposed, isFalse);
+    });
+
+    testManageMethod(
+        'manageAndReturnDisposable',
+        (argument) => disposable.manageAndReturnDisposable(argument),
+        disposableFactory());
+  });
+
   group('getManagedDisposer', () {
     test(
         'should call callback and accept null return value'
