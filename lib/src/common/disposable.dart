@@ -212,7 +212,7 @@ typedef Future<dynamic> Disposer();
 /// without explicit reference to [Disposable]. To do this, we use
 /// composition to include the [Disposable] machinery without changing
 /// the public interface of our class or polluting its lifecycle.
-class Disposable implements _Disposable, DisposableManagerV5, LeakFlagger {
+class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
   static bool _debugMode = false;
   static Logger _logger;
 
@@ -437,6 +437,15 @@ class Disposable implements _Disposable, DisposableManagerV5, LeakFlagger {
     });
 
     return managedStreamSubscription;
+  }
+
+  @mustCallSuper
+  @override
+  Disposable manageAndReturnDisposable(Disposable disposable) {
+    _throwOnInvalidCall('manageAndReturnDisposable', 'disposable', disposable);
+    manageDisposable(disposable);
+
+    return disposable;
   }
 
   @mustCallSuper

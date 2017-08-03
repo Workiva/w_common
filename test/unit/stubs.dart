@@ -22,6 +22,7 @@ import './typedefs.dart';
 
 abstract class StubDisposable implements Disposable {
   bool wasOnDisposeCalled = false;
+  Disposable injected;
 
   @override
   Future<Null> onDispose() {

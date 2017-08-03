@@ -27,6 +27,13 @@ abstract class DisposableManager {
   /// Automatically dispose another object when this object is disposed.
   ///
   /// The parameter may not be `null`.
+  ///
+  /// Deprecated: 1.8.0
+  /// To be removed: 2.0.0
+  ///
+  /// Use `manageAndReturnDisposable` instead. One will need to update
+  /// to [DisposableManagerV6] or above for this.
+  @deprecated
   void manageDisposable(Disposable disposable);
 
   /// Automatically handle arbitrary disposals using a callback.
@@ -177,6 +184,12 @@ abstract class DisposableManagerV4 implements DisposableManagerV3 {
 ///
 /// When new management methods are to be added, they should be added
 /// here first, then implemented in [Disposable].
+///
+/// Deprecated: 1.8.0
+/// To be removed: 2.0.0
+///
+/// Use [DisposableManagerV6] instead.
+@deprecated
 abstract class DisposableManagerV5 implements DisposableManagerV4 {
   /// Automatically handle arbitrary disposals using a callback.
   ///
@@ -226,6 +239,40 @@ abstract class DisposableManagerV5 implements DisposableManagerV4 {
   ///
   /// The parameter may not be `null`.
   ManagedDisposer getManagedDisposer(Disposer disposer);
+}
+
+/// Managers for disposable members.
+///
+/// This interface allows consumers to exercise more control over how
+/// disposal is implemented for their classes.
+///
+/// When new management methods are to be added, they should be added
+/// here first, then implemented in [Disposable].
+abstract class DisposableManagerV6 implements DisposableManagerV5 {
+  /// Automatically dispose another object when this object is disposed.
+  ///
+  /// This method is an extension to [manageDisposable] and returns the
+  /// passed in [Disposable] in addition to handling it's disposal. The
+  /// method should be used when a variable is set and should
+  /// conditionally be managed for disposal. The most common case will
+  /// be dealing with optional parameters:
+  ///
+  ///      class MyDisposable extends Disposable {
+  ///        // This object also extends disposable
+  ///        MyObject _internal;
+  ///
+  ///        MyDisposable({MyObject optional}) {
+  ///          // If optional is injected, we should not manage it.
+  ///          // If we create our own internal reference we should manage it.
+  ///          _internal = optional ??
+  ///              manageAndReturnDisposable(new MyObject());
+  ///        }
+  ///
+  ///        // ...
+  ///      }
+  ///
+  /// The parameter may not be `null`.
+  Disposable manageAndReturnDisposable(Disposable disposable);
 }
 
 /// An interface that allows a class to flag potential leaks by marking
