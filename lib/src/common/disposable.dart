@@ -135,6 +135,9 @@ typedef Future<dynamic> Disposer();
 /// Use as a mixin can cause the `onDispose` method to be shadowed. Use
 /// as an interface is just cumbersome.
 ///
+/// If an interface is desired, the `DisposableManager...` interfaces
+/// are available.
+///
 /// In the case below, the class is used as a mixin. This provides both
 /// default implementations and flexibility since it does not occupy
 /// a spot in the class hierarchy.
