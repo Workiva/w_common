@@ -126,10 +126,17 @@ typedef Future<dynamic> Disposer();
 /// Allows the creation of managed objects, including helpers for common
 /// patterns.
 ///
-/// There are four ways to consume this class: as a mixin, a base class,
-/// an interface, and a concrete class used as a proxy. All should work
-/// fine but the first is the simplest and most powerful. Using the class
-/// as an interface will require significant effort.
+/// We recommend consuming this class in one of two ways.
+///
+///   1. As a base class
+///   2. As a concrete proxy
+///
+/// We do not recommend using this class as a mixin or as an interface.
+/// Use as a mixin can cause the `onDispose` method to be shadowed. Use
+/// as an interface is just cumbersome.
+///
+/// If an interface is desired, the `DisposableManager...` interfaces
+/// are available.
 ///
 /// In the case below, the class is used as a mixin. This provides both
 /// default implementations and flexibility since it does not occupy
