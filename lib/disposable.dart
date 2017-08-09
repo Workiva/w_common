@@ -14,11 +14,17 @@
 
 export 'package:w_common/src/common/disposable_manager.dart'
     show
+        // ignore: deprecated_member_use
         DisposableManager,
+        // ignore: deprecated_member_use
         DisposableManagerV2,
+        // ignore: deprecated_member_use
         DisposableManagerV3,
+        // ignore: deprecated_member_use
         DisposableManagerV4,
+        // ignore: deprecated_member_use
         DisposableManagerV5,
+        DisposableManagerV6,
         ObjectDisposedException;
 export 'package:w_common/src/common/disposable.dart'
     show Disposable, Disposer, ManagedDisposer;
