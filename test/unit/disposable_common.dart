@@ -368,6 +368,14 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       }, returnsNormally);
     });
 
+    test('should return a timer that can be canceled inside its callback',
+        () async {
+      timer.cancel();
+      timer = disposable.getManagedTimer(harness.duration, expectAsync0(() {
+        timer.cancel();
+      }));
+    });
+
     test('should throw during disposal', () async {
       var completer = new Completer();
       // ignore: unawaited_futures
@@ -426,6 +434,14 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         timer.cancel();
         timer.cancel();
       }, returnsNormally);
+    });
+
+    test('should return a timer that can be canceled inside its callback',
+        () async {
+      timer.cancel();
+      timer = disposable.getManagedTimer(harness.duration, expectAsync0(() {
+        timer.cancel();
+      }));
     });
 
     test('should throw during disposal', () async {
