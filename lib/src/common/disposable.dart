@@ -26,8 +26,8 @@ abstract class _Disposable {
   Future<Null> dispose();
 }
 
-/// Used to invoke, and remove references to, a [Disposer] before disposal of the
-/// parent object.
+/// Used to invoke, and remove references to, a [Disposer] before disposal
+/// of the parent object.
 class ManagedDisposer implements _Disposable {
   Disposer _disposer;
   final Completer<Null> _didDispose = new Completer<Null>();
@@ -86,12 +86,18 @@ class _ObservableTimer implements Timer {
   _ObservableTimer(Duration duration, void callback()) {
     _timer = new Timer(duration, () {
       callback();
-      _didConclude.complete();
+      _complete();
     });
   }
 
   _ObservableTimer.periodic(Duration duration, void callback(Timer t)) {
     _timer = new Timer.periodic(duration, callback);
+  }
+
+  void _complete() {
+    if (!_didConclude.isCompleted) {
+      _didConclude.complete();
+    }
   }
 
   /// The timer has either been completed or has been cancelled.
@@ -100,9 +106,7 @@ class _ObservableTimer implements Timer {
   @override
   void cancel() {
     _timer.cancel();
-    if (!_didConclude.isCompleted) {
-      _didConclude.complete();
-    }
+    _complete();
   }
 
   @override
@@ -200,12 +204,19 @@ typedef Future<dynamic> Disposer();
 ///        Disposable _disposable = new Disposable();
 ///
 ///        MyLifecycleThing() {
-///          _disposable.manageStreamSubscription(someStream.listen(() => null));
+///          _disposable.listenToStream(someStream, (_) => null));
 ///        }
 ///
 ///        @override
-///        void manageStreamSubscription(StreamSubscription sub) {
-///          _disposable.manageStreamSubscription(sub);
+///        StreamSubscription<T> listenToStream<T>(
+///            Stream<T> stream, void onData(T event),
+///            {Function onError, void onDone(), bool cancelOnError}) {
+///          return _disposable.listenToStream(
+///            stream, onData,
+///            onError: onError,
+///            onDone: onDone,
+///            cancelOnError: cancelOnError
+///          );
 ///        }
 ///
 ///        // ...more methods
