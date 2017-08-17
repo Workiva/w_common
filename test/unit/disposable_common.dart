@@ -371,7 +371,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     test(
         'should not un-manage subscription when controller is closed '
-        'due to an error and cancelOnError is false', () async {
+        'due to an error, even when cancelOnError is false', () async {
       var previousTreeSize = disposable.disposalTreeSize;
 
       // ignore: close_sinks
