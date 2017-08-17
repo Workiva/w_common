@@ -275,6 +275,11 @@ abstract class DisposableManagerV6 implements DisposableManagerV5 {
   Disposable manageAndReturnDisposable(Disposable disposable);
 }
 
+// ignore: deprecated_member_use
+abstract class DisposableManagerV7 implements DisposableManagerV5 {
+  T manageAndReturnDisposable<T extends Disposable>(T disposable);
+}
+
 /// An interface that allows a class to flag potential leaks by marking
 /// itself with a particular class when it is disposed.
 abstract class LeakFlagger {
