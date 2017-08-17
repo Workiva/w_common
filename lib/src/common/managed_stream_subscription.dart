@@ -36,7 +36,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
     return _subscription.asFuture(futureValue).then((value) {
       _complete();
       return value;
-    }).catchError((error, [stackTrace]) {
+    }).whenComplete(() {
       _complete();
     });
   }

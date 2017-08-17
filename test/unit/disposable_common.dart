@@ -352,7 +352,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     test(
         'should un-manage subscription when controller is closed '
-        'due to an error and cancelOnError is true', () async {
+        'due to an error, when cancelOnError is true', () async {
       var previousTreeSize = disposable.disposalTreeSize;
 
       // ignore: close_sinks
@@ -400,15 +400,18 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         expect(value, 'intentional');
       });
 
-      test('that completes when the stream emits an error', () async {
+      test('that completes when the stream emits an error', () {
         // ignore: close_sinks
         var controller = new StreamController<Null>();
         // ignore: cancel_subscriptions
         var subscription = disposable.listenToStream(controller.stream, (_) {});
-        var future = subscription.asFuture('intentional');
+        subscription
+            .asFuture('intentional')
+            .then(expectAsync1((_) {}, count: 0))
+            .catchError(expectAsync2((error, [_]) {
+          expect(error.toString(), 'Exception: intentional');
+        }));
         controller.addError(new Exception('intentional'));
-        var value = await future;
-        expect(value, null);
       });
 
       test(
@@ -421,7 +424,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         // ignore: cancel_subscriptions
         var subscription = disposable.listenToStream(controller.stream, (_) {},
             cancelOnError: false, onError: (_, [__]) {});
-        var future = subscription.asFuture('intentional');
+        var future =
+            subscription.asFuture('intentional').catchError((_, [__]) {});
         expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
 
         controller.addError(new Exception('intentional'));
