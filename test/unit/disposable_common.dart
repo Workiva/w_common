@@ -271,6 +271,87 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     test(
+        'should throw if stream completes with an error and there is no '
+        'onError handler', () {
+      runZoned(() {
+        // ignore: close_sinks
+        var controller = new StreamController<Null>();
+        // ignore: cancel_subscriptions
+        var subscription = disposable.listenToStream(controller.stream, (_) {});
+        controller.addError(new Exception('intentional'));
+      }, onError: expectAsync2((error, _) {
+        expect(error, new isInstanceOf<Exception>());
+        expect(error.toString(), 'Exception: intentional');
+      }));
+    });
+
+    test(
+        'should call error handler if stream receives an error '
+        'and there was an onError handler set by listenToStream', () {
+      // ignore: close_sinks
+      var controller = new StreamController<Null>();
+      // ignore: cancel_subscriptions
+      var subscription = disposable.listenToStream(controller.stream, (_) {},
+          onError: expectAsync2((error, _) {
+        expect(error, new isInstanceOf<Exception>());
+        expect(error.toString(), 'Exception: intentional');
+      }));
+      controller.addError(new Exception('intentional'));
+    });
+
+    test(
+        'should call error handler if stream receives an error '
+        'and there was an onError handler set on the subscription', () {
+      // ignore: close_sinks
+      var controller = new StreamController<Null>();
+      // ignore: cancel_subscriptions
+      var subscription = disposable.listenToStream(controller.stream, (_) {});
+      subscription.onError(expectAsync2((error, _) {
+        expect(error, new isInstanceOf<Exception>());
+        expect(error.toString(), 'Exception: intentional');
+      }));
+      controller.addError(new Exception('intentional'));
+    });
+
+    test(
+        'should call onDone callback when controller is closed '
+        'and there was an onDone callback set by listenToStream', () {
+      // ignore: close_sinks
+      var controller = new StreamController<Null>();
+      // ignore: cancel_subscriptions
+      var subscription = disposable.listenToStream(controller.stream, (_) {},
+          onDone: expectAsync0(() {}));
+      controller.close();
+    });
+
+    test(
+        'should call onDone callback when controller is closed '
+        'and there was an onDone callback set on the subscription', () {
+      // ignore: close_sinks
+      var controller = new StreamController<Null>();
+      // ignore: cancel_subscriptions
+      var subscription = disposable.listenToStream(controller.stream, (_) {});
+      subscription.onDone(expectAsync0(() {}));
+      controller.close();
+    });
+
+    test('should unmanage subscription when controller is closed', () async {
+      var previousTreeSize = disposable.disposalTreeSize;
+
+      // ignore: close_sinks
+      var controller = new StreamController<Null>();
+      // ignore: cancel_subscriptions
+      var subscription = disposable.listenToStream(controller.stream, (_) {});
+      expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
+
+      await controller.close();
+      await new Future(() {});
+
+      expect(disposable.isDisposed, isFalse);
+      expect(disposable.disposalTreeSize, equals(previousTreeSize));
+    });
+
+    test(
         'should return ManagedStreamSubscription that returns null when an '
         'unwrapped StreamSubscription would have', () async {
       var stream = getNullReturningSubscriptionStream();
@@ -304,7 +385,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     test(
-        'should remove references when stream subscription is closed before'
+        'should remove references when stream subscription is closed before '
         'disposal when canceling a stream subscription returns a Future',
         () async {
       var previousTreeSize = disposable.disposalTreeSize;

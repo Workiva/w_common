@@ -15,10 +15,8 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
   Completer<Null> _didCancel = new Completer();
 
   ManagedStreamSubscription(Stream<T> stream, void onData(T),
-      {void onError(error, [stackTrace]),
-      void onDone(),
-      bool cancelOnError: false})
-      : _cancelOnError = cancelOnError,
+      {void onError(error, [stackTrace]), void onDone(), bool cancelOnError})
+      : _cancelOnError = cancelOnError ?? false,
         _subscription = stream.listen(onData, cancelOnError: cancelOnError) {
     _wrapOnDone(onDone);
     _wrapOnError(onError);
