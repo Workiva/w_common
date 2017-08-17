@@ -67,8 +67,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     var nullReturningSub = new MockStreamSubscription();
 
     when(nullReturningSub.cancel()).thenReturn(null);
-    when(stream.listen(any, onDone: any, onError: any, cancelOnError: any))
-        .thenReturn(nullReturningSub);
+    when(stream.listen(any, cancelOnError: any)).thenReturn(nullReturningSub);
 
     return stream;
   }
@@ -272,12 +271,11 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     test(
-        'should return ManagedStreamSubscription that returns null when an'
+        'should return ManagedStreamSubscription that returns null when an '
         'unwrapped StreamSubscription would have', () async {
       var stream = getNullReturningSubscriptionStream();
 
-      var unwrappedSubscription = stream.listen((_) {},
-          onDone: null, onError: null, cancelOnError: false);
+      var unwrappedSubscription = stream.listen((_) {}, cancelOnError: false);
 
       expect(unwrappedSubscription.cancel(), isNull);
 
@@ -287,7 +285,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     test(
-        'should remove references when stream subscription is closed before'
+        'should remove references when stream subscription is closed before '
         'disposal when canceling a stream subscription returns null', () async {
       var previousTreeSize = disposable.disposalTreeSize;
 
