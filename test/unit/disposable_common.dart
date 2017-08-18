@@ -272,12 +272,11 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test(
         'should throw if stream completes with an error and there is no '
         'onError handler', () {
+      // ignore: close_sinks
+      var controller = new StreamController<Null>();
+      controller.addError(new Exception('intentional'));
       runZoned(() {
-        // ignore: close_sinks
-        var controller = new StreamController<Null>();
-        // ignore: cancel_subscriptions
-        var subscription = disposable.listenToStream(controller.stream, (_) {});
-        controller.addError(new Exception('intentional'));
+        disposable.listenToStream(controller.stream, (_) {});
       }, onError: expectAsync2((error, _) {
         expect(error, new isInstanceOf<Exception>());
         expect(error.toString(), 'Exception: intentional');
@@ -351,8 +350,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     test(
-        'should un-manage subscription when controller is closed '
-        'due to an error, when cancelOnError is true', () async {
+        'should un-manage subscription when the stream emits an error '
+        'when cancelOnError is true', () async {
       var previousTreeSize = disposable.disposalTreeSize;
 
       // ignore: close_sinks
@@ -370,8 +369,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     test(
-        'should not un-manage subscription when controller is closed '
-        'due to an error, even when cancelOnError is false', () async {
+        'should not un-manage subscription when the stream emits an error '
+        'when cancelOnError is false', () async {
       var previousTreeSize = disposable.disposalTreeSize;
 
       // ignore: close_sinks

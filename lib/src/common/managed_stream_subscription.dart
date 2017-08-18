@@ -33,10 +33,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
 
   @override
   Future<E> asFuture<E>([E futureValue]) {
-    return _subscription.asFuture(futureValue).then((value) {
-      _complete();
-      return value;
-    }).whenComplete(() {
+    return _subscription.asFuture(futureValue).whenComplete(() {
       _complete();
     });
   }
