@@ -272,7 +272,7 @@ class Disposable implements disposable_common.Disposable {
   void _subscribeToEvent(EventTarget eventTarget, String event,
       EventListener callback, bool useCapture) {
     eventTarget.addEventListener(event, callback, useCapture);
-    _disposable.manageDisposer(() {
+    _disposable.getManagedDisposer(() {
       eventTarget.removeEventListener(event, callback, useCapture);
     });
   }

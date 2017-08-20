@@ -7,7 +7,7 @@ import 'package:w_common/disposable.dart';
 class TreeNode extends Disposable {
   TreeNode(int depth, int childCount) {
     manageStreamController(new StreamController.broadcast());
-    manageStreamSubscription(document.onDoubleClick.listen(_onDoubleClick));
+    listenToStream(document.onDoubleClick, _onDoubleClick);
 
     if (depth > 0) {
       for (int i = 0; i < childCount; i++) {
@@ -16,7 +16,7 @@ class TreeNode extends Disposable {
     }
   }
 
-  void _onDoubleClick(MouseEvent _) {
+  void _onDoubleClick(Event _) {
     print('document double clicked');
   }
 }
@@ -49,7 +49,7 @@ void main() {
   });
 
   disposeButton.onClick.listen((_) {
-    treeRoot.dispose().then((_) {
+    treeRoot?.dispose()?.then((_) {
       print('Disposable tree size: ${treeRoot.disposalTreeSize}');
       treeRoot = null;
     });

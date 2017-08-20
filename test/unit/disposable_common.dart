@@ -24,7 +24,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     test('should throw if object is disposing', () async {
-      disposable.manageDisposer(() async {
+      disposable.getManagedDisposer(() async {
         expect(() => callback(argument), throwsStateError);
       });
       await disposable.dispose();
@@ -67,7 +67,9 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     var nullReturningSub = new MockStreamSubscription();
 
     when(nullReturningSub.cancel()).thenReturn(null);
-    when(stream.listen(any, cancelOnError: any)).thenReturn(nullReturningSub);
+    when(stream.listen(typed(any),
+            cancelOnError: typed(any, named: 'cancelOnError')))
+        .thenReturn(nullReturningSub);
 
     return stream;
   }
@@ -89,9 +91,9 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
           .catchError((_) {}); // Because we dispose prematurely.
       disposable.getManagedPeriodicTimer(new Duration(days: 1), (_) {});
       expect(disposable.disposalTreeSize, 8);
-      disposable.dispose().then(expectAsync1((_) {
+      return disposable.dispose().then((_) {
         expect(disposable.disposalTreeSize, 1);
-      }));
+      });
     });
 
     test('should count nested objects', () {
@@ -99,9 +101,9 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       nestedThing.manageDisposable(disposableFactory());
       disposable.manageDisposable(nestedThing);
       expect(disposable.disposalTreeSize, 3);
-      disposable.dispose().then(expectAsync1((_) {
+      return disposable.dispose().then((_) {
         expect(disposable.disposalTreeSize, 1);
-      }));
+      });
     });
   });
 
@@ -289,7 +291,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: close_sinks
       var controller = new StreamController<Null>();
       // ignore: cancel_subscriptions
-      var subscription = disposable.listenToStream(controller.stream, (_) {},
+      disposable.listenToStream(controller.stream, (_) {},
           onError: expectAsync2((error, _) {
         expect(error, new isInstanceOf<Exception>());
         expect(error.toString(), 'Exception: intentional');
@@ -317,7 +319,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: close_sinks
       var controller = new StreamController<Null>();
       // ignore: cancel_subscriptions
-      var subscription = disposable.listenToStream(controller.stream, (_) {},
+      disposable.listenToStream(controller.stream, (_) {},
           onDone: expectAsync0(() {}));
       controller.close();
     });
@@ -339,7 +341,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: close_sinks
       var controller = new StreamController<Null>();
       // ignore: cancel_subscriptions
-      var subscription = disposable.listenToStream(controller.stream, (_) {});
+      disposable.listenToStream(controller.stream, (_) {});
       expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
 
       await controller.close();
@@ -357,7 +359,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: close_sinks
       var controller = new StreamController<Null>();
       // ignore: cancel_subscriptions
-      var subscription = disposable.listenToStream(controller.stream, (_) {},
+      disposable.listenToStream(controller.stream, (_) {},
           cancelOnError: true, onError: (_, [__]) {});
       expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
 
@@ -376,7 +378,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: close_sinks
       var controller = new StreamController<Null>();
       // ignore: cancel_subscriptions
-      var subscription = disposable.listenToStream(controller.stream, (_) {},
+      disposable.listenToStream(controller.stream, (_) {},
           cancelOnError: false, onError: (_, [__]) {});
       expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
 
@@ -721,6 +723,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test(
         'should call callback and accept null return value'
         'when parent is disposed', () async {
+      // ignore: deprecated_member_use
       disposable.manageDisposer(expectAsync0(() => null));
       await disposable.dispose();
     });
@@ -728,12 +731,16 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test(
         'should call callback and accept Future return value'
         'when parent is disposed', () async {
+      // ignore: deprecated_member_use
       disposable.manageDisposer(expectAsync0(() => new Future(() {})));
       await disposable.dispose();
     });
 
-    testManageMethod('manageDisposer',
-        (argument) => disposable.manageDisposer(argument), () async => null,
+    testManageMethod(
+        'manageDisposer',
+        // ignore: deprecated_member_use
+        (argument) => disposable.manageDisposer(argument),
+        () async => null,
         doesCallbackReturnArgument: false);
   });
 
@@ -804,6 +811,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       controller.onCancel = expectAsync1(([_]) {});
       var subscription =
           controller.stream.listen(expectAsync1((_) {}, count: 0));
+      // ignore: deprecated_member_use
       disposable.manageStreamSubscription(subscription);
       await disposable.dispose();
       controller.add(null);
@@ -814,6 +822,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     var controller = new StreamController();
     testManageMethod(
         'manageStreamSubscription',
+        // ignore: deprecated_member_use
         (argument) => disposable.manageStreamSubscription(argument),
         controller.stream.listen((_) {}),
         doesCallbackReturnArgument: false);

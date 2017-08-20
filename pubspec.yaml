@@ -13,8 +13,13 @@ dependencies:
 
 dev_dependencies:
   coverage: ^0.7.2
-  dart_dev: ^1.7.2
+  dart_dev: ^1.8.0
   dart_style: ^0.2.16
   dartdoc: ^0.9.0
   mockito: '>=0.8.0'
   test: ^0.12.4
+
+transformers:
+  - test/pub_serve:
+      $include: test/**_test{s*.*,}dart
+
