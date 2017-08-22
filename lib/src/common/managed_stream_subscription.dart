@@ -1,61 +1,107 @@
 import 'dart:async';
 
-/// An implementation of `StreamSubscription` that provides a [didCancel] future.
+/// An implementation of `StreamSubscription` that provides a [didComplete]
+/// future.
 ///
-/// The [didCancel] future is used to provide an anchor point for removing
-/// internal references to `StreamSubscriptions` if consumers manually cancel the
-/// subscription. This class is not publicly exported.
+/// The [didComplete] future is used to provide an anchor point for removing
+/// internal references to `StreamSubscriptions` if consumers manually cancel
+/// the subscription. This class is not publicly exported.
+///
+/// There are three situations in which [didComplete] will be completed:
+///   1. the managed subscription is canceled
+///   2. the stream is closed
+///   3. the stream sends an error and `cancelOnError` was set to `true`
 class ManagedStreamSubscription<T> implements StreamSubscription<T> {
+  final bool _cancelOnError;
+
   final StreamSubscription<T> _subscription;
 
-  Completer<Null> _didCancel = new Completer();
+  Completer<Null> _didComplete = new Completer();
 
   ManagedStreamSubscription(Stream<T> stream, void onData(T),
-      {Function onError, void onDone(), bool cancelOnError})
-      : _subscription = stream.listen(onData,
-            onError: onError, onDone: onDone, cancelOnError: cancelOnError);
-
-  @override
-  Future<E> asFuture<E>([E futureValue]) => _subscription.asFuture(futureValue);
-
-  @override
-  Future<Null> cancel() {
-    var result = _subscription.cancel();
-
-    // StreamSubscription.cancel() will return null if no cleanup was necessary.
-    // This behavior is described in the docs as "for historical reasons" so
-    // this may change in the future.
-    if (result == null) {
-      if (!_didCancel.isCompleted) {
-        _didCancel.complete();
-      }
-      return null;
-    }
-
-    return result.then((_) {
-      if (!_didCancel.isCompleted) {
-        _didCancel.complete();
-      }
-    });
+      {void onError(error, [stackTrace]), void onDone(), bool cancelOnError})
+      : _cancelOnError = cancelOnError ?? false,
+        _subscription = stream.listen(onData, cancelOnError: cancelOnError) {
+    _wrapOnDone(onDone);
+    _wrapOnError(onError);
   }
 
-  Future<Null> get didCancel => _didCancel.future;
+  Future<Null> get didComplete => _didComplete.future;
 
   @override
   bool get isPaused => _subscription.isPaused;
 
   @override
+  Future<E> asFuture<E>([E futureValue]) {
+    return _subscription.asFuture(futureValue).whenComplete(() {
+      _complete();
+    });
+  }
+
+  @override
+  Future<Null> cancel() {
+    var result = _subscription.cancel();
+
+    // StreamSubscription.cancel() will return null if no cleanup was
+    // necessary. This behavior is described in the docs as "for historical
+    // reasons" so this may change in the future.
+    if (result == null) {
+      _complete();
+      return null;
+    }
+
+    return result.then((_) {
+      _complete();
+    });
+  }
+
+  @override
   void onData(void handleData(T _)) => _subscription.onData(handleData);
 
   @override
-  void onDone(void handleDone()) => _subscription.onDone(handleDone);
+  void onDone(void handleDone()) => _wrapOnDone(handleDone);
 
   @override
-  void onError(Function handleError) => _subscription.onError(handleError);
+  void onError(Function handleError) => _wrapOnError(handleError);
 
   @override
   void pause([Future resumeSignal]) => _subscription.pause(resumeSignal);
 
   @override
   void resume() => _subscription.resume();
+
+  void _complete() {
+    if (!_didComplete.isCompleted) {
+      _didComplete.complete();
+    }
+  }
+
+  void _wrapOnDone(void handleDone()) {
+    _subscription.onDone(() {
+      if (handleDone != null) {
+        handleDone();
+      }
+
+      _complete();
+    });
+  }
+
+  void _wrapOnError(void handleError(error, [stackTrace])) {
+    _subscription.onError((error, [stackTrace]) {
+      if (handleError == null) {
+        // By default unhandled stream errors are handled by their zone
+        // error handler. In this case we *always* handle errors,
+        // but the consumer may actually want the default behavior,
+        // so in the case where the handler given to us by the consumer
+        // is null (which is the default) we take the default action.
+        Zone.current.handleUncaughtError(error, stackTrace);
+      } else {
+        handleError(error, stackTrace);
+      }
+
+      if (_cancelOnError) {
+        _complete();
+      }
+    });
+  }
 }

@@ -447,7 +447,7 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
 
     _internalDisposables.add(disposable);
 
-    managedStreamSubscription.didCancel.then((_) {
+    managedStreamSubscription.didComplete.then((_) {
       if (!isDisposedOrDisposing) {
         _logUnmanageMessage(disposable);
         _internalDisposables.remove(disposable);
