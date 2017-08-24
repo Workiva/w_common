@@ -313,6 +313,30 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       controller.addError(new Exception('intentional'));
     });
 
+    test('should accept a unary onError callback', () {
+      // ignore: close_sinks
+      var controller = new StreamController<Null>();
+      disposable.listenToStream(controller.stream, (_) {},
+          onError: expectAsync1((error) {
+        expect(error, new isInstanceOf<Exception>());
+        expect(error.toString(), 'Exception: intentional');
+      }));
+      controller.addError(new Exception('intentional'));
+    });
+
+    test('should accept a binary onError callback', () {
+      // ignore: close_sinks
+      var controller = new StreamController<Null>();
+      disposable.listenToStream(controller.stream, (_) {},
+          onError: expectAsync2((error, stackTrace) {
+        expect(error, new isInstanceOf<Exception>());
+        expect(error.toString(), 'Exception: intentional');
+        expect(stackTrace, isNotNull);
+        expect(stackTrace, new isInstanceOf<StackTrace>());
+      }));
+      controller.addError(new Exception('intentional'));
+    });
+
     test(
         'should call onDone callback when controller is closed '
         'and there was an onDone callback set by listenToStream', () {
