@@ -19,7 +19,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
   Completer<Null> _didComplete = new Completer();
 
   ManagedStreamSubscription(Stream<T> stream, void onData(T),
-      {void onError(error, [stackTrace]), void onDone(), bool cancelOnError})
+      {Function onError, void onDone(), bool cancelOnError})
       : _cancelOnError = cancelOnError ?? false,
         _subscription = stream.listen(onData, cancelOnError: cancelOnError) {
     _wrapOnDone(onDone);
@@ -86,8 +86,8 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
     });
   }
 
-  void _wrapOnError(void handleError(error, [stackTrace])) {
-    _subscription.onError((error, [stackTrace]) {
+  void _wrapOnError(Function handleError) {
+    _subscription.onError((error, stackTrace) {
       if (handleError == null) {
         // By default unhandled stream errors are handled by their zone
         // error handler. In this case we *always* handle errors,
@@ -96,7 +96,16 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
         // is null (which is the default) we take the default action.
         Zone.current.handleUncaughtError(error, stackTrace);
       } else {
-        handleError(error, stackTrace);
+        // The onError handler can be either a unary callback that accepts only
+        // the error, or a binary callback that accepts both the error and the
+        // stack trace.
+        // This is borrowed directly from the real StreamSubscription
+        // implementation from dart:async (see stream_impl.dart).
+        if (handleError is ZoneBinaryCallback<dynamic, Object, StackTrace>) {
+          handleError(error, stackTrace);
+        } else {
+          handleError(error);
+        }
       }
 
       if (_cancelOnError) {
