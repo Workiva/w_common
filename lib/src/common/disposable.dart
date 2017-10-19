@@ -19,6 +19,7 @@ import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
 import 'package:w_common/src/common/disposable_manager.dart';
+import 'package:w_common/src/common/disposable_state.dart';
 import 'package:w_common/src/common/managed_stream_subscription.dart';
 
 // ignore: one_member_abstracts
@@ -234,8 +235,6 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
   static bool _debugMode = false;
   static Logger _logger;
 
-  LeakFlag _leakFlag;
-
   /// Disables logging enabled by [enableDebugMode].
   static void disableDebugMode() {
     if (_debugMode) {
@@ -256,10 +255,11 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
     }
   }
 
-  final Set<Future> _awaitableFutures = new HashSet<Future>();
-  Completer<Null> _didDispose = new Completer<Null>();
-  final Set<_Disposable> _internalDisposables = new HashSet<_Disposable>();
-  bool _isDisposing = false;
+  final _awaitableFutures = new HashSet<Future>();
+  final _didDispose = new Completer<Null>();
+  LeakFlag _leakFlag;
+  final _internalDisposables = new HashSet<_Disposable>();
+  DisposableState _state = DisposableState.initialized;
 
   /// A [Future] that will complete when this object has been disposed.
   Future<Null> get didDispose => _didDispose.future;
@@ -284,22 +284,72 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
   /// Whether this object has been disposed.
   bool get isDisposed => _didDispose.isCompleted;
 
-  /// Whether this object has been disposed or is disposing.
+  /// Whether this object has been disposed or is currently disposing.
   ///
-  /// This will become `true` as soon as the [dispose] method is called
-  /// and will remain `true` forever. This is intended as a convenience
-  /// and `object.isDisposedOrDisposing` will always be the same as
-  /// `object.isDisposed || object.isDisposing`.
+  /// This will become `true` after [dispose] is called, but not until all
+  /// [Future]s registered via [awaitBeforeDispose] have resolved, and will
+  /// remain `true` forever.
+  ///
+  /// This is equivalent to:
+  ///
+  ///     object.isDisposed || object.isDisposing
+  ///
+  /// Deprecated: 1.9.0
+  /// To be removed: 2.0.0
+  ///
+  /// This was intended as a convenience method to be used to guard against APIs
+  /// being called after disposal has started. Consumers should now use
+  /// [isOrWillBeDisposed] instead because it also returns true when this
+  /// instance is in the "awaiting disposal" state that is entered as soon as
+  /// [dispose] is called, whereas this getter does not return true until
+  /// disposal has actually started.
+  @deprecated
   bool get isDisposedOrDisposing => isDisposed || isDisposing;
 
   /// Whether this object is in the process of being disposed.
   ///
-  /// This will become `true` as soon as the [dispose] method is called
-  /// and will become `false` once the [didDispose] future completes.
-  bool get isDisposing => _isDisposing;
+  /// This will become `true` after [dispose] is called, but not until all
+  /// [Future]s registered via [awaitBeforeDispose] have resolved, and will
+  /// become `false` once the [didDispose] future completes.
+  ///
+  /// Deprecated: 1.9.0
+  /// To be removed: 2.0.0
+  ///
+  /// [isOrWillBeDisposed] should be used instead.
+  ///
+  /// This getter is useful for [Disposable] tests, but for public consumption,
+  /// [isOrWillBeDisposed] is more useful because it remains true throughout the
+  /// "awaiting disposal", "disposing", and "disposed" states.
+  @deprecated
+  bool get isDisposing => _state == DisposableState.disposing;
 
   @override
   bool get isLeakFlagSet => _leakFlag != null;
+
+  /// Whether the disposal of this object has been requested, is in progress, or
+  /// is complete.
+  ///
+  /// This will become `true` as soon as the [dispose] method is called and will
+  /// remain `true` forever.
+  ///
+  /// Recommended usage of this boolean is to guard public APIs such that all
+  /// calls after disposal has been requested (via [dispose]) are rejected:
+  ///
+  ///     Response sendRequest() async {
+  ///       if (isOrWillBeDisposed) {
+  ///         throw new StateError(
+  ///             'sendRequest() cannot be called, object is disposing');
+  ///       }
+  ///       ...
+  ///     }
+  bool get isOrWillBeDisposed =>
+      _state == DisposableState.awaitingDisposal ||
+      _state == DisposableState.disposing ||
+      _state == DisposableState.disposed;
+
+  @protected
+  @visibleForTesting
+  DisposableState get state => _state;
 
   @mustCallSuper
   @override
@@ -307,11 +357,11 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
     _throwOnInvalidCall('awaitBeforeDispose', 'future', future);
     _awaitableFutures.add(future);
     future.then((_) {
-      if (!isDisposedOrDisposing) {
+      if (!isOrWillBeDisposed) {
         _awaitableFutures.remove(future);
       }
     }).catchError((_) {
-      if (!isDisposedOrDisposing) {
+      if (!isOrWillBeDisposed) {
         _awaitableFutures.remove(future);
       }
     });
@@ -331,13 +381,21 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
     if (isDisposed) {
       return null;
     }
-    if (_isDisposing) {
+    if (isOrWillBeDisposed) {
       return didDispose;
     }
-    _isDisposing = true;
 
-    await Future.wait(_awaitableFutures);
-    _awaitableFutures.clear();
+    _state = DisposableState.awaitingDisposal;
+
+    await willDispose();
+
+    while (_awaitableFutures.isNotEmpty) {
+      final futures = _awaitableFutures.toList();
+      _awaitableFutures.clear();
+      await Future.wait(futures);
+    }
+
+    _state = DisposableState.disposing;
 
     for (var disposable in _internalDisposables) {
       await disposable.dispose();
@@ -346,7 +404,11 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
 
     await onDispose();
 
-    _completeDisposeFuture();
+    _didDispose.complete();
+    _state = DisposableState.disposed;
+    if (_debugMode) {
+      _logger.info('Disposed object $hashCode of type $runtimeType');
+    }
 
     if (_debugMode) {
       stopwatch.stop();
@@ -381,6 +443,7 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
     _logManageMessage(completer.future);
     _internalDisposables.add(disposable);
     timer.didConclude.then((Null _) {
+      // ignore: deprecated_member_use
       if (!isDisposedOrDisposing) {
         _logUnmanageMessage(completer.future);
         _internalDisposables.remove(disposable);
@@ -400,6 +463,7 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
     _internalDisposables.add(disposable);
 
     disposable.didDispose.then((_) {
+      // ignore: deprecated_member_use
       if (!isDisposedOrDisposing) {
         _logUnmanageMessage(disposer);
         _internalDisposables.remove(disposable);
@@ -448,6 +512,7 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
     _internalDisposables.add(disposable);
 
     managedStreamSubscription.didComplete.then((_) {
+      // ignore: deprecated_member_use
       if (!isDisposedOrDisposing) {
         _logUnmanageMessage(disposable);
         _internalDisposables.remove(disposable);
@@ -480,11 +545,13 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
     _internalDisposables.add(disposable);
 
     completer.future.catchError((e) {
+      // ignore: deprecated_member_use
       if (!isDisposedOrDisposing) {
         _logUnmanageMessage(completer);
         _internalDisposables.remove(disposable);
       }
     }).then((_) {
+      // ignore: deprecated_member_use
       if (!isDisposedOrDisposing) {
         _logUnmanageMessage(completer);
         _internalDisposables.remove(disposable);
@@ -502,6 +569,7 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
 
     _internalDisposables.add(disposable);
     disposable.didDispose.then((_) {
+      // ignore: deprecated_member_use
       if (!isDisposedOrDisposing) {
         _logUnmanageMessage(disposable);
         _internalDisposables.remove(disposable);
@@ -544,6 +612,7 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
 
     controller.done.then((_) {
       isDone = true;
+      // ignore: deprecated_member_use
       if (!isDisposedOrDisposing) {
         _logUnmanageMessage(controller);
         _internalDisposables.remove(disposable);
@@ -571,23 +640,26 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
     return null;
   }
 
+  /// Callback to allow arbitrary cleanup as soon as disposal is requested (i.e.
+  /// [dispose] is called) but prior to disposal actually starting.
+  ///
+  /// Disposal will _not_ start before the [Future] returned from this method
+  /// completes.
+  @protected
+  Future<Null> willDispose() async {
+    return null;
+  }
+
   void _addObservableTimerDisposable(_ObservableTimer timer) {
     ManagedDisposer disposable =
         new ManagedDisposer(() async => timer.cancel());
     _internalDisposables.add(disposable);
     timer.didConclude.then((Null _) {
+      // ignore: deprecated_member_use
       if (!isDisposedOrDisposing) {
         _internalDisposables.remove(disposable);
       }
     });
-  }
-
-  void _completeDisposeFuture() {
-    _didDispose.complete();
-    _isDisposing = false;
-    if (_debugMode) {
-      _logger.info('Disposed object $hashCode of type $runtimeType');
-    }
   }
 
   void _logDispose() {
@@ -615,6 +687,7 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
     if (parameterValue == null) {
       throw new ArgumentError.notNull(parameterName);
     }
+    // ignore: deprecated_member_use
     if (isDisposing) {
       throw new StateError('$methodName not allowed, object is disposing');
     }
