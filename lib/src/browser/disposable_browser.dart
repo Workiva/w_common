@@ -23,7 +23,7 @@ import 'package:w_common/src/common/disposable_state.dart';
 
 class _InnerDisposable extends disposable_common.Disposable {
   Func<Future<Null>> onDisposeHandler;
-  Func<Future<Null>> willDisposeHandler;
+  Func<Future<Null>> onWillDisposeHandler;
 
   @override
   Future<Null> onDispose() {
@@ -31,8 +31,8 @@ class _InnerDisposable extends disposable_common.Disposable {
   }
 
   @override
-  Future<Null> willDispose() {
-    return willDisposeHandler();
+  Future<Null> onWillDispose() {
+    return onWillDisposeHandler();
   }
 }
 
@@ -175,7 +175,7 @@ class Disposable implements disposable_common.Disposable {
   Future<Null> dispose() {
     _disposable
       ..onDisposeHandler = this.onDispose
-      ..willDisposeHandler = this.willDispose;
+      ..onWillDisposeHandler = this.onWillDispose;
     return _disposable.dispose().then((_) {
       // We want the description to be the runtime type of this
       // object, not the proxy disposable, so we need to reset
@@ -255,7 +255,7 @@ class Disposable implements disposable_common.Disposable {
   /// completes.
   @override
   @protected
-  Future<Null> willDispose() async {
+  Future<Null> onWillDispose() async {
     return null;
   }
 

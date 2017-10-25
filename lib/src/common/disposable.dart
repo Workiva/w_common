@@ -387,7 +387,7 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
 
     _state = DisposableState.awaitingDisposal;
 
-    await willDispose();
+    await onWillDispose();
 
     while (_awaitableFutures.isNotEmpty) {
       final futures = _awaitableFutures.toList();
@@ -646,7 +646,7 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
   /// Disposal will _not_ start before the [Future] returned from this method
   /// completes.
   @protected
-  Future<Null> willDispose() async {
+  Future<Null> onWillDispose() async {
     return null;
   }
 

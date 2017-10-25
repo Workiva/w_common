@@ -760,18 +760,18 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
   });
 
-  group('willDispose', () {
+  group('onWillDispose', () {
     test('should be called immediately when dispose() is called', () async {
-      expect(disposable.wasWillDisposeCalled, isFalse);
+      expect(disposable.wasOnWillDisposeCalled, isFalse);
       var completer = new Completer();
       // ignore: unawaited_futures
       disposable.awaitBeforeDispose(completer.future);
       var future = disposable.dispose();
       await new Future(() {});
-      expect(disposable.wasWillDisposeCalled, isTrue);
+      expect(disposable.wasOnWillDisposeCalled, isTrue);
       completer.complete();
       await future;
-      expect(disposable.wasWillDisposeCalled, isTrue);
+      expect(disposable.wasOnWillDisposeCalled, isTrue);
     });
   });
 

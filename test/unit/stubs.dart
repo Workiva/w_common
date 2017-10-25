@@ -25,7 +25,7 @@ import './typedefs.dart';
 abstract class StubDisposable implements Disposable {
   Disposable injected;
   bool wasOnDisposeCalled = false;
-  bool wasWillDisposeCalled = false;
+  bool wasOnWillDisposeCalled = false;
 
   @override
   DisposableState get state;
@@ -53,14 +53,14 @@ abstract class StubDisposable implements Disposable {
   }
 
   @override
-  Future<Null> willDispose() {
+  Future<Null> onWillDispose() {
     expect(isDisposed, isFalse);
     // ignore: deprecated_member_use
     expect(isDisposing, isFalse);
     // ignore: deprecated_member_use
     expect(isDisposedOrDisposing, isFalse);
     expect(isOrWillBeDisposed, isTrue);
-    wasWillDisposeCalled = true;
+    wasOnWillDisposeCalled = true;
     return new Future(() {});
   }
 }
