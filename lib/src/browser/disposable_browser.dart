@@ -22,10 +22,16 @@ import 'package:w_common/src/common/disposable.dart' as disposable_common;
 
 class _InnerDisposable extends disposable_common.Disposable {
   Func<Future<Null>> onDisposeHandler;
+  Func<Future<Null>> onWillDisposeHandler;
 
   @override
   Future<Null> onDispose() {
     return onDisposeHandler();
+  }
+
+  @override
+  Future<Null> onWillDispose() {
+    return onWillDisposeHandler();
   }
 }
 
@@ -41,15 +47,15 @@ class _InnerDisposable extends disposable_common.Disposable {
 /// default implementations and flexibility since it does not occupy
 /// a spot in the class hierarchy.
 ///
-/// Helper methods, such as [manageStreamSubscription] allow certain
-/// cleanup to be automated. Managed subscriptions will be automatically
-/// canceled when [dispose] is called on the object.
+/// Helper methods, such as [listenToStream] allow certain cleanup to be
+/// automated. Managed subscriptions will be automatically canceled when
+/// [dispose] is called on the object.
 ///
 ///      class MyDisposable extends Object with Disposable {
 ///        StreamController _controller = new StreamController();
 ///
 ///        MyDisposable(Stream someStream) {
-///          manageStreamSubscription(someStream.listen((_) => print('some stream')));
+///          listenToStream(someStream, (_) => print('some stream'));
 ///          manageStreamController(_controller);
 ///        }
 ///
@@ -141,9 +147,11 @@ class Disposable implements disposable_common.Disposable {
   @override
   bool get isDisposed => _disposable.isDisposed;
 
+  @deprecated
   @override
   bool get isDisposedOrDisposing => _disposable.isDisposedOrDisposing;
 
+  @deprecated
   @override
   bool get isDisposing => _disposable.isDisposing;
 
@@ -151,12 +159,17 @@ class Disposable implements disposable_common.Disposable {
   bool get isLeakFlagSet => _disposable.isLeakFlagSet;
 
   @override
-  Future<T> awaitBeforeDispose<T>(Future<T> future) => _disposable
-      .awaitBeforeDispose(future);
+  bool get isOrWillBeDisposed => _disposable.isOrWillBeDisposed;
+
+  @override
+  Future<T> awaitBeforeDispose<T>(Future<T> future) =>
+      _disposable.awaitBeforeDispose(future);
 
   @override
   Future<Null> dispose() {
-    _disposable.onDisposeHandler = this.onDispose;
+    _disposable
+      ..onDisposeHandler = this.onDispose
+      ..onWillDisposeHandler = this.onWillDispose;
     return _disposable.dispose().then((_) {
       // We want the description to be the runtime type of this
       // object, not the proxy disposable, so we need to reset
@@ -196,8 +209,8 @@ class Disposable implements disposable_common.Disposable {
       _disposable.manageAndReturnDisposable(disposable);
 
   @override
-  Completer<T> manageCompleter<T>(Completer<T> completer) => _disposable
-      .manageCompleter(completer);
+  Completer<T> manageCompleter<T>(Completer<T> completer) =>
+      _disposable.manageCompleter(completer);
 
   @override
   void manageDisposable(disposable_common.Disposable disposable) =>
@@ -223,9 +236,20 @@ class Disposable implements disposable_common.Disposable {
       _disposable.manageStreamSubscription(subscription);
 
   /// Callback to allow arbitrary cleanup on dispose.
-  @protected
   @override
+  @protected
   Future<Null> onDispose() async {
+    return null;
+  }
+
+  /// Callback to allow arbitrary cleanup as soon as disposal is requested (i.e.
+  /// [dispose] is called) but prior to disposal actually starting.
+  ///
+  /// Disposal will _not_ start before the [Future] returned from this method
+  /// completes.
+  @override
+  @protected
+  Future<Null> onWillDispose() async {
     return null;
   }
 

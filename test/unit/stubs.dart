@@ -21,23 +21,46 @@ import 'package:w_common/disposable.dart';
 import './typedefs.dart';
 
 abstract class StubDisposable implements Disposable {
-  bool wasOnDisposeCalled = false;
   Disposable injected;
+  int numTimesOnDisposeCalled = 0;
+  int numTimesOnWillDisposeCalled = 0;
+  bool wasOnDisposeCalled = false;
+  bool wasOnWillDisposeCalled = false;
 
   @override
   Future<Null> onDispose() {
     expect(isDisposed, isFalse);
+    // ignore: deprecated_member_use
     expect(isDisposing, isTrue);
+    // ignore: deprecated_member_use
     expect(isDisposedOrDisposing, isTrue);
+    expect(isOrWillBeDisposed, isTrue);
+    numTimesOnDisposeCalled++;
     wasOnDisposeCalled = true;
     var future = new Future<Null>(() => null);
     future.then((_) async {
       await new Future(() {}); // Give it a chance to update state.
       expect(isDisposed, isTrue);
+      // ignore: deprecated_member_use
       expect(isDisposing, isFalse);
+      // ignore: deprecated_member_use
       expect(isDisposedOrDisposing, isTrue);
+      expect(isOrWillBeDisposed, isTrue);
     });
     return future;
+  }
+
+  @override
+  Future<Null> onWillDispose() {
+    expect(isDisposed, isFalse);
+    // ignore: deprecated_member_use
+    expect(isDisposing, isFalse);
+    // ignore: deprecated_member_use
+    expect(isDisposedOrDisposing, isFalse);
+    expect(isOrWillBeDisposed, isTrue);
+    numTimesOnWillDisposeCalled++;
+    wasOnWillDisposeCalled = true;
+    return new Future(() {});
   }
 }
 

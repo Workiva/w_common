@@ -248,10 +248,11 @@ abstract class DisposableManagerV5 implements DisposableManagerV4 {
 ///
 /// When new management methods are to be added, they should be added
 /// here first, then implemented in [Disposable].
+// ignore: deprecated_member_use
 abstract class DisposableManagerV6 implements DisposableManagerV5 {
   /// Automatically dispose another object when this object is disposed.
   ///
-  /// This method is an extension to [manageDisposable] and returns the
+  /// This method is an extension to `manageDisposable` and returns the
   /// passed in [Disposable] in addition to handling it's disposal. The
   /// method should be used when a variable is set and should
   /// conditionally be managed for disposal. The most common case will
