@@ -347,10 +347,6 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
       _state == DisposableState.disposing ||
       _state == DisposableState.disposed;
 
-  @protected
-  @visibleForTesting
-  DisposableState get state => _state;
-
   @mustCallSuper
   @override
   Future<T> awaitBeforeDispose<T>(Future<T> future) {

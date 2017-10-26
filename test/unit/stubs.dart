@@ -18,17 +18,14 @@ import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:w_common/disposable.dart';
 
-import 'package:w_common/src/common/disposable_state.dart';
-
 import './typedefs.dart';
 
 abstract class StubDisposable implements Disposable {
   Disposable injected;
+  int numTimesOnDisposeCalled = 0;
+  int numTimesOnWillDisposeCalled = 0;
   bool wasOnDisposeCalled = false;
   bool wasOnWillDisposeCalled = false;
-
-  @override
-  DisposableState get state;
 
   @override
   Future<Null> onDispose() {
@@ -38,6 +35,7 @@ abstract class StubDisposable implements Disposable {
     // ignore: deprecated_member_use
     expect(isDisposedOrDisposing, isTrue);
     expect(isOrWillBeDisposed, isTrue);
+    numTimesOnDisposeCalled++;
     wasOnDisposeCalled = true;
     var future = new Future<Null>(() => null);
     future.then((_) async {
@@ -60,6 +58,7 @@ abstract class StubDisposable implements Disposable {
     // ignore: deprecated_member_use
     expect(isDisposedOrDisposing, isFalse);
     expect(isOrWillBeDisposed, isTrue);
+    numTimesOnWillDisposeCalled++;
     wasOnWillDisposeCalled = true;
     return new Future(() {});
   }

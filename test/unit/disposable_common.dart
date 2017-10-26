@@ -5,8 +5,6 @@ import 'package:test/test.dart';
 import 'package:w_common/disposable.dart';
 import 'package:w_common/func.dart';
 
-import 'package:w_common/src/common/disposable_state.dart';
-
 import 'stubs.dart';
 
 void testCommonDisposable(Func<StubDisposable> disposableFactory) {
@@ -33,7 +31,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       disposable.awaitBeforeDispose(completer.future);
       var future = disposable.dispose();
       await new Future(() {});
-      expect(disposable.state, equals(DisposableState.awaitingDisposal));
+      expect(disposable.isOrWillBeDisposed, isTrue);
       callback(argument);
       completer.complete();
       await future;
@@ -73,7 +71,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       disposable.awaitBeforeDispose(completer.future);
       var future = disposable.dispose();
       await new Future(() {});
-      expect(disposable.state, equals(DisposableState.awaitingDisposal));
+      expect(disposable.isOrWillBeDisposed, isTrue);
       callback(argument, secondArgument);
       completer.complete();
       await future;
@@ -106,6 +104,25 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
   setUp(() {
     disposable = disposableFactory();
+  });
+
+  group('dispose', () {
+    test('should prevent multiple disposals if called more than once',
+        () async {
+      var completer = new Completer<Null>();
+      // ignore: unawaited_futures
+      disposable.awaitBeforeDispose(completer.future);
+      // ignore: unawaited_futures
+      disposable.dispose();
+      await new Future(() {});
+      expect(disposable.isOrWillBeDisposed, isTrue);
+      expect(disposable.isDisposed, isFalse);
+      var future = disposable.dispose();
+      completer.complete();
+      await future;
+      expect(disposable.numTimesOnDisposeCalled, equals(1));
+      expect(disposable.numTimesOnWillDisposeCalled, equals(1));
+    });
   });
 
   group('disposalTreeSize', () {
@@ -164,7 +181,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: unawaited_futures
       disposable.dispose();
       await new Future(() {});
-      expect(disposable.state, equals(DisposableState.awaitingDisposal));
+      expect(disposable.isOrWillBeDisposed, isTrue);
       await disposable.getManagedDelayedFuture(
           new Duration(milliseconds: 10), () => null);
       completer.complete();
@@ -180,7 +197,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       completer.future.then((_) async {
         await new Future(() {});
         // ignore: deprecated_member_use
-        expect(disposable.state, equals(DisposableState.disposing));
+        expect(disposable.isDisposing, isTrue);
         expect(
             () => disposable.getManagedDelayedFuture(
                 new Duration(seconds: 10), () => null),
@@ -191,7 +208,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     test('should throw if called after disposal', () async {
       await disposable.dispose();
-      expect(disposable.state, equals(DisposableState.disposed));
+      expect(disposable.isDisposed, isTrue);
       expect(
           () => disposable.getManagedDelayedFuture(
               new Duration(seconds: 10), () => null),
@@ -624,7 +641,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: unawaited_futures
       disposable.dispose();
       await new Future(() {});
-      expect(disposable.state, equals(DisposableState.awaitingDisposal));
+      expect(disposable.isOrWillBeDisposed, isTrue);
       disposable.getManagedTimer(new Duration(milliseconds: 10), () => null);
       completer.complete();
     });
@@ -638,7 +655,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: unawaited_futures
       completer.future.then((_) async {
         await new Future(() {});
-        expect(disposable.state, equals(DisposableState.disposing));
+        // ignore: deprecated_member_use
+        expect(disposable.isDisposing, isTrue);
         expect(
             () => disposable.getManagedTimer(
                 new Duration(seconds: 10), () => null),
@@ -709,7 +727,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: unawaited_futures
       disposable.dispose();
       await new Future(() {});
-      expect(disposable.state, equals(DisposableState.awaitingDisposal));
+      expect(disposable.isOrWillBeDisposed, isTrue);
       disposable.getManagedPeriodicTimer(
           new Duration(milliseconds: 10), (_) => null);
       completer.complete();

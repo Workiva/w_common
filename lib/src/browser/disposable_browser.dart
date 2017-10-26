@@ -19,7 +19,6 @@ import 'package:meta/meta.dart';
 import 'package:w_common/func.dart';
 
 import 'package:w_common/src/common/disposable.dart' as disposable_common;
-import 'package:w_common/src/common/disposable_state.dart';
 
 class _InnerDisposable extends disposable_common.Disposable {
   Func<Future<Null>> onDisposeHandler;
@@ -161,11 +160,6 @@ class Disposable implements disposable_common.Disposable {
 
   @override
   bool get isOrWillBeDisposed => _disposable.isOrWillBeDisposed;
-
-  @override
-  @protected
-  @visibleForTesting
-  DisposableState get state => _disposable.state;
 
   @override
   Future<T> awaitBeforeDispose<T>(Future<T> future) =>
