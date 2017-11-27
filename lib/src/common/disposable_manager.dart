@@ -253,7 +253,7 @@ abstract class DisposableManagerV6 implements DisposableManagerV5 {
   /// Automatically dispose another object when this object is disposed.
   ///
   /// This method is an extension to `manageDisposable` and returns the
-  /// passed in [Disposable] in addition to handling it's disposal. The
+  /// passed in [Disposable] in addition to handling its disposal. The
   /// method should be used when a variable is set and should
   /// conditionally be managed for disposal. The most common case will
   /// be dealing with optional parameters:
@@ -273,7 +273,7 @@ abstract class DisposableManagerV6 implements DisposableManagerV5 {
   ///      }
   ///
   /// The parameter may not be `null`.
-  Disposable manageAndReturnDisposable(Disposable disposable);
+  T manageAndReturnDisposable<T extends Disposable>(T disposable);
 }
 
 /// An interface that allows a class to flag potential leaks by marking
