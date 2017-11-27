@@ -10,8 +10,8 @@ import 'stubs.dart';
 void testCommonDisposable(Func<StubDisposable> disposableFactory) {
   StubDisposable disposable;
 
-  void testManageMethod(
-      String methodName, callback(dynamic argument), dynamic argument,
+  void testManageMethod<T>(
+      String methodName, T callback(T argument), T argument,
       {bool doesCallbackReturnArgument: true}) {
     if (doesCallbackReturnArgument) {
       test('should return the argument', () {
@@ -241,6 +241,35 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     testManageMethod(
         'manageAndReturnDisposable',
         (Disposable argument) => disposable.manageAndReturnDisposable(argument),
+        disposableFactory());
+  });
+
+  group('manageAndReturnTypedDisposable', () {
+    void injectDisposable({Disposable injected}) {
+      disposable.injected = injected ??
+          disposable.manageAndReturnTypedDisposable(disposableFactory());
+    }
+
+    test('should dispose managed disposable', () async {
+      injectDisposable();
+      await disposable.dispose();
+      expect(disposable.injected, isNotNull);
+      expect(disposable.isDisposed, isTrue);
+      expect(disposable.injected.isDisposed, isTrue);
+    });
+
+    test('should not dispose injected variable', () async {
+      injectDisposable(injected: disposableFactory());
+      await disposable.dispose();
+      expect(disposable.injected, isNotNull);
+      expect(disposable.isDisposed, isTrue);
+      expect(disposable.injected.isDisposed, isFalse);
+    });
+
+    testManageMethod(
+        'manageAndReturnTypedDisposable',
+        (StubDisposable argument) =>
+            disposable.manageAndReturnTypedDisposable(argument),
         disposableFactory());
   });
 
@@ -884,11 +913,10 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       expect(disposeCounter.disposeCount, 1);
     });
 
-    testManageMethod(
-        'manageDisposable',
-        (argument) => disposable.manageDisposable(argument),
-        disposableFactory(),
-        doesCallbackReturnArgument: false);
+    testManageMethod('manageDisposable', (argument) {
+      disposable.manageDisposable(argument);
+      return argument;
+    }, disposableFactory(), doesCallbackReturnArgument: false);
   });
 
   group('manageDisposer', () {
@@ -908,12 +936,11 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       await disposable.dispose();
     });
 
-    testManageMethod(
-        'manageDisposer',
-        // ignore: deprecated_member_use
-        (argument) => disposable.manageDisposer(argument),
-        () async => null,
-        doesCallbackReturnArgument: false);
+    testManageMethod('manageDisposer', (argument) {
+      // ignore: deprecated_member_use
+      disposable.manageDisposer(argument);
+      return argument;
+    }, () async => null, doesCallbackReturnArgument: false);
   });
 
   group('manageStreamController', () {
@@ -970,11 +997,10 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       expect(controller.isClosed, isTrue);
     });
 
-    testManageMethod(
-        'manageStreamController',
-        (argument) => disposable.manageStreamController(argument),
-        new StreamController(),
-        doesCallbackReturnArgument: false);
+    testManageMethod('manageStreamController', (argument) {
+      disposable.manageStreamController(argument);
+      return argument;
+    }, new StreamController(), doesCallbackReturnArgument: false);
   });
 
   group('manageStreamSubscription', () {
@@ -992,12 +1018,11 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     var controller = new StreamController();
-    testManageMethod(
-        'manageStreamSubscription',
-        // ignore: deprecated_member_use
-        (argument) => disposable.manageStreamSubscription(argument),
-        controller.stream.listen((_) {}),
-        doesCallbackReturnArgument: false);
+    testManageMethod('manageStreamSubscription', (argument) {
+      // ignore: deprecated_member_use
+      disposable.manageStreamSubscription(argument);
+      return argument;
+    }, controller.stream.listen((_) {}), doesCallbackReturnArgument: false);
     controller.close();
   });
 
