@@ -520,7 +520,7 @@ class Disposable implements _Disposable, DisposableManagerV6, LeakFlagger {
 
   @mustCallSuper
   @override
-  Disposable manageAndReturnDisposable(Disposable disposable) {
+  T manageAndReturnDisposable<T extends Disposable>(T disposable) {
     _throwOnInvalidCall('manageAndReturnDisposable', 'disposable', disposable);
     manageDisposable(disposable);
 

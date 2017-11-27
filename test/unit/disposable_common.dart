@@ -240,7 +240,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     testManageMethod(
         'manageAndReturnDisposable',
-        (argument) => disposable.manageAndReturnDisposable(argument),
+        (Disposable argument) => disposable.manageAndReturnDisposable(argument),
         disposableFactory());
   });
 
