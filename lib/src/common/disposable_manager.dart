@@ -21,7 +21,7 @@ import 'package:w_common/src/common/disposable.dart';
 /// This interface allows consumers to exercise more control over how
 /// disposal is implemented for their classes.
 ///
-/// Deprecated: Use [DisposableManagerV5] instead.
+/// Deprecated: Use [DisposableManagerV7] instead.
 @deprecated
 abstract class DisposableManager {
   /// Automatically dispose another object when this object is disposed.
@@ -79,7 +79,7 @@ abstract class DisposableManager {
 /// When new management methods are to be added, they should be added
 /// here first, then implemented in [Disposable].
 ///
-/// Deprecated: Use [DisposableManagerV5] instead.
+/// Deprecated: Use [DisposableManagerV7] instead.
 @deprecated
 abstract class DisposableManagerV2 implements DisposableManager {
   /// Creates a [Timer] instance that will be cancelled if active
@@ -102,7 +102,7 @@ abstract class DisposableManagerV2 implements DisposableManager {
 /// Deprecated: 1.7.0
 /// To be removed: 2.0.0
 ///
-/// Use [DisposableManagerV5] instead.
+/// Use [DisposableManagerV7] instead.
 @deprecated
 abstract class DisposableManagerV3 implements DisposableManagerV2 {
   /// Add [future] to a list of futures that will be awaited before the
@@ -159,7 +159,7 @@ abstract class DisposableManagerV3 implements DisposableManagerV2 {
 /// Deprecated: 1.7.0
 /// To be removed: 2.0.0
 ///
-/// Use [DisposableManagerV5] instead.
+/// Use [DisposableManagerV7] instead.
 @deprecated
 abstract class DisposableManagerV4 implements DisposableManagerV3 {
   /// Returns a [StreamSubscription] which handles events from the stream using
@@ -188,7 +188,7 @@ abstract class DisposableManagerV4 implements DisposableManagerV3 {
 /// Deprecated: 1.8.0
 /// To be removed: 2.0.0
 ///
-/// Use [DisposableManagerV6] instead.
+/// Use [DisposableManagerV7] instead.
 @deprecated
 abstract class DisposableManagerV5 implements DisposableManagerV4 {
   /// Automatically handle arbitrary disposals using a callback.
@@ -252,7 +252,7 @@ abstract class DisposableManagerV5 implements DisposableManagerV4 {
 /// Deprecated: 1.10.0
 /// To be removed: 2.0.0
 ///
-/// Use [DisposableManagerV6] instead.
+/// Use [DisposableManagerV7] instead.
 @deprecated
 abstract class DisposableManagerV6 implements DisposableManagerV5 {
   /// Automatically dispose another object when this object is disposed.
