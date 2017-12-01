@@ -24,7 +24,9 @@ export 'package:w_common/src/common/disposable_manager.dart'
         DisposableManagerV4,
         // ignore: deprecated_member_use
         DisposableManagerV5,
+        // ignore: deprecated_member_use
         DisposableManagerV6,
+        DisposableManagerV7,
         ObjectDisposedException;
 export 'package:w_common/src/browser/disposable_browser.dart' show Disposable;
 export 'package:w_common/src/common/disposable.dart'

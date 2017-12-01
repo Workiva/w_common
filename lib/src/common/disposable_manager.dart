@@ -21,7 +21,7 @@ import 'package:w_common/src/common/disposable.dart';
 /// This interface allows consumers to exercise more control over how
 /// disposal is implemented for their classes.
 ///
-/// Deprecated: Use [DisposableManagerV5] instead.
+/// Deprecated: Use [DisposableManagerV7] instead.
 @deprecated
 abstract class DisposableManager {
   /// Automatically dispose another object when this object is disposed.
@@ -31,8 +31,8 @@ abstract class DisposableManager {
   /// Deprecated: 1.8.0
   /// To be removed: 2.0.0
   ///
-  /// Use `manageAndReturnDisposable` instead. One will need to update
-  /// to [DisposableManagerV6] or above for this.
+  /// Use `manageAndReturnTypedDisposable` instead. One will need to update
+  /// to [DisposableManagerV7] or above for this.
   @deprecated
   void manageDisposable(Disposable disposable);
 
@@ -79,7 +79,7 @@ abstract class DisposableManager {
 /// When new management methods are to be added, they should be added
 /// here first, then implemented in [Disposable].
 ///
-/// Deprecated: Use [DisposableManagerV5] instead.
+/// Deprecated: Use [DisposableManagerV7] instead.
 @deprecated
 abstract class DisposableManagerV2 implements DisposableManager {
   /// Creates a [Timer] instance that will be cancelled if active
@@ -102,7 +102,7 @@ abstract class DisposableManagerV2 implements DisposableManager {
 /// Deprecated: 1.7.0
 /// To be removed: 2.0.0
 ///
-/// Use [DisposableManagerV5] instead.
+/// Use [DisposableManagerV7] instead.
 @deprecated
 abstract class DisposableManagerV3 implements DisposableManagerV2 {
   /// Add [future] to a list of futures that will be awaited before the
@@ -159,7 +159,7 @@ abstract class DisposableManagerV3 implements DisposableManagerV2 {
 /// Deprecated: 1.7.0
 /// To be removed: 2.0.0
 ///
-/// Use [DisposableManagerV5] instead.
+/// Use [DisposableManagerV7] instead.
 @deprecated
 abstract class DisposableManagerV4 implements DisposableManagerV3 {
   /// Returns a [StreamSubscription] which handles events from the stream using
@@ -188,7 +188,7 @@ abstract class DisposableManagerV4 implements DisposableManagerV3 {
 /// Deprecated: 1.8.0
 /// To be removed: 2.0.0
 ///
-/// Use [DisposableManagerV6] instead.
+/// Use [DisposableManagerV7] instead.
 @deprecated
 abstract class DisposableManagerV5 implements DisposableManagerV4 {
   /// Automatically handle arbitrary disposals using a callback.
@@ -248,12 +248,17 @@ abstract class DisposableManagerV5 implements DisposableManagerV4 {
 ///
 /// When new management methods are to be added, they should be added
 /// here first, then implemented in [Disposable].
-// ignore: deprecated_member_use
+///
+/// Deprecated: 1.10.0
+/// To be removed: 2.0.0
+///
+/// Use [DisposableManagerV7] instead.
+@deprecated
 abstract class DisposableManagerV6 implements DisposableManagerV5 {
   /// Automatically dispose another object when this object is disposed.
   ///
   /// This method is an extension to `manageDisposable` and returns the
-  /// passed in [Disposable] in addition to handling it's disposal. The
+  /// passed in [Disposable] in addition to handling its disposal. The
   /// method should be used when a variable is set and should
   /// conditionally be managed for disposal. The most common case will
   /// be dealing with optional parameters:
@@ -273,7 +278,46 @@ abstract class DisposableManagerV6 implements DisposableManagerV5 {
   ///      }
   ///
   /// The parameter may not be `null`.
+  ///
+  /// Use `manageAndReturnTypedDisposable` instead. One will need to update
+  /// to [DisposableManagerV7] or above for this.
+  @deprecated
   Disposable manageAndReturnDisposable(Disposable disposable);
+}
+
+/// Managers for disposable members.
+///
+/// This interface allows consumers to exercise more control over how
+/// disposal is implemented for their classes.
+///
+/// When new management methods are to be added, they should be added
+/// here first, then implemented in [Disposable].
+// ignore: deprecated_member_use
+abstract class DisposableManagerV7 implements DisposableManagerV6 {
+  /// Automatically dispose another object when this object is disposed.
+  ///
+  /// This method is an extension to `manageAndReturnDisposable` and returns the
+  /// passed in [Disposable] as its original type in addition to handling its
+  /// disposal. The method should be used when a variable is set and should
+  /// conditionally be managed for disposal. The most common case will be dealing
+  /// with optional parameters:
+  ///
+  ///      class MyDisposable extends Disposable {
+  ///        // This object also extends disposable
+  ///        MyObject _internal;
+  ///
+  ///        MyDisposable({MyObject optional}) {
+  ///          // If optional is injected, we should not manage it.
+  ///          // If we create our own internal reference we should manage it.
+  ///          _internal = optional ??
+  ///              manageAndReturnTypedDisposable(new MyObject());
+  ///        }
+  ///
+  ///        // ...
+  ///      }
+  ///
+  /// The parameter may not be `null`.
+  T manageAndReturnTypedDisposable<T extends Disposable>(T disposable);
 }
 
 /// An interface that allows a class to flag potential leaks by marking

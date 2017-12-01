@@ -209,6 +209,11 @@ class Disposable implements disposable_common.Disposable {
       _disposable.manageAndReturnDisposable(disposable);
 
   @override
+  T manageAndReturnTypedDisposable<T extends disposable_common.Disposable>(
+          T disposable) =>
+      _disposable.manageAndReturnTypedDisposable(disposable);
+
+  @override
   Completer<T> manageCompleter<T>(Completer<T> completer) =>
       _disposable.manageCompleter(completer);
 
