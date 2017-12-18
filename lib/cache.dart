@@ -1,4 +1,4 @@
-// Copyright 2016 Workiva Inc.
+// Copyright 2017 Workiva Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,19 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Deprecated: 1.6.0
-/// To be removed: 2.0.0
-///
-/// This entry point is deprecated in favor of consumers importing the specific
-/// pieces of w_common they want to use. For example, to leverage the disposable
-/// classes:
-///
-///     import 'package:w_common/disposable.dart';
-@deprecated
-library w_common;
-
-export 'cache.dart';
-export 'disposable.dart';
-export 'func.dart' show Func;
-export 'invalidation_mixin.dart' show InvalidationMixin, ValidationStatus;
-export 'json_serializable.dart' show JsonSerializable;
+export 'package:w_common/src/common/cache/cache.dart'
+    show Cache, CacheContext, CachingStrategy;
+export 'package:w_common/src/common/cache/reference_counting_strategy.dart'
+    show ReferenceCountingStrategy;

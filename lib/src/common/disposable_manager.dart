@@ -232,7 +232,7 @@ abstract class DisposableManagerV5 implements DisposableManagerV4 {
   ///          // ...
   ///
   ///          // request comes from an external source, the reference held by
-  ///          // this clojure may introduce a memory leak.
+  ///          // this closure may introduce a memory leak.
   ///          getManagedDisposer(request.cancel);
   ///        }
   ///      }
