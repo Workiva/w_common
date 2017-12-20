@@ -219,7 +219,7 @@ void main() {
         var stubCachingStrategy = new MockCachingStrategy();
         var childCache = new Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
-        verifyNever(stubCachingStrategy.onDidRemove(any, any));
+        verifyNever(stubCachingStrategy.onDidRemove(typed(any), typed(any)));
       });
 
       test('should not call onWillRemove when identifer is not cached',
@@ -227,7 +227,7 @@ void main() {
         var stubCachingStrategy = new MockCachingStrategy();
         var childCache = new Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
-        verifyNever(stubCachingStrategy.onWillRemove(any));
+        verifyNever(stubCachingStrategy.onWillRemove(typed(any)));
       });
 
       test('should remove after pending get if called synchronously', () {
@@ -308,7 +308,8 @@ void main() {
         var stubCachingStrategy = new MockCachingStrategy();
         var childCache = new Cache(stubCachingStrategy);
         await childCache.release(cachedId);
-        verifyNever(stubCachingStrategy.onDidRelease(any, any, any));
+        verifyNever(stubCachingStrategy.onDidRelease(
+            typed(any), typed(any), typed(any)));
       });
 
       test('should not call onWillRemove when identifer is not cached',
@@ -316,7 +317,7 @@ void main() {
         var stubCachingStrategy = new MockCachingStrategy();
         var childCache = new Cache(stubCachingStrategy);
         await childCache.release(cachedId);
-        verifyNever(stubCachingStrategy.onWillRelease(any));
+        verifyNever(stubCachingStrategy.onWillRelease(typed(any)));
       });
 
       test('should complete if pending get factory completes with an error',
@@ -347,8 +348,11 @@ void main() {
 class MockCachingStrategy extends Mock
     implements CachingStrategy<String, Object> {
   MockCachingStrategy() {
-    when(this.onDidGet(any, any)).thenReturn(new Future.value(null));
-    when(this.onDidRelease(any, any, any)).thenReturn(new Future.value(null));
-    when(this.onDidRemove(any, any)).thenReturn(new Future.value(null));
+    when(this.onDidGet(typed(any), typed(any)))
+        .thenReturn(new Future.value(null));
+    when(this.onDidRelease(typed(any), typed(any), typed(any)))
+        .thenReturn(new Future.value(null));
+    when(this.onDidRemove(typed(any), typed(any)))
+        .thenReturn(new Future.value(null));
   }
 }
