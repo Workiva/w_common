@@ -51,7 +51,7 @@ class CachingStrategy<TIdentifier, TValue> {
   /// release was called there is no need for the value to be evicted and
   /// recomputed, (because of the get immediately after the release). Release is
   /// a suggestion, every release does not need to be paired with a removal. If
-  /// consumers wanted `_superLongAsyncCall` in the example below to be ran
+  /// consumers wanted `_superLongAsyncCall` in the example below to be run
   /// twice, [Cache.remove] could be used.
   ///
   ///     var a = cache.getAsync('id', _superLongAsyncCall);
@@ -135,9 +135,10 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   Stream<CacheContext<TIdentifier, TValue>> get didUpdate =>
       _didUpdateController.stream;
 
-  /// Returns a value from the cache for a given [TIdentifier]. If the
-  /// [TIdentifier] is not present in the cache the value returned by the given
-  /// [valueFactory] is added to the cache and returned.
+  /// Returns a value from the cache for a given [TIdentifier].
+  ///
+  /// If the [TIdentifier] is not present in the cache the value returned by the
+  /// given [valueFactory] is added to the cache and returned.
   ///
   /// All calls to [get] await a call to the current caching strategy's
   /// [CachingStrategy.onDidGet] lifecycle method before returning the cached value.
@@ -190,14 +191,15 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     return _cache[id];
   }
 
-  /// Returns a value from the cache for a given [TIdentifier]. If the
-  /// [TIdentifier] is not present in the cache the value returned by the given
-  /// [valueFactory] is added to the cache and returned.
+  /// Returns a value from the cache for a given [TIdentifier].
+  ///
+  /// If the [TIdentifier] is not present in the cache the value returned by the
+  /// given [valueFactory] is added to the cache and returned.
   ///
   /// All calls to [getAsync] await a call to the current caching strategy's
   /// [CachingStrategy.onDidGet] method before returning the cached value. If the
   /// [Cache] does not contain an instance for the given [TIdentifier], the given
-  /// [valueFactory] is called and an [CacheContext] event is emitted on the
+  /// [valueFactory] is called and a [CacheContext] event is emitted on the
   /// [didUpdate] stream. A call to [get] that returns a cached value does not
   /// emit this event as the [Cache] has not updated.
   ///
@@ -241,11 +243,10 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
 
   Iterable<TIdentifier> get keys => _cache.keys;
 
-  /// Releases a reference for a given [TIdentifier] and removes the
-  /// [TIdentifier] from the [Cache] when the last reference is released.
+  /// Marks a [TIdentifier] [TValue] pair as eligable for removal.
   ///
-  /// If [Cache] [isOrWillBeDisposed] then a [StateError] is
-  /// thrown.
+  /// The dicision of whether or not to actually remove the value will be up to
+  /// the current [CachingStrategy].
   @mustCallSuper
   Future<Null> release(TIdentifier id) {
     _throwWhenDisposed('release');
