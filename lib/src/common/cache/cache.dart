@@ -46,10 +46,10 @@ class CachingStrategy<TIdentifier, TValue> {
   /// Values should not be removed unnecessarily. In the example below it is
   /// expected that both `a`, `b` and `c` would resolve to the same value while
   /// only making `_superLongAsyncCall` once. Here [Cache.release] and
-  /// [Cache.get] are called synchronously before `_superLongAsyncCall` has
+  /// [Cache.getAsync] are called synchronously before `_superLongAsyncCall` has
   /// completed. The strategy has enough information to know that even though
   /// release was called there is no need for the value to be evicted and
-  /// recomputed, (because of the get immediately after the release). Release is
+  /// recomputed (because of the get immediately after the release). Release is
   /// a suggestion, every release does not need to be paired with a removal. If
   /// consumers wanted `_superLongAsyncCall` in the example below to be run
   /// twice, [Cache.remove] could be used.
@@ -108,14 +108,6 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
         .forEach(manageStreamController);
   }
 
-  /// Does the [Cache] contain the given [TIdentifier]?
-  ///
-  /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
-  bool containsKey(Object id) {
-    _throwWhenDisposed('determine if identifier is cached');
-    return _cache.containsKey(id);
-  }
-
   /// A stream of [CacheContext]s that dispatches when an item is released from
   /// the cache.
   ///
@@ -134,6 +126,18 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// the cache.
   Stream<CacheContext<TIdentifier, TValue>> get didUpdate =>
       _didUpdateController.stream;
+
+  Iterable<TIdentifier> get keys => _cache.keys;
+
+  Future<Iterable<TValue>> get values => Future.wait(_cache.values);
+
+  /// Does the [Cache] contain the given [TIdentifier]?
+  ///
+  /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
+  bool containsKey(TIdentifier id) {
+    _throwWhenDisposed('determine if identifier is cached');
+    return _cache.containsKey(id);
+  }
 
   /// Returns a value from the cache for a given [TIdentifier].
   ///
@@ -200,8 +204,8 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// [CachingStrategy.onDidGet] method before returning the cached value. If the
   /// [Cache] does not contain an instance for the given [TIdentifier], the given
   /// [valueFactory] is called and a [CacheContext] event is emitted on the
-  /// [didUpdate] stream. A call to [get] that returns a cached value does not
-  /// emit this event as the [Cache] has not updated.
+  /// [didUpdate] stream. A call to [getAsync] that returns a cached value does
+  /// not emit this event as the [Cache] has not updated.
   ///
   /// Calls to [getAsync] are evaluated synchronously and will return the future
   /// value established by the first call to [get]. This allows calls to
@@ -241,11 +245,9 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     return _cache[id];
   }
 
-  Iterable<TIdentifier> get keys => _cache.keys;
-
-  /// Marks a [TIdentifier] [TValue] pair as eligable for removal.
+  /// Marks a [TIdentifier] [TValue] pair as eligible for removal.
   ///
-  /// The dicision of whether or not to actually remove the value will be up to
+  /// The decision of whether or not to actually remove the value will be up to
   /// the current [CachingStrategy].
   @mustCallSuper
   Future<Null> release(TIdentifier id) {
@@ -296,6 +298,4 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
       throw new StateError('Cannot $op when Cache is disposed');
     }
   }
-
-  Future<Iterable<TValue>> get values => Future.wait(_cache.values);
 }
