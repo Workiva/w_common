@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:test/test.dart';
 import 'package:w_common/src/common/cache/cache.dart';
+import 'package:w_common/src/common/cache/most_recently_used_strategy.dart';
 import 'package:w_common/src/common/cache/reference_counting_strategy.dart';
 
 typedef CachingStrategy<String, Object> CachingStrategyFactory();
@@ -10,7 +11,10 @@ typedef CachingStrategy<String, Object> CachingStrategyFactory();
 void main() {
   <String, CachingStrategyFactory>{
     'ReferenceCountingStrategy': () =>
-        new ReferenceCountingStrategy<String, Object>()
+        new ReferenceCountingStrategy<String, Object>(),
+    'MostRecentlyUsedStrategy keep = 0': () => new MostRecentlyUsedStrategy(0),
+    'MostRecentlyUsedStrategy keep = 1': () => new MostRecentlyUsedStrategy(1),
+    'MostRecentlyUsedStrategy keep = 2': () => new MostRecentlyUsedStrategy(2),
   }.forEach((name, strategyFactory) {
     group('$name', () {
       Cache<String, Object> cache;
@@ -34,9 +38,10 @@ void main() {
 
         var thirdGetCall = cache.getAsync('id', valueFactory);
 
-        expect(valueFactoryCalled, 1);
         expect(await firstGetCall, await secondGetCall);
         expect(await secondGetCall, await thirdGetCall);
+        // This should be checked after gets and releases are awaited
+        expect(valueFactoryCalled, 1);
       });
 
       test(
@@ -55,9 +60,10 @@ void main() {
 
         var thirdGetCall = cache.getAsync('id', valueFactory);
 
-        expect(valueFactoryCalled, 1);
         expect(await firstGetCall, await secondGetCall);
         expect(await secondGetCall, await thirdGetCall);
+        // This should be checked after gets and releases are awaited
+        expect(valueFactoryCalled, 1);
       });
     });
   });
