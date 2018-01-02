@@ -58,7 +58,8 @@ class CachingStrategy<TIdentifier, TValue> {
   ///     var release = cache.release('id');
   ///     var b = cache.getAsync('id', _superLongAsyncCall);
   ///
-  ///     await release; // _superLongAsyncCall completes
+  ///     await release;
+  ///     // _superLongAsyncCall and onDidRelease have now completed
   ///
   ///     var c = cache.getAsync('id', _superLongAsyncCall);
   Future<Null> onDidRelease(TIdentifier id, TValue value,
@@ -279,8 +280,8 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   Future<Null> remove(TIdentifier id) {
     _throwWhenDisposed('remove');
     if (_cache.containsKey(id)) {
-      final removedValue = _cache.remove(id);
       _cachingStrategy.onWillRemove(id);
+      final removedValue = _cache.remove(id);
       return removedValue.then((TValue value) async {
         await _cachingStrategy.onDidRemove(id, value);
         _didRemoveController.add(new CacheContext(id, value));
