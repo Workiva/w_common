@@ -7,7 +7,7 @@ import 'package:w_common/cache.dart';
 ///
 /// When n = 0 the strategy will remove a [TIdentifier] [TValue] pair immediately
 /// on release.
-class MostRecentlyUsedStrategy<TIdentifier, TValue>
+class LeastRecentlyUsedStrategy<TIdentifier, TValue>
     extends CachingStrategy<TIdentifier, TValue> {
   final Queue<TIdentifier> _removalQueue = new Queue<TIdentifier>();
 
@@ -15,7 +15,7 @@ class MostRecentlyUsedStrategy<TIdentifier, TValue>
   /// cache before removing the least recently used pair form the cache.
   final int _keep;
 
-  MostRecentlyUsedStrategy(this._keep) {
+  LeastRecentlyUsedStrategy(this._keep) {
     if (_keep < 0) {
       throw new ArgumentError(
           'Cannot keep a negative number of most recently used items in the cache');

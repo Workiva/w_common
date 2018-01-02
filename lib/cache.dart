@@ -14,7 +14,7 @@
 
 export 'package:w_common/src/common/cache/cache.dart'
     show Cache, CacheContext, CachingStrategy;
-export 'package:w_common/src/common/cache/most_recently_used_strategy.dart'
-    show MostRecentlyUsedStrategy;
+export 'package:w_common/src/common/cache/least_recently_used_strategy.dart'
+    show LeastRecentlyUsedStrategy;
 export 'package:w_common/src/common/cache/reference_counting_strategy.dart'
     show ReferenceCountingStrategy;

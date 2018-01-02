@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:test/test.dart';
 import 'package:w_common/src/common/cache/cache.dart';
-import 'package:w_common/src/common/cache/most_recently_used_strategy.dart';
+import 'package:w_common/src/common/cache/least_recently_used_strategy.dart';
 import 'package:w_common/src/common/cache/reference_counting_strategy.dart';
 
 typedef CachingStrategy<String, Object> CachingStrategyFactory();
@@ -12,9 +12,9 @@ void main() {
   <String, CachingStrategyFactory>{
     'ReferenceCountingStrategy': () =>
         new ReferenceCountingStrategy<String, Object>(),
-    'MostRecentlyUsedStrategy keep = 0': () => new MostRecentlyUsedStrategy(0),
-    'MostRecentlyUsedStrategy keep = 1': () => new MostRecentlyUsedStrategy(1),
-    'MostRecentlyUsedStrategy keep = 2': () => new MostRecentlyUsedStrategy(2),
+    'MostRecentlyUsedStrategy keep = 0': () => new LeastRecentlyUsedStrategy(0),
+    'MostRecentlyUsedStrategy keep = 1': () => new LeastRecentlyUsedStrategy(1),
+    'MostRecentlyUsedStrategy keep = 2': () => new LeastRecentlyUsedStrategy(2),
   }.forEach((name, strategyFactory) {
     group('$name', () {
       Cache<String, Object> cache;

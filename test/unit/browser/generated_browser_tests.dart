@@ -5,7 +5,7 @@ library test.unit.browser.generated_browser_tests;
 
 import './cache/cache_test.dart' as cache_cache_test;
 import './cache/caching_strategy_common_test.dart' as cache_caching_strategy_common_test;
-import './cache/most_recently_used_strategy_test.dart' as cache_most_recently_used_strategy_test;
+import './cache/least_recently_used_strategy_test.dart' as cache_least_recently_used_strategy_test;
 import './cache/reference_counting_strategy_test.dart' as cache_reference_counting_strategy_test;
 import './disposable_browser_test.dart' as disposable_browser_test;
 import './invalidation_mixin_test.dart' as invalidation_mixin_test;
@@ -15,7 +15,7 @@ import 'package:test/test.dart';
 void main() {
   cache_cache_test.main();
   cache_caching_strategy_common_test.main();
-  cache_most_recently_used_strategy_test.main();
+  cache_least_recently_used_strategy_test.main();
   cache_reference_counting_strategy_test.main();
   disposable_browser_test.main();
   invalidation_mixin_test.main();

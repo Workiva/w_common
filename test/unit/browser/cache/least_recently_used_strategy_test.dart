@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:w_common/src/common/cache/cache.dart';
-import 'package:w_common/src/common/cache/most_recently_used_strategy.dart';
+import 'package:w_common/src/common/cache/least_recently_used_strategy.dart';
 
 void main() {
   group('MostRecentlyUsedStrategy', () {
@@ -11,7 +11,7 @@ void main() {
       Cache<String, Object> cache;
 
       setUp(() async {
-        cache = new Cache<String, Object>(new MostRecentlyUsedStrategy(i));
+        cache = new Cache<String, Object>(new LeastRecentlyUsedStrategy(i));
 
         // install expected item
         await cache.get(expectedId, () => expectedValue);
