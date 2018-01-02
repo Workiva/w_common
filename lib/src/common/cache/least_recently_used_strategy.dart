@@ -10,7 +10,7 @@ import 'package:w_common/cache.dart';
 class LeastRecentlyUsedStrategy<TIdentifier, TValue>
     extends CachingStrategy<TIdentifier, TValue> {
   /// [TIdentifier]s that have been released but not yet removed in order of most
-  /// to least frequently used.
+  /// to least recently used.
   final Queue<TIdentifier> _removalQueue = new Queue<TIdentifier>();
 
   /// The number of recently used [TIdentifier] [TValue] pairs to keep in the
@@ -45,9 +45,9 @@ class LeastRecentlyUsedStrategy<TIdentifier, TValue>
     // id has been released, add it to the front of the removal queue. If
     // necessary, the least recently used items will be removed in onDidRemove
     // which the cache will call after any pending async value factory
-    // associated with id completes. Items are added to the removal queue on the
-    // will rather than the did release to allow a get called before an async
-    // value factory completes to cancel an unnecessary removal.
+    // associated with id completes. Items are added to the removal queue in
+    // onWillRelease will rather than onDidRelease to allow a get called before
+    // an async value factory completes to cancel an unnecessary removal.
     if (!_removalQueue.contains(id)) {
       _removalQueue.addFirst(id);
     }

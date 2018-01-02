@@ -25,8 +25,8 @@ void main() {
       });
 
       test(
-          'release should remove released item after $i releases when storing $i '
-          'most recently used items', () async {
+          'release should remove released item after $i additional releases '
+          'when storing $i most recently used items', () async {
         cache.didRemove.listen(expectAsync1((context) {
           expect(context.id, expectedId);
           expect(context.value, expectedValue);
@@ -44,8 +44,8 @@ void main() {
 
       test(
           'release after a synchronous getAsync remove getAsync call should '
-          'remove released item after $i releases when storing $i most '
-          'recently used items', () async {
+          'remove released item after $i additional releases when storing $i '
+          'most recently used items', () async {
         cache.didRemove.listen(expectAsync1((context) {
           expect(context.id, expectedId);
           expect(context.value, expectedValue);
