@@ -46,8 +46,8 @@ class LeastRecentlyUsedStrategy<TIdentifier, TValue>
     // necessary, the least recently used items will be removed in onDidRemove
     // which the cache will call after any pending async value factory
     // associated with id completes. Items are added to the removal queue in
-    // onWillRelease will rather than onDidRelease to allow a get called before
-    // an async value factory completes to cancel an unnecessary removal.
+    // onWillRelease rather than onDidRelease to allow a get called before an
+    // async value factory completes to cancel an unnecessary removal.
     if (!_removalQueue.contains(id)) {
       _removalQueue.addFirst(id);
     }
