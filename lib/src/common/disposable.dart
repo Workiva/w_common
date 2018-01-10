@@ -251,7 +251,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   static void enableDebugMode() {
     if (!_debugMode) {
       _debugMode = true;
-      _logger = new Logger('Disposable');
+      _logger = new Logger('w_common.Disposable');
     }
   }
 
