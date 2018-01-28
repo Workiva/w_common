@@ -12,21 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export 'package:w_common/src/common/disposable_manager.dart'
+export 'package:w_common/src/common/disposable/disposable_manager.dart'
     show
-        // ignore: deprecated_member_use
-        DisposableManager,
-        // ignore: deprecated_member_use
-        DisposableManagerV2,
-        // ignore: deprecated_member_use
-        DisposableManagerV3,
-        // ignore: deprecated_member_use
-        DisposableManagerV4,
-        // ignore: deprecated_member_use
-        DisposableManagerV5,
-        // ignore: deprecated_member_use
-        DisposableManagerV6,
-        DisposableManagerV7,
-        ObjectDisposedException;
-export 'package:w_common/src/common/disposable.dart'
-    show Disposable, Disposer, ManagedDisposer;
+        DisposableManagerV7;
+export 'package:w_common/src/common/disposable/disposable.dart'
+    show Disposable;
+export 'package:w_common/src/common/disposable/disposer.dart'
+    show Disposer;
+export 'package:w_common/src/common/disposable/managed_disposer.dart'
+    show ManagedDisposer;
+export 'package:w_common/src/common/disposable/object_disposed_exception.dart'
+    show ObjectDisposedException;

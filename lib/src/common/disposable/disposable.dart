@@ -1,4 +1,4 @@
-// Copyright 2016 Workiva Inc.
+// Copyright 2017 Workiva Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,115 +18,16 @@ import 'dart:collection';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
-import 'package:w_common/src/common/disposable_manager.dart';
-import 'package:w_common/src/common/disposable_state.dart';
-import 'package:w_common/src/common/managed_stream_subscription.dart';
-
-// ignore: one_member_abstracts
-abstract class _Disposable {
-  Future<Null> dispose();
-}
-
-/// Used to invoke, and remove references to, a [Disposer] before disposal
-/// of the parent object.
-class ManagedDisposer implements _Disposable {
-  Disposer _disposer;
-  final Completer<Null> _didDispose = new Completer<Null>();
-  bool _isDisposing = false;
-
-  ManagedDisposer(this._disposer);
-
-  /// A [Future] that will complete when this object has been disposed.
-  Future<Null> get didDispose => _didDispose.future;
-
-  /// Whether this object has been disposed.
-  bool get isDisposed => _didDispose.isCompleted;
-
-  /// Whether this object has been disposed or is disposing.
-  ///
-  /// This will become `true` as soon as the [dispose] method is called
-  /// and will remain `true` forever. This is intended as a convenience
-  /// and `object.isDisposedOrDisposing` will always be the same as
-  /// `object.isDisposed || object.isDisposing`.
-  bool get isDisposedOrDisposing => isDisposed || isDisposing;
-
-  /// Whether this object is in the process of being disposed.
-  ///
-  /// This will become `true` as soon as the [dispose] method is called
-  /// and will become `false` once the [didDispose] future completes.
-  bool get isDisposing => _isDisposing;
-
-  /// Dispose of the object, cleaning up to prevent memory leaks.
-  @override
-  Future<Null> dispose() {
-    if (isDisposedOrDisposing) {
-      return didDispose;
-    }
-    _isDisposing = true;
-
-    var disposeFuture = _disposer != null
-        ? (_disposer() ?? new Future.value())
-        : new Future.value();
-    _disposer = null;
-
-    return disposeFuture.then((_) {
-      _disposer = null;
-      _didDispose.complete();
-      _isDisposing = false;
-    });
-  }
-}
-
-/// A [Timer] implementation that exposes a [Future] that resolves when a
-/// non-periodic timer finishes it's callback or when any type of [Timer] is
-/// cancelled.
-class _ObservableTimer implements Timer {
-  Completer<Null> _didConclude = new Completer<Null>();
-  Timer _timer;
-
-  _ObservableTimer(Duration duration, void callback()) {
-    _timer = new Timer(duration, () {
-      callback();
-      _complete();
-    });
-  }
-
-  _ObservableTimer.periodic(Duration duration, void callback(Timer t)) {
-    _timer = new Timer.periodic(duration, callback);
-  }
-
-  void _complete() {
-    if (!_didConclude.isCompleted) {
-      _didConclude.complete();
-    }
-  }
-
-  /// The timer has either been completed or has been cancelled.
-  Future<Null> get didConclude => _didConclude.future;
-
-  @override
-  void cancel() {
-    _timer.cancel();
-    _complete();
-  }
-
-  @override
-  bool get isActive => _timer.isActive;
-}
-
-/// A class used as a marker for potential memory leaks.
-class LeakFlag {
-  final String description;
-
-  LeakFlag(this.description);
-
-  @override
-  String toString() =>
-      description == null ? 'LeakFlag' : 'LeakFlag: $description';
-}
-
-/// A function that, when called, disposes of one or more objects.
-typedef Future<dynamic> Disposer();
+import 'package:w_common/src/common/disposable/disposable_base.dart';
+import 'package:w_common/src/common/disposable/disposable_manager.dart';
+import 'package:w_common/src/common/disposable/disposable_state.dart';
+import 'package:w_common/src/common/disposable/disposer.dart';
+import 'package:w_common/src/common/disposable/leak_flag.dart';
+import 'package:w_common/src/common/disposable/leak_flagger.dart';
+import 'package:w_common/src/common/disposable/managed_disposer.dart';
+import 'package:w_common/src/common/disposable/managed_stream_subscription.dart';
+import 'package:w_common/src/common/disposable/object_disposed_exception.dart';
+import 'package:w_common/src/common/disposable/observable_timer.dart';
 
 /// Allows the creation of managed objects, including helpers for common
 /// patterns.
@@ -231,7 +132,7 @@ typedef Future<dynamic> Disposer();
 /// without explicit reference to [Disposable]. To do this, we use
 /// composition to include the [Disposable] machinery without changing
 /// the public interface of our class or polluting its lifecycle.
-class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
+class Disposable implements DisposableBase, DisposableManagerV7, LeakFlagger {
   static bool _debugMode = false;
   static Logger _logger;
 
@@ -258,7 +159,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   final _awaitableFutures = new HashSet<Future>();
   final _didDispose = new Completer<Null>();
   LeakFlag _leakFlag;
-  final _internalDisposables = new HashSet<_Disposable>();
+  final _internalDisposables = new HashSet<DisposableBase>();
   DisposableState _state = DisposableState.initialized;
 
   /// A [Future] that will complete when this object has been disposed.
@@ -431,7 +332,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
         'getManagedDelayedFuture', 'duration', 'callback', duration, callback);
     var completer = new Completer<T>();
     var timer =
-        new _ObservableTimer(duration, () => completer.complete(callback()));
+        new ObservableTimer(duration, () => completer.complete(callback()));
     var disposable = new ManagedDisposer(() async {
       timer.cancel();
       completer.completeError(new ObjectDisposedException());
@@ -474,7 +375,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   Timer getManagedTimer(Duration duration, void callback()) {
     _throwOnInvalidCall2(
         'getManagedTimer', 'duration', 'callback', duration, callback);
-    var timer = new _ObservableTimer(duration, callback);
+    var timer = new ObservableTimer(duration, callback);
     _addObservableTimerDisposable(timer);
     return timer;
   }
@@ -484,7 +385,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer)) {
     _throwOnInvalidCall2(
         'getManagedPeriodicTimer', 'duration', 'callback', duration, callback);
-    var timer = new _ObservableTimer.periodic(duration, callback);
+    var timer = new ObservableTimer.periodic(duration, callback);
     _addObservableTimerDisposable(timer);
     return timer;
   }
@@ -655,7 +556,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     return null;
   }
 
-  void _addObservableTimerDisposable(_ObservableTimer timer) {
+  void _addObservableTimerDisposable(ObservableTimer timer) {
     ManagedDisposer disposable =
         new ManagedDisposer(() async => timer.cancel());
     _internalDisposables.add(disposable);

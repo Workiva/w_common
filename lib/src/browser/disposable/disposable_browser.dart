@@ -18,9 +18,11 @@ import 'dart:html';
 import 'package:meta/meta.dart';
 import 'package:w_common/func.dart';
 
-import 'package:w_common/src/common/disposable.dart' as disposable_common;
+import 'package:w_common/src/common/disposable/disposable.dart' as disposable;
+import 'package:w_common/src/common/disposable/disposer.dart' as disposer;
+import 'package:w_common/src/common/disposable/managed_disposer.dart' as managed_disposer;
 
-class _InnerDisposable extends disposable_common.Disposable {
+class _InnerDisposable extends disposable.Disposable {
   Func<Future<Null>> onDisposeHandler;
   Func<Future<Null>> onWillDisposeHandler;
 
@@ -124,17 +126,17 @@ class _InnerDisposable extends disposable_common.Disposable {
 /// without explicit reference to [Disposable]. To do this, we use
 /// composition to include the [Disposable] machinery without changing
 /// the public interface of our class or polluting its lifecycle.
-class Disposable implements disposable_common.Disposable {
+class Disposable implements disposable.Disposable {
   /// Disables logging enabled by [enableDebugMode].
   static void disableDebugMode() =>
-      disposable_common.Disposable.disableDebugMode();
+      disposable.Disposable.disableDebugMode();
 
   /// Causes messages to be logged for various lifecycle and management events.
   ///
   /// This should only be used for debugging and profiling as it can result
   /// in a huge number of messages being generated.
   static void enableDebugMode() =>
-      disposable_common.Disposable.enableDebugMode();
+      disposable.Disposable.enableDebugMode();
 
   final _InnerDisposable _disposable = new _InnerDisposable();
 
@@ -204,12 +206,12 @@ class Disposable implements disposable_common.Disposable {
           onError: onError, onDone: onDone, cancelOnError: cancelOnError);
 
   @override
-  disposable_common.Disposable manageAndReturnDisposable(
-          disposable_common.Disposable disposable) =>
+  disposable.Disposable manageAndReturnDisposable(
+          disposable.Disposable disposable) =>
       _disposable.manageAndReturnDisposable(disposable);
 
   @override
-  T manageAndReturnTypedDisposable<T extends disposable_common.Disposable>(
+  T manageAndReturnTypedDisposable<T extends disposable.Disposable>(
           T disposable) =>
       _disposable.manageAndReturnTypedDisposable(disposable);
 
@@ -218,17 +220,17 @@ class Disposable implements disposable_common.Disposable {
       _disposable.manageCompleter(completer);
 
   @override
-  void manageDisposable(disposable_common.Disposable disposable) =>
+  void manageDisposable(disposable.Disposable disposable) =>
       _disposable.manageDisposable(disposable);
 
   @deprecated
   @override
-  void manageDisposer(disposable_common.Disposer disposer) =>
+  void manageDisposer(disposer.Disposer disposer) =>
       _disposable.manageDisposer(disposer);
 
   @override
-  disposable_common.ManagedDisposer getManagedDisposer(
-          disposable_common.Disposer disposer) =>
+  managed_disposer.ManagedDisposer getManagedDisposer(
+          disposer.Disposer disposer) =>
       _disposable.getManagedDisposer(disposer);
 
   @override
