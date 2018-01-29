@@ -421,11 +421,24 @@ class Disposable implements DisposableBase, DisposableManagerV7, LeakFlagger {
 
   @mustCallSuper
   @override
-  Disposable manageAndReturnDisposable(Disposable disposable) {
+  Completer<T> manageAndReturnCompleter<T>(Completer<T> completer) {
+    return manageCompleter(completer);
+  }
+
+  @mustCallSuper
+  @override
+  T manageAndReturnDisposable<T extends Disposable>(T disposable) {
     _throwOnInvalidCall('manageAndReturnDisposable', 'disposable', disposable);
     manageDisposable(disposable);
 
     return disposable;
+  }
+
+  @mustCallSuper
+  @override
+  StreamController<T> manageAndReturnStreamController<T>(StreamController<T> controller) {
+    manageStreamController(controller);
+    return controller;
   }
 
   @mustCallSuper
