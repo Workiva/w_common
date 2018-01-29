@@ -13,12 +13,9 @@
 // limitations under the License.
 
 export 'package:w_common/src/common/disposable/disposable_manager.dart'
-    show
-        DisposableManagerV7;
-export 'package:w_common/src/common/disposable/disposable.dart'
-    show Disposable;
-export 'package:w_common/src/common/disposable/disposer.dart'
-    show Disposer;
+    show DisposableManagerV7;
+export 'package:w_common/src/common/disposable/disposable.dart' show Disposable;
+export 'package:w_common/src/common/disposable/disposer.dart' show Disposer;
 export 'package:w_common/src/common/disposable/managed_disposer.dart'
     show ManagedDisposer;
 export 'package:w_common/src/common/disposable/object_disposed_exception.dart'

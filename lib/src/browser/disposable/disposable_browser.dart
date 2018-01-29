@@ -20,7 +20,8 @@ import 'package:w_common/func.dart';
 
 import 'package:w_common/src/common/disposable/disposable.dart' as disposable;
 import 'package:w_common/src/common/disposable/disposer.dart' as disposer;
-import 'package:w_common/src/common/disposable/managed_disposer.dart' as managed_disposer;
+import 'package:w_common/src/common/disposable/managed_disposer.dart'
+    as managed_disposer;
 
 class _InnerDisposable extends disposable.Disposable {
   Func<Future<Null>> onDisposeHandler;
@@ -128,15 +129,13 @@ class _InnerDisposable extends disposable.Disposable {
 /// the public interface of our class or polluting its lifecycle.
 class Disposable implements disposable.Disposable {
   /// Disables logging enabled by [enableDebugMode].
-  static void disableDebugMode() =>
-      disposable.Disposable.disableDebugMode();
+  static void disableDebugMode() => disposable.Disposable.disableDebugMode();
 
   /// Causes messages to be logged for various lifecycle and management events.
   ///
   /// This should only be used for debugging and profiling as it can result
   /// in a huge number of messages being generated.
-  static void enableDebugMode() =>
-      disposable.Disposable.enableDebugMode();
+  static void enableDebugMode() => disposable.Disposable.enableDebugMode();
 
   final _InnerDisposable _disposable = new _InnerDisposable();
 
@@ -206,9 +205,17 @@ class Disposable implements disposable.Disposable {
           onError: onError, onDone: onDone, cancelOnError: cancelOnError);
 
   @override
-  disposable.Disposable manageAndReturnDisposable(
-          disposable.Disposable disposable) =>
+  T manageAndReturnDisposable<T extends disposable.Disposable>(T disposable) =>
       _disposable.manageAndReturnDisposable(disposable);
+
+  @override
+  Completer<T> manageAndReturnCompleter<T>(Completer<T> completer) =>
+      _disposable.manageAndReturnCompleter(completer);
+
+  @override
+  StreamController<T> manageAndReturnStreamController<T>(
+          StreamController<T> controller) =>
+      _disposable.manageAndReturnStreamController(controller);
 
   @override
   T manageAndReturnTypedDisposable<T extends disposable.Disposable>(

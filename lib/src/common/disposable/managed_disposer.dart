@@ -66,4 +66,3 @@ class ManagedDisposer implements DisposableBase {
     });
   }
 }
-

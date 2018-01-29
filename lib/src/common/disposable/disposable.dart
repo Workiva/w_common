@@ -436,7 +436,8 @@ class Disposable implements DisposableBase, DisposableManagerV7, LeakFlagger {
 
   @mustCallSuper
   @override
-  StreamController<T> manageAndReturnStreamController<T>(StreamController<T> controller) {
+  StreamController<T> manageAndReturnStreamController<T>(
+      StreamController<T> controller) {
     manageStreamController(controller);
     return controller;
   }
