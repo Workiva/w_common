@@ -145,7 +145,8 @@ typedef Future<dynamic> Disposer();
 ///
 /// In the case below, the class is used as a mixin. This provides both
 /// default implementations and flexibility since it does not occupy
-/// a spot in the class hierarchy.
+/// a spot in the class hierarchy. However, consumers should use caution
+/// if they choose to employ this pattern.
 ///
 /// Helper methods, such as [listenToStream] allow certain
 /// cleanup to be automated. Managed subscriptions will be automatically
