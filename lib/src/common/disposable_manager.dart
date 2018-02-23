@@ -320,6 +320,32 @@ abstract class DisposableManagerV7 implements DisposableManagerV6 {
   T manageAndReturnTypedDisposable<T extends Disposable>(T disposable);
 }
 
+/// Managers for disposable members.
+///
+/// This interface allows consumers to exercise more control over how
+/// disposal is implemented for their classes.
+///
+/// When new management methods are to be added, they should be added
+/// here first, then implemented in [Disposable].
+// ignore: deprecated_member_use
+abstract class DisposableManagerV8 implements DisposableManagerV7 {
+  /// Returns a [StreamSubscription] which handles events from the stream using
+  /// the provided [onData], [onError] and [onDone] handlers in the case
+  /// where the actual [onData] callback provided doesn't need the stream
+  /// payload.
+  ///
+  /// Consult documentation for Stream.listen for more info.
+  ///
+  /// If the returned `StreamSubscription` is cancelled manually (i.e. canceled
+  /// before disposal of the parent object) [Disposable] will clean up the
+  /// internal reference allowing the subscription to be garbage collected.
+  ///
+  /// Neither parameter may be `null`.
+  StreamSubscription<T> listenToStreamWithoutPayload<T>(
+      Stream<T> stream, void onData(),
+      {Function onError, void onDone(), bool cancelOnError});
+}
+
 /// An interface that allows a class to flag potential leaks by marking
 /// itself with a particular class when it is disposed.
 abstract class LeakFlagger {

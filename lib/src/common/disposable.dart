@@ -232,7 +232,7 @@ typedef Future<dynamic> Disposer();
 /// without explicit reference to [Disposable]. To do this, we use
 /// composition to include the [Disposable] machinery without changing
 /// the public interface of our class or polluting its lifecycle.
-class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
+class Disposable implements _Disposable, DisposableManagerV8, LeakFlagger {
   static bool _debugMode = false;
   static Logger _logger;
 
@@ -517,6 +517,14 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     });
 
     return managedStreamSubscription;
+  }
+
+  @override
+  StreamSubscription<T> listenToStreamWithoutPayload<T>(
+      Stream<T> stream, void onData(),
+      {Function onError, void onDone(), bool cancelOnError}) {
+    return listenToStream(stream, (dynamic _) => onData(),
+        onError: onError, onDone: onDone, cancelOnError: cancelOnError);
   }
 
   @mustCallSuper

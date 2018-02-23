@@ -212,6 +212,13 @@ class Disposable implements disposable_common.Disposable {
           onError: onError, onDone: onDone, cancelOnError: cancelOnError);
 
   @override
+  StreamSubscription<T> listenToStreamWithoutPayload<T>(
+          Stream<T> stream, void onData(),
+          {Function onError, void onDone(), bool cancelOnError}) =>
+      _disposable.listenToStreamWithoutPayload(stream, onData,
+          onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+
+  @override
   disposable_common.Disposable manageAndReturnDisposable(
           disposable_common.Disposable disposable) =>
       _disposable.manageAndReturnDisposable(disposable);
