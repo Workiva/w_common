@@ -112,6 +112,12 @@ class _ObservableTimer implements Timer {
 
   @override
   bool get isActive => _timer.isActive;
+
+  @override
+  int get tick => _timer.tick; // Dart2 only
+  //int get tick => 0; // Works for Dart1 & 2, but will this break something about timers?
+  // can we re-implement the tick value correctly? Should we inject our own zone handler for
+  // timer creation to call the complete method?
 }
 
 /// A class used as a marker for potential memory leaks.
