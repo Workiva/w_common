@@ -114,10 +114,12 @@ class _ObservableTimer implements Timer {
   bool get isActive => _timer.isActive;
 
   @override
-  int get tick => _timer.tick; // Dart2 only
-  //int get tick => 0; // Works for Dart1 & 2, but will this break something about timers?
-  // can we re-implement the tick value correctly? Should we inject our own zone handler for
-  // timer creation to call the complete method?
+  int get tick {
+      // TODO: Once fully transitioned to Dart 2 just return
+      // the tick value from our internal timer
+      // return _timer.tick;
+      throw new UnsupportedError('Timer.tick is unsupported');
+  }
 }
 
 /// A class used as a marker for potential memory leaks.
