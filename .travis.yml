@@ -3,7 +3,8 @@ sudo: required
 
 dart:
   - 1.24.3
-  - 2.0.0-dev.32.0
+  - stable
+  - dev
 addons:
   apt:
     packages:
