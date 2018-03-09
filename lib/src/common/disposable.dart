@@ -112,6 +112,14 @@ class _ObservableTimer implements Timer {
 
   @override
   bool get isActive => _timer.isActive;
+
+  @override
+  int get tick {
+    // TODO: Once fully transitioned to Dart 2 just return
+    // the tick value from our internal timer
+    // return _timer.tick;
+    throw new UnsupportedError('Timer.tick is unsupported');
+  }
 }
 
 /// A class used as a marker for potential memory leaks.
