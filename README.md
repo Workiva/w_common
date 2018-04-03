@@ -1,4 +1,4 @@
-# w_common
+# w_common (Test)
 
 A collection of helpful utilities for use in Dart projects. Right now, it
 includes the following:
