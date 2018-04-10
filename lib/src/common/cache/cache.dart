@@ -294,6 +294,47 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     return new Future.value();
   }
 
+  /// Provides access to a value stored in the cache without informing the
+  /// caching strategy of a get; therefore not preventing a future removal of the
+  /// [TValue] [TIdentifier] pair.
+  ///
+  /// This can be thought of as a weak reference to something in the cache,
+  /// having one out will not prevent an item from being removed from the cache.
+  /// This is ideally used to create a reference with a lifetime that you know
+  /// will not exceed that of the item in the cache itself. For example this
+  /// would be a very bad consumption pattern:
+  /// (lifetime of cached item and reference are indicated)
+  ///
+  ///     var cache = new Cache<String, Disposable>(new LeastRecentlyUsedStrategy(0));
+  ///     cache.didRemove.listen((CacheContext context) => context.value.dispose());
+  ///     cache.get('thing', () => new Disposable());                                  -
+  ///                                                                                   |
+  ///     var danglingReference = await cache.weakGet('thing');                         | -
+  ///                                                                                   |  |
+  ///     await cache.release('thing');                                                -   |
+  ///     // Await a random future to ensure that the callback registered on didRemove     |
+  ///     // is called.                                                                    |
+  ///     await new Future((){});                                                          |
+  ///                                                                                      |
+  ///     // This will throw because the instance associated with 'thing' has been         |
+  ///     // removed from the cache and disposed on the didRemove callback.                .
+  ///     danglingReference.manageDisposable(new Disposable());                            .
+  ///                                                                                      .
+  /// An ideal consumption pattern would look something like:
+  /// (lifetime of cached item and reference are indicated)
+  ///
+  ///     var cache = new Cache<String, Disposable>(new LeastRecentlyUsedStrategy(0));
+  ///     cache.get('thing', () => new Disposable());                              -
+  ///                                                                               |
+  ///     // The lifetime of the reference exists within the addition and removal   |
+  ///     // from the cache                                                         |
+  ///     (await cache.weakGet('thing')).manageDisposable(new Disposable());        | -
+  ///                                                                               |
+  ///     await cache.release('thing');                                            _
+  Future<TValue> weakGet(TIdentifier id) {
+    return _cache[id];
+  }
+
   void _throwWhenDisposed(String op) {
     if (isOrWillBeDisposed) {
       throw new StateError('Cannot $op when Cache is disposed');
