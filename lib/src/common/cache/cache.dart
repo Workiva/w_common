@@ -172,7 +172,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
   @mustCallSuper
   Future<TValue> get(TIdentifier id, Func<TValue> valueFactory) {
-    _log.finest("get id: $id");
+    _log.finest('get id: $id');
     _throwWhenDisposed('get');
     _cachingStrategy.onWillGet(id);
     // Await any pending cached futures
@@ -230,7 +230,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
   @mustCallSuper
   Future<TValue> getAsync(TIdentifier id, Func<Future<TValue>> valueFactory) {
-    _log.finest("getAsync id: $id");
+    _log.finest('getAsync id: $id');
     _throwWhenDisposed('getAsync');
     _cachingStrategy.onWillGet(id);
     // Await any pending cached futures
@@ -257,7 +257,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// the current [CachingStrategy].
   @mustCallSuper
   Future<Null> release(TIdentifier id) {
-    _log.finest("release id: $id");
+    _log.finest('release id: $id');
     _throwWhenDisposed('release');
     // Await any pending cached futures
     if (_cache.containsKey(id)) {
@@ -284,7 +284,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
   @mustCallSuper
   Future<Null> remove(TIdentifier id) {
-    _log.finest("remove id: $id");
+    _log.finest('remove id: $id');
     _throwWhenDisposed('remove');
     if (_cache.containsKey(id)) {
       _cachingStrategy.onWillRemove(id);
@@ -357,7 +357,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   ///     }
   Future<TValue> weakGet(TIdentifier id) {
     _throwWhenDisposed('weakGet');
-    _log.finest("weakGet id: $id");
+    _log.finest('weakGet id: $id');
     return _cache[id];
   }
 
