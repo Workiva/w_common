@@ -130,6 +130,26 @@ void main() {
       });
     });
 
+    group('weakGet', () {
+      test('should return cached value when identifier is cached', () async {
+        final value = await cache.weakGet(cachedId);
+        expect(value, same(cachedValue));
+      });
+
+      test('should not call onDidGet', () async {
+        final mockCachingStrategy = new MockCachingStrategy();
+        final childCache = new Cache<String, Object>(mockCachingStrategy);
+        await childCache.weakGet(cachedId);
+
+        verifyNever(mockCachingStrategy.onDidGet(cachedId, cachedValue));
+      });
+
+      test('should throw when disposed', () async {
+        await cache.dispose();
+        expect(() => cache.get(cachedId, () => cachedValue), throwsStateError);
+      });
+    });
+
     group('containsKey', () {
       test('should return false when identifier has not been cached', () {
         expect(cache.containsKey(notCachedId), isFalse);

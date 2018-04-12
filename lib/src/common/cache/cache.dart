@@ -87,7 +87,7 @@ class CachingStrategy<TIdentifier, TValue> {
 /// References are retained for the lifecycle of the instance of the [Cache],
 /// unless explicitly removed.
 class Cache<TIdentifier, TValue> extends Object with Disposable {
-  final Logger _log = new Logger('Cache');
+  final Logger _log = new Logger('w_common.Cache');
 
   /// The backing store for values in the [Cache].
   Map<TIdentifier, Future<TValue>> _cache = <TIdentifier, Future<TValue>>{};
@@ -312,11 +312,11 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// object that is known to be in the cache.
   ///
   /// This ideally shouldn't be used to create a reference with a lifetime that
-  /// will exceed the time an item exists in the cache. For example this would be
+  /// will exceed the time the item exists in the cache. For example this would be
   /// a bad consumption pattern:
   ///
-  /// (when a reference created with [weakGet] would be alive and when an item
-  /// will be in the cache highlighted on the right).
+  /// The delineation to the right of the code indicates when an item will be in
+  /// the cache and when a reference created with [weakGet] would be alive.
   ///
   ///     var cache = new Cache<String, Disposable>(new LeastRecentlyUsedStrategy(0));
   ///     cache.didRemove.listen((CacheContext context) => context.value.dispose());
@@ -333,7 +333,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   ///     // removed from the cache and disposed on the didRemove callback.             ┃
   ///     danglingReference.manageDisposable(new Disposable());                         ┋
   ///
-  /// An usual consumption pattern would look something like:
+  /// A usual consumption pattern would look something like:
   ///
   ///     class Things {
   ///       Cache<String, Thing> _cache =
@@ -356,6 +356,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   ///       }
   ///     }
   Future<TValue> weakGet(TIdentifier id) {
+    _throwWhenDisposed('weakGet');
     _log.finest("weakGet id: $id");
     return _cache[id];
   }
