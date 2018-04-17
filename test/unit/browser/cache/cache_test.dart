@@ -130,26 +130,6 @@ void main() {
       });
     });
 
-    group('weakGet', () {
-      test('should return cached value when identifier is cached', () async {
-        final value = await cache.weakGet(cachedId);
-        expect(value, same(cachedValue));
-      });
-
-      test('should not call onDidGet', () async {
-        final mockCachingStrategy = new MockCachingStrategy();
-        final childCache = new Cache<String, Object>(mockCachingStrategy);
-        await childCache.weakGet(cachedId);
-
-        verifyNever(mockCachingStrategy.onDidGet(cachedId, cachedValue));
-      });
-
-      test('should throw when disposed', () async {
-        await cache.dispose();
-        expect(() => cache.get(cachedId, () => cachedValue), throwsStateError);
-      });
-    });
-
     group('containsKey', () {
       test('should return false when identifier has not been cached', () {
         expect(cache.containsKey(notCachedId), isFalse);
@@ -172,6 +152,12 @@ void main() {
         expect(cache.containsKey(notCachedId), isTrue);
         cache.remove(notCachedId);
         expect(cache.containsKey(notCachedId), isFalse);
+      });
+
+      test('should return false when identifier has been released', () {
+        expect(cache.containsKey(cachedId), isTrue);
+        cache.release(cachedId);
+        expect(cache.containsKey(cachedId), isFalse);
       });
 
       test('should throw when disposed', () async {
@@ -360,6 +346,99 @@ void main() {
       test('should throw when disposed', () async {
         await cache.dispose();
         expect(() => cache.release(cachedId), throwsStateError);
+      });
+    });
+
+    group('keys', () {
+      test('should not provide access to released keys', () {
+        // Ensure that cached item is not removed
+        cache.didRemove
+            .listen(expectAsync1((CacheContext context) {}, count: 0));
+
+        expect(cache.keys, contains(cachedId));
+        cache.release(cachedId);
+        expect(cache.keys.contains(cachedId), isFalse);
+      });
+
+      test('should not provide access to released keys when release is awaited',
+          () async {
+        // Ensure that cached item is not removed
+        cache.didRemove
+            .listen(expectAsync1((CacheContext context) {}, count: 0));
+
+        expect(cache.keys, contains(cachedId));
+        await cache.release(cachedId);
+        expect(cache.keys.contains(cachedId), isFalse);
+      });
+    });
+
+    group('values', () {
+      test('should not provide access to released values', () async {
+        // Ensure that cached item is not removed
+        cache.didRemove
+            .listen(expectAsync1((CacheContext context) {}, count: 0));
+
+        expect(await cache.values, contains(cachedValue));
+        // ignore: unawaited_futures
+        cache.release(cachedId);
+        expect((await cache.values).contains(cachedValue), isFalse);
+      });
+
+      test(
+          'should not provide access to released values when release is awaited',
+          () async {
+        // Ensure that cached item is not removed
+        cache.didRemove
+            .listen(expectAsync1((CacheContext context) {}, count: 0));
+
+        expect(await cache.values, contains(cachedValue));
+        await cache.release(cachedId);
+        expect((await cache.values).contains(cachedValue), isFalse);
+      });
+    });
+
+    group('applyToItem', () {
+      test('should return false if item is not in the cache', () {
+        expect(cache.applyToItem(notCachedId, (_) {}), isFalse);
+      });
+
+      test('should return true if item is in the cache', () {
+        expect(cache.applyToItem(cachedId, (_) {}), isTrue);
+      });
+
+      test('should not run callback if item is not in the cache', () {
+        var calbackRan = false;
+        cache.applyToItem(notCachedId, (_) {
+          calbackRan = true;
+        });
+
+        expect(calbackRan, isFalse);
+      });
+
+      test('should run callback if item is in the cache', () {
+        var calbackRan = false;
+        cache.applyToItem(cachedId, (_) {
+          calbackRan = true;
+        });
+
+        expect(calbackRan, isTrue);
+      });
+
+      test('should not run callback if item is in but released from the cache',
+          () {
+        var calbackRan = false;
+        cache
+          ..release(cachedId)
+          ..applyToItem(cachedId, (_) {
+            calbackRan = true;
+          });
+
+        expect(calbackRan, isFalse);
+      });
+
+      test('should throw when disposed', () async {
+        await cache.dispose();
+        expect(() => cache.applyToItem(cachedId, (_) {}), throwsStateError);
       });
     });
   });

@@ -82,7 +82,13 @@ class CachingStrategy<TIdentifier, TValue> {
   void onWillRemove(TIdentifier id) {}
 }
 
-/// Maintains a reference to a given [TValue] associated with a [TIdentifier].
+/// An abstraction over [Map] that helps avoid paying construction costs for
+/// expensive objects.
+///
+/// Objects are created or existing ones returned with [get] or its async
+/// equivalent [getAsync] and marked as eligible for removal with [release]. If
+/// the [TValue] stored requires some sort of destruction this should be done in
+/// a callback registered with the [didRemove] stream.
 ///
 /// References are retained for the lifecycle of the instance of the [Cache],
 /// unless explicitly removed.
@@ -91,6 +97,8 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
 
   /// The backing store for values in the [Cache].
   Map<TIdentifier, Future<TValue>> _cache = <TIdentifier, Future<TValue>>{};
+
+  Map<TIdentifier, bool> _isReleased = <TIdentifier, bool>{};
 
   /// The current caching strategy, set at construction.
   final CachingStrategy<TIdentifier, TValue> _cachingStrategy;
@@ -131,16 +139,19 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   Stream<CacheContext<TIdentifier, TValue>> get didUpdate =>
       _didUpdateController.stream;
 
-  Iterable<TIdentifier> get keys => _cache.keys;
+  Iterable<TIdentifier> get keys =>
+      _cache.keys.where((TIdentifier key) => !_isReleased[key]);
 
-  Future<Iterable<TValue>> get values => Future.wait(_cache.values);
+  Future<Iterable<TValue>> get values => Future.wait(_cache.keys
+      .where((TIdentifier key) => !_isReleased[key])
+      .map((TIdentifier key) => _cache[key]));
 
   /// Does the [Cache] contain the given [TIdentifier]?
   ///
   /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
   bool containsKey(TIdentifier id) {
     _throwWhenDisposed('determine if identifier is cached');
-    return _cache.containsKey(id);
+    return _cache.containsKey(id) && !_isReleased[id];
   }
 
   /// Returns a value from the cache for a given [TIdentifier].
@@ -175,6 +186,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     _log.finest('get id: $id');
     _throwWhenDisposed('get');
     _cachingStrategy.onWillGet(id);
+    _isReleased[id] = false;
     // Await any pending cached futures
     if (_cache.containsKey(id)) {
       return _cache[id].then((TValue value) async {
@@ -232,6 +244,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   Future<TValue> getAsync(TIdentifier id, Func<Future<TValue>> valueFactory) {
     _log.finest('getAsync id: $id');
     _throwWhenDisposed('getAsync');
+    _isReleased[id] = false;
     _cachingStrategy.onWillGet(id);
     // Await any pending cached futures
     if (_cache.containsKey(id)) {
@@ -255,10 +268,21 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   ///
   /// The decision of whether or not to actually remove the value will be up to
   /// the current [CachingStrategy].
+  ///
+  /// Release indicates that consuming code has finished with the [TIdentifier]
+  /// [TValue] pair associated with [id]. This pair may be removed immediately or
+  /// in time depending on the [CachingStrategy]. Access to the pair will be
+  /// blocked immediately, i.e. the [keys] and [values] getters won't report this
+  /// item, even if the pair isn't immediately removed from the cache. A [get] or
+  /// [getAsync] must be performed to mark the item as not eligible for removal
+  /// and live in the cache again.
+  ///
+  /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
   @mustCallSuper
   Future<Null> release(TIdentifier id) {
     _log.finest('release id: $id');
     _throwWhenDisposed('release');
+    _isReleased[id] = true;
     // Await any pending cached futures
     if (_cache.containsKey(id)) {
       _cachingStrategy.onWillRelease(id);
@@ -286,6 +310,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   Future<Null> remove(TIdentifier id) {
     _log.finest('remove id: $id');
     _throwWhenDisposed('remove');
+    _isReleased.remove(id);
     if (_cache.containsKey(id)) {
       _cachingStrategy.onWillRemove(id);
       final removedValue = _cache.remove(id);
@@ -301,64 +326,23 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     return new Future.value();
   }
 
-  /// Provides access to a value stored in the cache without informing the
-  /// [CachingStrategy] of a get.
+  /// Run [callback] on [TValue] associated with [id].
   ///
-  /// [weakGet] can be thought of sort of like a weak reference when working with
-  /// a garbage collector. [weakGet] won't prevent removal of a [TValue]
-  /// [TIdentifier] pair from the [Cache], [get] or [getAsync] will. In other
-  /// words, it's a get that behaves like `Map`'s does rather than the way
-  /// [Cache]'s does. This can be convenient, for example, when mutating an
-  /// object that is known to be in the cache.
+  /// If [TIdentifier] [TValue] pair found runs [callback] and returns true,
+  /// otherwise returns false. Will not run on released items and does not
+  /// perform a [get] or [getAsync]. As [get] or [getAsync] are not performed
+  /// calling [applyToItem] will not affect retention or removal of a
+  /// [TIdentifier][TValue] pair from the cache.
   ///
-  /// This ideally shouldn't be used to create a reference with a lifetime that
-  /// will exceed the time the item exists in the cache. For example this would be
-  /// a bad consumption pattern:
-  ///
-  /// The delineation to the right of the code indicates when an item will be in
-  /// the cache and when a reference created with [weakGet] would be alive.
-  ///
-  ///     var cache = new Cache<String, Disposable>(new LeastRecentlyUsedStrategy(0));
-  ///     cache.didRemove.listen((CacheContext context) => context.value.dispose());
-  ///     cache.get('thing', () => new Disposable());                                  ┓
-  ///                                                                                  ┃
-  ///     var danglingReference = await cache.weakGet('thing');                        ┃┓
-  ///                                                                                  ┃┃
-  ///     await cache.release('thing');                                                ┛┃
-  ///     // Await a random future to ensure that the callback registered on didRemove  ┃
-  ///     // is called.                                                                 ┃
-  ///     await new Future((){});                                                       ┃
-  ///                                                                                   ┃
-  ///     // This will throw because the instance associated with 'thing' has been      ┃
-  ///     // removed from the cache and disposed on the didRemove callback.             ┃
-  ///     danglingReference.manageDisposable(new Disposable());                         ┋
-  ///
-  /// A usual consumption pattern would look something like:
-  ///
-  ///     class Things {
-  ///       Cache<String, Thing> _cache =
-  ///           new Cache<String, Thing>(new LeastRecentlyUsedStrategy(10));
-  ///
-  ///       Future<Null> createAThing(String id) async {
-  ///         await _cache.get(id, heavyThingCreation);
-  ///       }
-  ///
-  ///       /// It is expected that consumers of [Things] will call [createAThing], before
-  ///       /// [mutateAThing].
-  ///       Future<Null> mutateAThing(String id) async {
-  ///         // Using a weak get here rather than a full get will prevent unintentional
-  ///         // retention in the case where mutateAThing is called after removeAThing
-  ///         (await _cache.weakGet(id)).mutate();
-  ///       }
-  ///
-  ///       void removeAThing(String id) {
-  ///         _cache.release(id);
-  ///       }
-  ///     }
-  Future<TValue> weakGet(TIdentifier id) {
-    _throwWhenDisposed('weakGet');
-    _log.finest('weakGet id: $id');
-    return _cache[id];
+  /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
+  bool applyToItem(TIdentifier id, void callback(Future<TValue> value)) {
+    _log.finest('applyToItem id: $id');
+    _throwWhenDisposed('applyToItem');
+    if (_isReleased[id] != false) {
+      return false;
+    }
+    callback(_cache[id]);
+    return true;
   }
 
   void _throwWhenDisposed(String op) {
