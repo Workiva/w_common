@@ -86,7 +86,7 @@ class CachingStrategy<TIdentifier, TValue> {
 /// An abstraction over [Map] that helps avoid paying construction costs for
 /// expensive objects.
 ///
-/// Objects are created or existing ones returned with [get] or its async
+/// Objects are created or existing ones returned with [get] or its `async`
 /// equivalent [getAsync] and marked as eligible for removal with [release]. If
 /// the [TValue] stored requires some sort of destruction this should be done in
 /// a callback registered with the [didRemove] stream.
@@ -97,9 +97,11 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   final Logger _log = new Logger('w_common.Cache');
 
   /// The backing store for values in the [Cache].
-  Map<TIdentifier, Future<TValue>> _cache = <TIdentifier, Future<TValue>>{};
+  final Map<TIdentifier, Future<TValue>> _cache =
+      <TIdentifier, Future<TValue>>{};
 
-  Map<TIdentifier, bool> _isReleased = <TIdentifier, bool>{};
+  /// Whether a given identifier has been released.
+  final Map<TIdentifier, bool> _isReleased = <TIdentifier, bool>{};
 
   /// The current caching strategy, set at construction.
   final CachingStrategy<TIdentifier, TValue> _cachingStrategy;
@@ -143,9 +145,8 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   Iterable<TIdentifier> get keys =>
       _cache.keys.where((TIdentifier key) => !_isReleased[key]);
 
-  Future<Iterable<TValue>> get values => Future.wait(_cache.keys
-      .where((TIdentifier key) => !_isReleased[key])
-      .map((TIdentifier key) => _cache[key]));
+  Future<Iterable<TValue>> get values =>
+      Future.wait(keys.map((TIdentifier key) => _cache[key]));
 
   /// Does the [Cache] contain the given [TIdentifier]?
   ///
@@ -327,12 +328,11 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     return new Future.value();
   }
 
-  /// Run [callback] on [TValue] associated with [id].
+  /// Returns `true` and calls [callback] if there is a cached, unreleased
+  /// [TValue] associated with [id]; returns `false` otherwise.
   ///
-  /// If [TIdentifier] [TValue] pair found runs [callback] and returns true,
-  /// otherwise returns false. Will not run on released items and does not
-  /// perform a [get] or [getAsync]. As [get] or [getAsync] are not performed
-  /// calling [applyToItem] will not affect retention or removal of a
+  /// This does not perform a [get] or [getAsync], and as a result,
+  /// will not affect retention or removal of a
   /// [TIdentifier][TValue] pair from the cache.
   ///
   /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
