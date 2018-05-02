@@ -4,7 +4,6 @@ sudo: required
 dart:
   - 1.24.3
   - stable
-  - dev
 addons:
   apt:
     packages:
@@ -41,6 +40,6 @@ script:
   - pub run dart_dev gen-test-runner --check
   - pub run dart_dev format --check
   - pub run dart_dev analyze
-  #- pub run dart_dev coverage --no-html
+  - pub run dart_dev coverage --no-html
   - pub run dart_dev test # Remove once coverage works with Dart latest
   - bash <(curl -s https://codecov.io/bash) -f coverage/coverage.lcov
