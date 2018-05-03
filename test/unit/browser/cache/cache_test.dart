@@ -370,9 +370,9 @@ void main() {
         cache.didRemove.listen(expectAsync1((CacheContext context) {},
             count: 0, reason: 'Ensure that cached item is not removed'));
 
-        expect(cache.nonReleasedKeys, contains(cachedId));
+        expect(cache.liveKeys, contains(cachedId));
         cache.release(cachedId);
-        expect(cache.nonReleasedKeys.contains(cachedId), isFalse);
+        expect(cache.liveKeys.contains(cachedId), isFalse);
       });
 
       test('should not provide access to released keys when release is awaited',
@@ -380,9 +380,9 @@ void main() {
         cache.didRemove.listen(expectAsync1((CacheContext context) {},
             count: 0, reason: 'Ensure that cached item is not removed'));
 
-        expect(cache.nonReleasedKeys, contains(cachedId));
+        expect(cache.liveKeys, contains(cachedId));
         await cache.release(cachedId);
-        expect(cache.nonReleasedKeys.contains(cachedId), isFalse);
+        expect(cache.liveKeys.contains(cachedId), isFalse);
       });
     });
 
@@ -391,10 +391,10 @@ void main() {
         cache.didRemove.listen(expectAsync1((CacheContext context) {},
             count: 0, reason: 'Ensure that cached item is not removed'));
 
-        expect(await cache.nonReleasedValues, contains(cachedValue));
+        expect(await cache.liveValues, contains(cachedValue));
         // ignore: unawaited_futures
         cache.release(cachedId);
-        expect(await cache.nonReleasedValues, isNot(contains(cachedValue)));
+        expect(await cache.liveValues, isNot(contains(cachedValue)));
       });
 
       test(
@@ -403,9 +403,9 @@ void main() {
         cache.didRemove.listen(expectAsync1((CacheContext context) {},
             count: 0, reason: 'Ensure that cached item is not removed'));
 
-        expect(await cache.nonReleasedValues, contains(cachedValue));
+        expect(await cache.liveValues, contains(cachedValue));
         await cache.release(cachedId);
-        expect((await cache.nonReleasedValues), isNot(contains(cachedValue)));
+        expect((await cache.liveValues), isNot(contains(cachedValue)));
       });
     });
 

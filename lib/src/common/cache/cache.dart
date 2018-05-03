@@ -152,19 +152,19 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// To be removed: 2.0.0
   ///
   /// This entry point is deprecated in favor of the more precisely named
-  /// [releasedKeys] and [nonReleasedKeys].
+  /// [releasedKeys] and [liveKeys].
   @deprecated
   Iterable<TIdentifier> get keys => _cache.keys;
 
   /// Keys that have not been released.
-  Iterable<TIdentifier> get nonReleasedKeys =>
+  Iterable<TIdentifier> get liveKeys =>
       _cache.keys.where((TIdentifier key) => !_isReleased[key]);
 
   /// Values that have not been released.
   ///
   /// To access a released value a [get] or [getAsync] should be used.
-  Future<Iterable<TValue>> get nonReleasedValues =>
-      Future.wait(nonReleasedKeys.map((TIdentifier key) => _cache[key]));
+  Future<Iterable<TValue>> get liveValues =>
+      Future.wait(liveKeys.map((TIdentifier key) => _cache[key]));
 
   /// Keys that have been released but are not yet removed.
   Iterable<TIdentifier> get releasedKeys =>
@@ -178,9 +178,9 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// To be removed: 2.0.0
   ///
   /// This entry point is deprecated in favor of the more precisely named
-  /// [nonReleasedValues].
+  /// [liveValues].
   @deprecated
-  Future<Iterable<TValue>> get values => nonReleasedValues;
+  Future<Iterable<TValue>> get values => liveValues;
 
   /// Does the [Cache] contain the given [TIdentifier]?
   ///
@@ -189,7 +189,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// Deprecated: 1.12.0
   /// To be removed: 2.0.0
   ///
-  /// This entry point is deprecated in favor of using [nonReleasedKeys].contains
+  /// This entry point is deprecated in favor of using [liveKeys].contains
   /// or [releasedKeys].contains directly.
   @deprecated
   bool containsKey(TIdentifier id) {
@@ -315,10 +315,10 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// Release indicates that consuming code has finished with the [TIdentifier]
   /// [TValue] pair associated with [id]. This pair may be removed immediately or
   /// in time depending on the [CachingStrategy]. Access to the pair will be
-  /// blocked immediately, i.e. the [nonReleasedValues] getter won't report this
+  /// blocked immediately, i.e. the [liveValues] getter won't report this
   /// item, even if the pair isn't immediately removed from the cache. A [get] or
-  /// [getAsync] must be performed to mark the item as not eligible for removal
-  /// and live in the cache again.
+  /// [getAsync] must be performed to mark the item as ineligible for removal and
+  /// live in the cache again.
   ///
   /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
   @mustCallSuper
