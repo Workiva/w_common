@@ -439,6 +439,9 @@ void main() {
 
       test('should not run callback if item is in but released from the cache',
           () {
+        cache.didRemove.listen(expectAsync1((CacheContext context) {},
+            count: 0, reason: 'Ensure that cached item is not removed'));
+
         var callbackRan = false;
         cache
           ..release(cachedId)
