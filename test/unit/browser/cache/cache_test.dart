@@ -410,46 +410,57 @@ void main() {
     });
 
     group('applyToItem', () {
-      test('should return false if item is not in the cache', () async {
-        expect(await cache.applyToItem(notCachedId, (_) {}), isFalse);
-      });
+      group('when item is in the cache', () {
+        test('should run callback', () async {
+          var callbackRan = false;
+          await cache.applyToItem(cachedId, (Future<Object> value) async {
+            callbackRan = true;
+            expect(await value, cachedValue);
+          });
 
-      test('should return true if item is in the cache', () async {
-        expect(await cache.applyToItem(cachedId, (_) {}), isTrue);
-      });
-
-      test('should not run callback if item is not in the cache', () {
-        var callbackRan = false;
-        cache.applyToItem(notCachedId, (_) {
-          callbackRan = true;
+          expect(callbackRan, isTrue);
         });
 
-        expect(callbackRan, isFalse);
-      });
-
-      test('should run callback if item is in the cache', () async {
-        var callbackRan = false;
-        await cache.applyToItem(cachedId, (Future<Object> value) async {
-          callbackRan = true;
-          expect(await value, cachedValue);
+        test('should return true', () async {
+          expect(await cache.applyToItem(cachedId, (_) {}), isTrue);
         });
-
-        expect(callbackRan, isTrue);
       });
 
-      test('should not run callback if item is in but released from the cache',
-          () {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {},
-            count: 0, reason: 'Ensure that cached item is not removed'));
-
-        var callbackRan = false;
-        cache
-          ..release(cachedId)
-          ..applyToItem(cachedId, (_) {
+      group('when item is not in the cache', () {
+        test('should not run callback', () {
+          var callbackRan = false;
+          cache.applyToItem(notCachedId, (_) {
             callbackRan = true;
           });
 
-        expect(callbackRan, isFalse);
+          expect(callbackRan, isFalse);
+        });
+
+        test('should return false', () async {
+          expect(await cache.applyToItem(notCachedId, (_) {}), isFalse);
+        });
+      });
+
+      group('when item is released but not yet removed from the cache', () {
+        setUp(() {
+          cache.didRemove.listen(expectAsync1((CacheContext context) {},
+              count: 0, reason: 'Ensure that cached item is not removed'));
+        });
+
+        test('should not run callback', () {
+          var callbackRan = false;
+          cache
+            ..release(cachedId)
+            ..applyToItem(cachedId, (_) {
+              callbackRan = true;
+            });
+
+          expect(callbackRan, isFalse);
+        });
+
+        test('should return true', () async {
+          expect(await cache.applyToItem(cachedId, (_) {}), isTrue);
+        });
       });
 
       group('should not event didRemove stream until callback has completed',
@@ -462,6 +473,7 @@ void main() {
 
         test('when callback completes normally', () {
           var callbackCompleted = false;
+
           cache.didRemove.listen(expectAsync1((CacheContext context) {
             expect(context.id, cachedId);
             expect(callbackCompleted, isTrue);
