@@ -97,8 +97,8 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   final Logger _log = new Logger('w_common.Cache');
 
   /// Any apply to item callbacks currently in flight.
-  final Map<TIdentifier, List<Future<Null>>> _applyToItemCallBacks =
-      <TIdentifier, List<Future<Null>>>{};
+  final Map<TIdentifier, List<Future<dynamic>>> _applyToItemCallBacks =
+      <TIdentifier, List<Future<dynamic>>>{};
 
   /// The backing store for values in the [Cache].
   final Map<TIdentifier, Future<TValue>> _cache =
@@ -126,6 +126,10 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     [_didReleaseController, _didRemoveController, _didUpdateController]
         .forEach(manageStreamController);
   }
+
+  @visibleForTesting
+  Map<TIdentifier, List<Future<dynamic>>> get applyToItemCallBacks =>
+      _applyToItemCallBacks;
 
   /// A stream of [CacheContext]s that dispatches when an item is released from
   /// the cache.
@@ -382,25 +386,34 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   ///
   /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
   Future<bool> applyToItem(
-      TIdentifier id, Future<Null> callback(Future<TValue> value)) {
+      TIdentifier id, dynamic callback(Future<TValue> value)) {
     _log.finest('applyToItem id: $id');
     _throwWhenDisposed('applyToItem');
     if (_isReleased[id] != false) {
-      return new Future.value(false);
+      return new Future<bool>.value(false);
     }
-    final callbackFuture = callback(_cache[id]);
-    if (callbackFuture is Future<Null>) {
-      _applyToItemCallBacks.putIfAbsent(id, () => <Future<Null>>[]);
-      _applyToItemCallBacks[id].add(callbackFuture);
-      callbackFuture.then((_) {
-        _applyToItemCallBacks[id].remove(id);
+
+    final callBackResult = callback(_cache[id]);
+    if (callBackResult is Future) {
+      // In this case we're only interested in the computation being done or not
+      // done, not in the result
+      final errorlessCallbackResult = callBackResult.catchError((_) {});
+
+      _applyToItemCallBacks.putIfAbsent(id, () => <Future<dynamic>>[]);
+      _applyToItemCallBacks[id].add(errorlessCallbackResult);
+
+      errorlessCallbackResult.whenComplete(() {
+        _applyToItemCallBacks[id].remove(errorlessCallbackResult);
         if (_applyToItemCallBacks[id].isEmpty) {
           _applyToItemCallBacks.remove(id);
         }
       });
-      return callbackFuture.then((_) => true);
+
+      // Return future that will complete with either true or the error
+      // generated from callback
+      return callBackResult.then((_) => true);
     }
-    return new Future.value(true);
+    return new Future<bool>.value(true);
   }
 
   void _throwWhenDisposed(String op) {

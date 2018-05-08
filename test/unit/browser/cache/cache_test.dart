@@ -449,24 +449,94 @@ void main() {
         expect(callbackRan, isFalse);
       });
 
-      test('should not event didRemove stream until callback has completed',
-          () async {
-        cache = new Cache<String, Object>(
-            new LeastRecentlyUsedStrategy<String, Object>(0));
-        var callbackCompleted = false;
-        await cache.get(cachedId, () => cachedValue);
+      group('should not event didRemove stream until callback has completed',
+          () {
+        setUp(() async {
+          cache = new Cache<String, Object>(
+              new LeastRecentlyUsedStrategy<String, Object>(0));
+          await cache.get(cachedId, () => cachedValue);
+        });
 
-        cache.didRemove.listen(expectAsync1((CacheContext context) {
-          expect(context.id, cachedId);
-          expect(callbackCompleted, isTrue);
-        }));
+        test('when callback completes normally', () {
+          var callbackCompleted = false;
+          cache.didRemove.listen(expectAsync1((CacheContext context) {
+            expect(context.id, cachedId);
+            expect(callbackCompleted, isTrue);
+          }));
 
-        cache
-          ..applyToItem(cachedId, (_) async {
-            await new Future.delayed(const Duration(seconds: 1));
-            callbackCompleted = true;
-          })
-          ..release(cachedId);
+          cache
+            ..applyToItem(cachedId, (_) async {
+              await new Future.delayed(const Duration(seconds: 1));
+              callbackCompleted = true;
+            })
+            ..release(cachedId);
+        });
+
+        test('when callback completes with an error', () {
+          var callbackCompleted = false;
+
+          cache.didRemove.listen(expectAsync1((CacheContext context) {
+            expect(context.id, cachedId);
+            expect(callbackCompleted, isTrue);
+          }));
+
+          runZoned(() {
+            cache.applyToItem(cachedId, (_) async {
+              await new Future.delayed(const Duration(seconds: 1));
+              callbackCompleted = true;
+              throw new Error();
+            });
+          },
+              onError: expectAsync1((_) {},
+                  reason: 'error should be thrown in callback'));
+
+          cache.release(cachedId);
+        });
+      });
+
+      test(
+          'should return future that completes with same error as the ' +
+              'future returned from callback', () async {
+        final error = new Error();
+        await cache.applyToItem(cachedId, (_) async {
+          await new Future.delayed(new Duration(seconds: 1));
+          throw error;
+        }).catchError((e) {
+          expect(e, error);
+        });
+      });
+
+      test(
+          'should not add futures to applyToItemCallbacks for synchronous ' +
+              'callbacks', () {
+        cache.applyToItem(cachedId, (_) {});
+        expect(cache.applyToItemCallBacks, isEmpty);
+      });
+
+      test(
+          'should remove futures added to applyToItemCallbacks after async ' +
+              'callback completes with error', () async {
+        try {
+          final applyToItemFuture = cache.applyToItem(cachedId, (_) async {
+            throw new Error();
+          });
+          expect(cache.applyToItemCallBacks, isNotEmpty);
+          await applyToItemFuture;
+        } catch (_) {}
+
+        expect(cache.applyToItemCallBacks, isEmpty);
+      });
+
+      test(
+          'should remove futures added to applyToItemCallbacks after async ' +
+              'callback completes', () async {
+        final applyToItemFuture = cache.applyToItem(cachedId, (_) {
+          return new Future(() {});
+        });
+
+        expect(cache.applyToItemCallBacks, isNotEmpty);
+        await applyToItemFuture;
+        expect(cache.applyToItemCallBacks, isEmpty);
       });
 
       test('should throw when disposed', () async {
