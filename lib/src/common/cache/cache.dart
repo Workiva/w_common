@@ -381,8 +381,9 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   ///
   /// This does not perform a [get] or [getAsync], and as a result, will not
   /// affect retention or removal of a [TIdentifier][TValue] pair from the cache.
-  /// If any callbacks are in fight on removal of [TIdentifier] [TValue] pair
-  /// [didRemove] will not event until callback has completed.
+  ///
+  /// Any [TIdentifier] [TValue] pair removals will wait for the Future returned by
+  /// the call to [callback] before emitting [didRemove] events.
   ///
   /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
   Future<bool> applyToItem(
