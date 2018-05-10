@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:w_common/src/common/cache/cache.dart';
+import 'package:w_common/src/common/cache/least_recently_used_strategy.dart';
 
 void main() {
   group('Cache', () {
@@ -120,7 +121,7 @@ void main() {
         final completer = new Completer<Object>();
         final futureGet1 = cache.getAsync(notCachedId, () => completer.future);
 
-        // Remove the identifer from teh cache before the original get completes
+        // Remove the identifer from the cache before the original get completes
         cache.remove(notCachedId);
 
         // Get the same identifier from the cache but with a new value;
@@ -340,6 +341,223 @@ void main() {
       test('should throw when disposed', () async {
         await cache.dispose();
         expect(() => cache.release(cachedId), throwsStateError);
+      });
+    });
+
+    group('releasedKeys', () {
+      test('should provide access to released keys', () {
+        cache.didRemove.listen(expectAsync1((CacheContext context) {},
+            count: 0, reason: 'Ensure that cached item is not removed'));
+
+        expect(cache.releasedKeys, isNot(contains(cachedId)));
+        cache.release(cachedId);
+        expect(cache.releasedKeys, contains(cachedId));
+      });
+
+      test('should provide access to released keys when release is awaited',
+          () async {
+        cache.didRemove.listen(expectAsync1((CacheContext context) {},
+            count: 0, reason: 'Ensure that cached item is not removed'));
+
+        expect(cache.releasedKeys, isNot(contains(cachedId)));
+        await cache.release(cachedId);
+        expect(cache.releasedKeys, contains(cachedId));
+      });
+    });
+
+    group('liveKeys', () {
+      test('should not provide access to released keys', () {
+        cache.didRemove.listen(expectAsync1((CacheContext context) {},
+            count: 0, reason: 'Ensure that cached item is not removed'));
+
+        expect(cache.liveKeys, contains(cachedId));
+        cache.release(cachedId);
+        expect(cache.liveKeys.contains(cachedId), isFalse);
+      });
+
+      test('should not provide access to released keys when release is awaited',
+          () async {
+        cache.didRemove.listen(expectAsync1((CacheContext context) {},
+            count: 0, reason: 'Ensure that cached item is not removed'));
+
+        expect(cache.liveKeys, contains(cachedId));
+        await cache.release(cachedId);
+        expect(cache.liveKeys.contains(cachedId), isFalse);
+      });
+    });
+
+    group('liveValues', () {
+      test('should not provide access to released values', () async {
+        cache.didRemove.listen(expectAsync1((CacheContext context) {},
+            count: 0, reason: 'Ensure that cached item is not removed'));
+
+        expect(await cache.liveValues, contains(cachedValue));
+        // ignore: unawaited_futures
+        cache.release(cachedId);
+        expect(await cache.liveValues, isNot(contains(cachedValue)));
+      });
+
+      test(
+          'should not provide access to released values when release is awaited',
+          () async {
+        cache.didRemove.listen(expectAsync1((CacheContext context) {},
+            count: 0, reason: 'Ensure that cached item is not removed'));
+
+        expect(await cache.liveValues, contains(cachedValue));
+        await cache.release(cachedId);
+        expect((await cache.liveValues), isNot(contains(cachedValue)));
+      });
+    });
+
+    group('applyToItem', () {
+      group('when item is in the cache', () {
+        test('should run callback', () async {
+          var callbackRan = false;
+          await cache.applyToItem(cachedId, (Future<Object> value) async {
+            callbackRan = true;
+            expect(await value, cachedValue);
+          });
+
+          expect(callbackRan, isTrue);
+        });
+
+        test('should return true', () async {
+          expect(await cache.applyToItem(cachedId, (_) {}), isTrue);
+        });
+      });
+
+      group('when item is not in the cache', () {
+        test('should not run callback', () {
+          var callbackRan = false;
+          cache.applyToItem(notCachedId, (_) {
+            callbackRan = true;
+          });
+
+          expect(callbackRan, isFalse);
+        });
+
+        test('should return false', () async {
+          expect(await cache.applyToItem(notCachedId, (_) {}), isFalse);
+        });
+      });
+
+      group('when item is released but not yet removed from the cache', () {
+        setUp(() {
+          cache.didRemove.listen(expectAsync1((CacheContext context) {},
+              count: 0, reason: 'Ensure that cached item is not removed'));
+        });
+
+        test('should not run callback', () {
+          var callbackRan = false;
+          cache
+            ..release(cachedId)
+            ..applyToItem(cachedId, (_) {
+              callbackRan = true;
+            });
+
+          expect(callbackRan, isFalse);
+        });
+
+        test('should return true', () async {
+          expect(await cache.applyToItem(cachedId, (_) {}), isTrue);
+        });
+      });
+
+      group(
+          'should not add event to didRemove stream until callback has completed',
+          () {
+        setUp(() async {
+          cache = new Cache<String, Object>(
+              new LeastRecentlyUsedStrategy<String, Object>(0));
+          await cache.get(cachedId, () => cachedValue);
+        });
+
+        test('when callback completes normally', () {
+          var callbackCompleted = false;
+
+          cache.didRemove.listen(expectAsync1((CacheContext context) {
+            expect(context.id, cachedId);
+            expect(callbackCompleted, isTrue);
+          }));
+
+          cache
+            ..applyToItem(cachedId, (_) async {
+              await new Future.delayed(const Duration(seconds: 1));
+              callbackCompleted = true;
+            })
+            ..release(cachedId);
+        });
+
+        test('when callback completes with an error', () {
+          var callbackCompleted = false;
+
+          cache.didRemove.listen(expectAsync1((CacheContext context) {
+            expect(context.id, cachedId);
+            expect(callbackCompleted, isTrue);
+          }));
+
+          runZoned(() {
+            cache.applyToItem(cachedId, (_) async {
+              await new Future.delayed(const Duration(seconds: 1));
+              callbackCompleted = true;
+              throw new Error();
+            });
+          },
+              onError: expectAsync1((_) {},
+                  reason: 'error should be thrown in callback'));
+
+          cache.release(cachedId);
+        });
+      });
+
+      test(
+          'should return future that completes with same error as the ' +
+              'future returned from callback', () async {
+        final error = new Error();
+        await cache.applyToItem(cachedId, (_) async {
+          await new Future.delayed(new Duration(seconds: 1));
+          throw error;
+        }).catchError((e) {
+          expect(e, error);
+        });
+      });
+
+      test(
+          'should not add futures to applyToItemCallbacks for synchronous ' +
+              'callbacks', () {
+        cache.applyToItem(cachedId, (_) {});
+        expect(cache.applyToItemCallBacks, isEmpty);
+      });
+
+      test(
+          'should remove futures added to applyToItemCallbacks after async ' +
+              'callback completes with error', () async {
+        try {
+          final applyToItemFuture = cache.applyToItem(cachedId, (_) async {
+            throw new Error();
+          });
+          expect(cache.applyToItemCallBacks, isNotEmpty);
+          await applyToItemFuture;
+        } catch (_) {}
+
+        expect(cache.applyToItemCallBacks, isEmpty);
+      });
+
+      test(
+          'should remove futures added to applyToItemCallbacks after async ' +
+              'callback completes', () async {
+        final applyToItemFuture = cache.applyToItem(cachedId, (_) {
+          return new Future(() {});
+        });
+
+        expect(cache.applyToItemCallBacks, isNotEmpty);
+        await applyToItemFuture;
+        expect(cache.applyToItemCallBacks, isEmpty);
+      });
+
+      test('should throw when disposed', () async {
+        await cache.dispose();
+        expect(() => cache.applyToItem(cachedId, (_) {}), throwsStateError);
       });
     });
   });
