@@ -365,7 +365,7 @@ void main() {
       });
     });
 
-    group('nonReleasedKeys', () {
+    group('liveKeys', () {
       test('should not provide access to released keys', () {
         cache.didRemove.listen(expectAsync1((CacheContext context) {},
             count: 0, reason: 'Ensure that cached item is not removed'));
@@ -386,7 +386,7 @@ void main() {
       });
     });
 
-    group('nonReleasedValues', () {
+    group('liveValues', () {
       test('should not provide access to released values', () async {
         cache.didRemove.listen(expectAsync1((CacheContext context) {},
             count: 0, reason: 'Ensure that cached item is not removed'));
@@ -463,7 +463,8 @@ void main() {
         });
       });
 
-      group('should not event didRemove stream until callback has completed',
+      group(
+          'should not add event to didRemove stream until callback has completed',
           () {
         setUp(() async {
           cache = new Cache<String, Object>(

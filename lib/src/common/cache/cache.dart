@@ -198,7 +198,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   @deprecated
   bool containsKey(TIdentifier id) {
     _throwWhenDisposed('containsKey');
-    return keys.contains(id) || releasedKeys.contains(id);
+    return liveKeys.contains(id) || releasedKeys.contains(id);
   }
 
   /// Returns a value from the cache for a given [TIdentifier].
