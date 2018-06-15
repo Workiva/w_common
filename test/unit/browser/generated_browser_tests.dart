@@ -10,6 +10,7 @@ import './cache/reference_counting_strategy_test.dart' as cache_reference_counti
 import './disposable_browser_test.dart' as disposable_browser_test;
 import './invalidation_mixin_test.dart' as invalidation_mixin_test;
 import './json_serializable_test.dart' as json_serializable_test;
+import './time_test.dart' as time_test;
 import 'package:test/test.dart';
 
 void main() {
@@ -20,4 +21,5 @@ void main() {
   disposable_browser_test.main();
   invalidation_mixin_test.main();
   json_serializable_test.main();
+  time_test.main();
 }
