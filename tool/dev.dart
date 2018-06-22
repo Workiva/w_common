@@ -48,7 +48,7 @@ Future main(List<String> args) async {
   ];
 
   config.test
-    ..platforms = ['vm', 'content-shell']
+    ..platforms = ['vm', 'dartium']
     ..unitTests = [
       'test/unit/vm/generated_vm_tests.dart',
       'test/unit/browser/generated_browser_tests.dart'
