@@ -4,36 +4,10 @@ sudo: required
 dart:
   - 1.24.3
   - stable
-addons:
-  apt:
-    packages:
-    - ttf-kochi-mincho
-    - ttf-kochi-gothic
-    - ttf-dejavu
-    - ttf-indic-fonts
-    - fonts-tlwg-garuda
-
-before_install:
-  # Content shell needs this font. Since it has a EULA, we need to manually
-  # install it.
-  #
-  # TODO: remove this and use "sudo: false" when travis-ci/travis-ci#4714 is
-  # fixed.
-  - sudo apt-get update -yq
-  - sudo sh -c "echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections"
-  - sudo apt-get install msttcorefonts -qq
-
-  - mkdir -p bin
-  - export PATH="$PATH:`pwd`/bin/"
-  - ln -s `which chromium-browser` bin/google-chrome
-
-  - wget "http://gsdview.appspot.com/dart-archive/channels/stable/release/latest/dartium/content_shell-linux-x64-release.zip"
-  - unzip content_shell-linux-x64-release.zip
-  - ln -s `pwd`/`echo drt-linux-*`/content_shell bin/content_shell
-
-  -  export DISPLAY=:99.0
-  -  export PATH=$PATH":$PWD"
-  -  sh -e /etc/init.d/xvfb start
+dart_task:
+  - test: --platform vm
+  - test: --platform dartium
+  - install_dartium: true
 
 script:
   - pub publish --dry-run # Validate package
@@ -41,5 +15,4 @@ script:
   - pub run dart_dev format --check
   - pub run dart_dev analyze
   #- pub run dart_dev coverage --no-html
-  - pub run dart_dev test # Remove once coverage works with Dart latest
   - bash <(curl -s https://codecov.io/bash) -f coverage/coverage.lcov
