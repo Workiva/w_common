@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'dart:convert' show JSON;
-
+import 'package:dart2_constant/convert.dart' as convert;
 import 'package:test/test.dart';
 import 'package:w_common/json_serializable.dart';
 
@@ -33,8 +32,8 @@ void main() {
     test('example object can be properly serialized', () async {
       ExampleSerializable testSerializable = new ExampleSerializable();
       testSerializable.context['child'] = 'childName';
-      expect(
-          JSON.encode(testSerializable), '{"context":{"child":"childName"}}');
+      expect(convert.json.encode(testSerializable),
+          '{"context":{"child":"childName"}}');
     });
   });
 }

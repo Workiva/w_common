@@ -3,16 +3,15 @@ sudo: required
 
 dart:
   - 1.24.3
-  - stable
+  - dev
 dart_task:
   - test: --platform vm
-  - test: --platform dartium
-  - install_dartium: true
+  - test: --platform chrome
 
 script:
   - pub publish --dry-run # Validate package
   - pub run dart_dev gen-test-runner --check
-  - pub run dart_dev format --check
-  - pub run dart_dev analyze
+  - dartfmt -w --set-exit-if-changed example lib test tool
+  - dartanalyzer lib example tool test/unit
   #- pub run dart_dev coverage --no-html
   - bash <(curl -s https://codecov.io/bash) -f coverage/coverage.lcov

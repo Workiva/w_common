@@ -32,7 +32,7 @@ void main() {
 
     group('invalidate', () {
       test('marks the thing as invalid', () {
-        Future onValidation = thing.invalidate();
+        Future<ValidationStatus> onValidation = thing.invalidate();
 
         expect(thing.invalid, isTrue);
 
@@ -46,7 +46,7 @@ void main() {
       });
 
       test('calls validate, eventually', () {
-        Future onValidation = thing.invalidate();
+        Future<ValidationStatus> onValidation = thing.invalidate();
 
         onValidation.then(expectAsync1((ValidationStatus status) {
           expect(status, equals(ValidationStatus.complete));
