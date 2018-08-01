@@ -96,7 +96,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     when(nullReturningSub.cancel()).thenReturn(null);
     when(stream.listen(typed(any),
-            cancelOnError: typed(any, named: 'cancelOnError')))
+            onError: typed(any, named: 'onError'), onDone: typed(any, named: 'onDone'), cancelOnError: typed(any, named: 'cancelOnError')))
         .thenReturn(nullReturningSub);
 
     return stream;

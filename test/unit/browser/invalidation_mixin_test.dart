@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+@TestOn('browser')
 
 import 'dart:async';
 
@@ -32,7 +33,7 @@ void main() {
 
     group('invalidate', () {
       test('marks the thing as invalid', () {
-        Future<ValidationStatus> onValidation = thing.invalidate();
+        final onValidation = thing.invalidate();
 
         expect(thing.invalid, isTrue);
 
@@ -46,10 +47,10 @@ void main() {
       });
 
       test('calls validate, eventually', () {
-        Future<ValidationStatus> onValidation = thing.invalidate();
+        final onValidation = thing.invalidate();
 
         onValidation.then(expectAsync1((ValidationStatus status) {
-          expect(status, equals(ValidationStatus.complete));
+          expect(status, ValidationStatus.complete);
         }));
 
         thing.onValidate.listen(expectAsync1((_) {}));
@@ -59,8 +60,9 @@ void main() {
 }
 
 class InvalidThing extends InvalidationMixin {
-  StreamController _onValidate = new StreamController.broadcast();
-  Stream get onValidate => _onValidate.stream;
+  final StreamController<ValidationStatus> _onValidate = new StreamController<ValidationStatus>.broadcast();
+
+  Stream<ValidationStatus> get onValidate => _onValidate.stream;
 
   @override
   void validate() {
