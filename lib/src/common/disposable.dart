@@ -417,9 +417,8 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
     if (_debugMode) {
       stopwatch.stop();
-      _logger
-          .info('$runtimeType $hashCode took ${stopwatch.elapsedMicroseconds /
-          1000000.0} seconds to dispose');
+      var t = stopwatch.elapsedMicroseconds / 1000000.0;
+      _logger.info('$runtimeType $hashCode took $t seconds to dispose');
     }
 
     flagLeak();
