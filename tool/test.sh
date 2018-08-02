@@ -4,6 +4,8 @@ set -e
 DART_VERSION=$(dart --version 2>&1)
 DART_2_PREFIX="Dart VM version: 2"
 if [[ $DART_VERSION = $DART_2_PREFIX* ]]; then
+    echo -e 'pub publish --dry-run'
+    pub publish --dry-run # Validate package
     echo -e 'pub run build_runner test -- -p chrome -p vm --reporter=expanded'
     pub run build_runner test -- -p chrome -p vm --reporter=expanded
 else

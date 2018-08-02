@@ -11,7 +11,6 @@ dart_task:
   - dartanalyzer: lib example tool test/unit
 
 script:
-  - pub publish --dry-run # Validate package
   - xvfb-run --server-args="-screen 0 1024x768x24" tool/test.sh
   #- pub run dart_dev coverage --no-html
   - bash <(curl -s https://codecov.io/bash) -f coverage/coverage.lcov
