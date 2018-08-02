@@ -12,7 +12,6 @@ dart_task:
 
 script:
   - pub publish --dry-run # Validate package
-  - pub run dart_dev gen-test-runner --check
   - xvfb-run --server-args="-screen 0 1024x768x24" tool/test.sh
   #- pub run dart_dev coverage --no-html
   - bash <(curl -s https://codecov.io/bash) -f coverage/coverage.lcov

@@ -7,6 +7,8 @@ if [[ $DART_VERSION = $DART_2_PREFIX* ]]; then
     echo -e 'pub run build_runner test -- -p chrome -p vm --reporter=expanded'
     pub run build_runner test -- -p chrome -p vm --reporter=expanded
 else
+    echo -e 'pub run dart_dev gen-test-runner --check'
+    pub run dart_dev gen-test-runner --check
     echo -e 'pub run dart_dev test --pub-serve --web-compiler=dartdevc -p chrome -p vm'
     pub run dart_dev test --pub-serve --web-compiler=dartdevc -p chrome -p vm
 fi 
