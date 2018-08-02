@@ -90,18 +90,6 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
   }
 
-  Stream getNullReturningSubscriptionStream() {
-    var stream = new MockStream();
-    var nullReturningSub = new MockStreamSubscription();
-
-    when(nullReturningSub.cancel()).thenReturn(null);
-    when(stream.listen(typed(any),
-            onError: typed(any, named: 'onError'), onDone: typed(any, named: 'onDone'), cancelOnError: typed(any, named: 'cancelOnError')))
-        .thenReturn(nullReturningSub);
-
-    return stream;
-  }
-
   setUp(() {
     disposable = disposableFactory();
   });
@@ -560,38 +548,32 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test(
         'should return ManagedStreamSubscription that returns null when an '
         'unwrapped StreamSubscription would have', () async {
-      var stream = getNullReturningSubscriptionStream();
-
-      var unwrappedSubscription = stream.listen((_) {}, cancelOnError: false);
+      final stream = new StubStream<Object>();
+      final unwrappedSubscription = stream.listen((_) {}, cancelOnError: false);
+      final managedSubscription = disposable.listenToStream(stream, (_) {});
 
       expect(unwrappedSubscription.cancel(), isNull);
-
-      var managedSubscription = disposable.listenToStream(stream, (_) {});
-
       expect(managedSubscription.cancel(), isNull);
     });
 
     test(
-        'should un-manage when stream subscription is closed before '
+        'should un-manage when stream subscription is canceled before '
         'disposal when canceling a stream subscription returns null', () async {
-      var previousTreeSize = disposable.disposalTreeSize;
-
-      var stream = getNullReturningSubscriptionStream();
-
-      StreamSubscription subscription =
-          disposable.listenToStream(stream, (_) {});
+      final previousTreeSize = disposable.disposalTreeSize;
+      final stream = new StubStream<Object>();
+      final subscription = disposable.listenToStream(stream, (_) {});
 
       expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
 
       await subscription.cancel();
-      await new Future(() {});
+      await new Future<Null>(() {});
 
       expect(disposable.isDisposed, isFalse);
       expect(disposable.disposalTreeSize, equals(previousTreeSize));
     });
 
     test(
-        'should un-manage when stream subscription is closed before '
+        'should un-manage when stream subscription is canceled before '
         'disposal when canceling a stream subscription returns a Future',
         () async {
       var previousTreeSize = disposable.disposalTreeSize;
