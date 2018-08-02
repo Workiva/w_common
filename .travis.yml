@@ -12,7 +12,7 @@ dart_task:
   - test: --platform vm
   - test: --platform chrome
 
-script:
-  #- xvfb-run --server-args="-screen 0 1024x768x24" tool/test.sh
-  #- pub run dart_dev coverage --no-html
-  - bash <(curl -s https://codecov.io/bash) -f coverage/coverage.lcov
+#script:
+#  #- xvfb-run --server-args="-screen 0 1024x768x24" tool/test.sh
+#  #- pub run dart_dev coverage --no-html
+#  - bash <(curl -s https://codecov.io/bash) -f coverage/coverage.lcov
