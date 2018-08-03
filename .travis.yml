@@ -10,5 +10,3 @@ dart:
 
 script:
   - xvfb-run --server-args="-screen 0 1024x768x24" tool/test.sh
-  - pub run dart_dev coverage --no-html
-  - bash <(curl -s https://codecov.io/bash) -f coverage/coverage.lcov

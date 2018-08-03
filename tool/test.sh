@@ -17,4 +17,11 @@ else
 
     echo -e 'pub run dart_dev test --pub-serve --web-compiler=dartdevc -p chrome -p vm'
     pub run dart_dev test --pub-serve --web-compiler=dartdevc -p chrome -p vm
-fi 
+
+    echo -e 'pub run dart_dev coverage --no-html'
+    pub run dart_dev coverage --no-html
+
+    echo -e 'submit coverage'
+    bash <(curl -s https://codecov.io/bash) -f coverage/coverage.lcov
+fi
+

@@ -703,9 +703,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       expect(await harness.didCompleteTimer, isFalse);
     });
 
-    test(
-        'disposing should have no effect on timer after it has cancelled by'
-        ' the consumer', () async {
+    test('disposing should have no effect after timer expires', () async {
       await harness.didConclude;
       expect(timer.isActive, isFalse);
 
