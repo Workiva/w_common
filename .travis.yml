@@ -6,13 +6,12 @@ dart:
   - stable
 dart_task:
   - test: --platform vm
+  - test: --platform chrome
   - test: --platform dartium
   - install_dartium: true
 
 script:
   - pub publish --dry-run # Validate package
-  - pub run dart_dev gen-test-runner --check
-  - pub run dart_dev format --check
-  - pub run dart_dev analyze
+  - make check-full
   #- pub run dart_dev coverage --no-html
   - bash <(curl -s https://codecov.io/bash) -f coverage/coverage.lcov
