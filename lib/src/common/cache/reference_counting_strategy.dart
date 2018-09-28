@@ -5,11 +5,10 @@ import 'package:w_common/src/common/cache/cache.dart';
 /// Maintains the number of references to an instance of a cache value.
 class ReferenceCountingStrategy<TIdentifier, TValue>
     extends CachingStrategy<TIdentifier, TValue> {
-  Map<TIdentifier, int> _count = <TIdentifier, int>{};
+  final _count = <TIdentifier, int>{};
 
-  int referenceCount(TIdentifier id) {
-    return _count[id];
-  }
+  /// Return the number of references to the given ID.
+  int referenceCount(TIdentifier id) => _count[id];
 
   @override
   Future<Null> onDidRelease(

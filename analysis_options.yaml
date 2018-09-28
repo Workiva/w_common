@@ -45,7 +45,8 @@ linter:
     # Specify type annotations.
     # recommendation: recommended
     # 0 issues
-    - always_specify_types
+    # Removed because it conflicts with omit_local_variable_types.
+    #- always_specify_types
 
     # Annotate overridden members.
     # recommendation: required
@@ -420,7 +421,7 @@ linter:
     # recommendation: optional
     # reason: Can get annoying for React component lifecycle methods, constructors.
     # 0 issues
-    - public_member_api_docs
+    #- public_member_api_docs
 
     # Property getter recursively returns itself.
     # recommendation: optional

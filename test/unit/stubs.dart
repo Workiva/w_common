@@ -28,7 +28,7 @@ abstract class StubDisposable implements Disposable {
   bool wasOnWillDisposeCalled = false;
 
   @override
-  Future<Null> onDispose() {
+  Future<void> onDispose() {
     expect(isDisposed, isFalse);
     // ignore: deprecated_member_use
     expect(isDisposing, isTrue);
@@ -37,8 +37,8 @@ abstract class StubDisposable implements Disposable {
     expect(isOrWillBeDisposed, isTrue);
     numTimesOnDisposeCalled++;
     wasOnDisposeCalled = true;
-    var future = new Future<Null>(() => null);
-    future.then((_) async {
+    final future = new Future<void>(() => null)
+    ..then((_) async {
       await new Future(() {}); // Give it a chance to update state.
       expect(isDisposed, isTrue);
       // ignore: deprecated_member_use
@@ -51,7 +51,7 @@ abstract class StubDisposable implements Disposable {
   }
 
   @override
-  Future<Null> onWillDispose() {
+  Future<void> onWillDispose() {
     expect(isDisposed, isFalse);
     // ignore: deprecated_member_use
     expect(isDisposing, isFalse);
@@ -67,7 +67,7 @@ abstract class StubDisposable implements Disposable {
 class DisposeCounter extends Disposable {
   int disposeCount = 0;
   @override
-  Future<Null> dispose() {
+  Future<void> dispose() {
     disposeCount++;
     return super.dispose();
   }
@@ -82,8 +82,8 @@ class TimerHarness {
   Completer<bool> _didCancelTimerCompleter;
   bool _didCompleteTimer = false;
   Completer<bool> _didCompleteTimerCompleter;
-  final Completer<Null> _didConcludeCompleter = new Completer<Null>();
-  final Duration _timerDuration = new Duration(milliseconds: 10);
+  final _didConcludeCompleter = new Completer<void>();
+  final _timerDuration = const Duration(milliseconds: 10);
 
   Duration get duration => _timerDuration;
 
@@ -97,7 +97,7 @@ class TimerHarness {
       new Future.error(
           'getCallback() must be called before didCompleteTimer is valid');
 
-  Future<Null> get didConclude => _didConcludeCompleter.future;
+  Future<void> get didConclude => _didConcludeCompleter.future;
 
   TimerHarnessCallback getCallback() {
     _setupInternalTimer();
@@ -110,7 +110,7 @@ class TimerHarness {
   TimerHarnessPeriodicCallback getPeriodicCallback({int count: 2}) {
     _setupInternalTimer(count: count);
     var _callCount = 0;
-    return (Timer t) {
+    return (t) {
       _callCount++;
       if (_callCount == count) {
         t.cancel();
@@ -124,7 +124,7 @@ class TimerHarness {
     _didCompleteTimerCompleter = new Completer<bool>();
     _didCancelTimerCompleter = new Completer<bool>();
 
-    var internalDuration = new Duration(milliseconds: (count * 10) + 5);
+    final internalDuration = new Duration(milliseconds: (count * 10) + 5);
     new Timer(internalDuration, () {
       _didCompleteTimerCompleter.complete(_didCompleteTimer);
       _didCancelTimerCompleter.complete(_didCancelTimer);

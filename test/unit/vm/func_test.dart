@@ -11,17 +11,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+@TestOn('browser')
 
 import 'package:test/test.dart';
-import 'package:w_common/func.dart';
 
 void main() {
   group('Func<T>', () {
     test('works as a type', () {
-      final f = () => new TestModel();
-      final testFunction = (Func<TestModel> modelGetter) {
-        expect(modelGetter(), new isInstanceOf<TestModel>());
-      };
+      TestModel f() => new TestModel();
+      void testFunction(TestModel modelGetter()) => expect(modelGetter(), const TypeMatcher<TestModel>());
 
       testFunction(f);
     });

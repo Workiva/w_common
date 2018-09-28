@@ -17,6 +17,7 @@ class LeastRecentlyUsedStrategy<TIdentifier, TValue>
   /// cache before removing the least recently used pair from the cache.
   final int _keep;
 
+  /// Instantiate an LRU strategy.
   LeastRecentlyUsedStrategy(this._keep) {
     if (_keep < 0) {
       throw new ArgumentError(

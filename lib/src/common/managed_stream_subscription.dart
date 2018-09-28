@@ -16,7 +16,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
 
   final StreamSubscription<T> _subscription;
 
-  Completer<Null> _didComplete = new Completer();
+  final _didComplete = new Completer<Null>();
 
   ManagedStreamSubscription(Stream<T> stream, void onData(T arg),
       {Function onError, void onDone(), bool cancelOnError})
@@ -32,15 +32,11 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
   bool get isPaused => _subscription.isPaused;
 
   @override
-  Future<E> asFuture<E>([E futureValue]) {
-    return _subscription.asFuture(futureValue).whenComplete(() {
-      _complete();
-    });
-  }
+  Future<E> asFuture<E>([E futureValue]) => _subscription.asFuture(futureValue).whenComplete(_complete);
 
   @override
   Future<Null> cancel() {
-    var result = _subscription.cancel();
+    final result = _subscription.cancel();
 
     // StreamSubscription.cancel() will return null if no cleanup was
     // necessary. This behavior is described in the docs as "for historical

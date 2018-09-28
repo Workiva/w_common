@@ -34,13 +34,13 @@ void main() {
       test(
           'synchronous get release get should not unnecessarily '
           'remove item from cache', () async {
-        var firstGetCall = cache.getAsync('id', valueFactory);
-        var release = cache.release('id');
-        var secondGetCall = cache.getAsync('id', valueFactory);
+        final firstGetCall = cache.getAsync('id', valueFactory);
+        final release = cache.release('id');
+        final secondGetCall = cache.getAsync('id', valueFactory);
 
         await release;
 
-        var thirdGetCall = cache.getAsync('id', valueFactory);
+        final thirdGetCall = cache.getAsync('id', valueFactory);
 
         expect(await firstGetCall, await secondGetCall);
         expect(await secondGetCall, await thirdGetCall);
@@ -51,13 +51,13 @@ void main() {
       test(
           'synchronous get release release get should not unnecessarily '
           'remove item from cache', () async {
-        var firstGetCall = cache.getAsync('id', valueFactory);
-        var releases = Future.wait([cache.release('id'), cache.release('id')]);
-        var secondGetCall = cache.getAsync('id', valueFactory);
+        final firstGetCall = cache.getAsync('id', valueFactory);
+        final releases = Future.wait([cache.release('id'), cache.release('id')]);
+        final secondGetCall = cache.getAsync('id', valueFactory);
 
         await releases;
 
-        var thirdGetCall = cache.getAsync('id', valueFactory);
+        final thirdGetCall = cache.getAsync('id', valueFactory);
 
         expect(await firstGetCall, await secondGetCall);
         expect(await secondGetCall, await thirdGetCall);
@@ -68,13 +68,13 @@ void main() {
       test(
           'synchronous get remove get should result in value factory being called twice',
           () async {
-        var firstGetCall = cache.getAsync('id', valueFactory);
-        var remove = cache.remove('id');
-        var secondGetCall = cache.getAsync('id', valueFactory);
+        final firstGetCall = cache.getAsync('id', valueFactory);
+        final remove = cache.remove('id');
+        final secondGetCall = cache.getAsync('id', valueFactory);
 
         await remove;
 
-        var thirdGetCall = cache.getAsync('id', valueFactory);
+        final thirdGetCall = cache.getAsync('id', valueFactory);
 
         expect(await firstGetCall, isNot(await secondGetCall));
         expect(await firstGetCall, isNot(await thirdGetCall));

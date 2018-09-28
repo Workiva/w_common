@@ -8,10 +8,10 @@ import 'package:w_common/src/common/cache/least_recently_used_strategy.dart';
 void main() {
   group('Cache', () {
     Cache<String, Object> cache;
-    final String cachedId = '1';
-    final Object cachedValue = new Object();
-    final String notCachedId = '2';
-    final Object notCachedValue = new Object();
+    const cachedId = '1';
+    final cachedValue = new Object();
+    const notCachedId = '2';
+    final notCachedValue = new Object();
 
     setUp(() async {
       cache = new Cache(new MockCachingStrategy());
@@ -20,37 +20,37 @@ void main() {
 
     group('get', () {
       test('should return cached value when identifier is cached', () async {
-        var value = await cache.get(cachedId, () => notCachedValue);
+        final value = await cache.get(cachedId, () => notCachedValue);
         expect(value, same(cachedValue));
       });
 
       test(
           'should return same value when called successively '
           'synchronously', () async {
-        var cachedValues = <Future<Object>>[
+        final cachedValues = <Future<Object>>[
           cache.get(notCachedId, () => notCachedValue),
           cache.get(notCachedId, () => new Object())
         ];
-        var completedValues = await Future.wait(cachedValues);
+        final completedValues = await Future.wait(cachedValues);
         expect(completedValues[0], same(notCachedValue));
         expect(completedValues[1], same(notCachedValue));
       });
 
       test('should return factory value when identifier is not cached',
           () async {
-        var value = await cache.get(notCachedId, () => notCachedValue);
+        final value = await cache.get(notCachedId, () => notCachedValue);
         expect(value, same(notCachedValue));
       });
 
       test('should return error thrown by factory function', () {
-        var error = new StateError('Factory Error');
-        var value = cache.get(notCachedId, () => throw error);
+        final error = new StateError('Factory Error');
+        final value = cache.get(notCachedId, () => throw error);
         expect(value, throwsA(same(error)));
       });
 
       test('should return error thrown by async factory function', () {
-        var error = new StateError('Async Factory Error');
-        var value = cache.getAsync(notCachedId, () async => throw error);
+        final error = new StateError('Async Factory Error');
+        final value = cache.getAsync(notCachedId, () async => throw error);
         expect(value, throwsA(same(error)));
       });
 
@@ -74,12 +74,12 @@ void main() {
 
       test('should not dispatch didUpdate event on cached get', () async {
         cache.didUpdate
-            .listen(expectAsync1((CacheContext context) {}, count: 0));
+            .listen(expectAsync1((context) {}, count: 0));
         await cache.get(cachedId, () => new Object());
       });
 
       test('should dispatch didUpdate event on uncached get', () async {
-        cache.didUpdate.listen(expectAsync1((CacheContext context) {
+        cache.didUpdate.listen(expectAsync1((context) {
           expect(context.id, notCachedId);
           expect(context.value, notCachedValue);
         }));
@@ -87,16 +87,16 @@ void main() {
       });
 
       test('should call onDidGet when value is not cached', () async {
-        var mockCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(mockCachingStrategy);
+        final mockCachingStrategy = new MockCachingStrategy();
+        final childCache = new Cache(mockCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
 
         verify(mockCachingStrategy.onDidGet(cachedId, cachedValue));
       });
 
       test('should call onDidGet when value is cached', () async {
-        var mockCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(mockCachingStrategy);
+        final mockCachingStrategy = new MockCachingStrategy();
+        final childCache = new Cache(mockCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.get(cachedId, () => cachedValue);
 
@@ -113,15 +113,16 @@ void main() {
           'is not complete', () async {
         final value1 = new Object();
         final value2 = new Object();
-        cache.didRemove.listen(expectAsync1((CacheContext context) {
+        cache.didRemove.listen(expectAsync1((context) {
           expect(context.id, notCachedId);
           expect(context.value, value2);
         }));
-        // Get a unached value that completes in the future
+        // Get a un-cached value that completes in the future
         final completer = new Completer<Object>();
         final futureGet1 = cache.getAsync(notCachedId, () => completer.future);
 
-        // Remove the identifer from the cache before the original get completes
+        // Remove the identifier from the cache before the original get completes
+        // ignore: unawaited_futures
         cache.remove(notCachedId);
 
         // Get the same identifier from the cache but with a new value;
@@ -131,41 +132,10 @@ void main() {
       });
     });
 
-    group('containsKey', () {
-      test('should return false when identifier has not been cached', () {
-        expect(cache.containsKey(notCachedId), isFalse);
-      });
-
-      test('should return true when identifier has been cached', () {
-        expect(cache.containsKey(cachedId), isTrue);
-      });
-
-      test('should return false when identifier has been removed', () async {
-        await cache.remove(cachedId);
-        expect(cache.containsKey(cachedId), isFalse);
-      });
-
-      test(
-          'should return false when identifer has been removed before get '
-          'completes', () async {
-        final completer = new Completer<Object>();
-        cache.getAsync(notCachedId, () => completer.future);
-        expect(cache.containsKey(notCachedId), isTrue);
-        cache.remove(notCachedId);
-        expect(cache.containsKey(notCachedId), isFalse);
-      });
-
-      test('should throw when disposed', () async {
-        await cache.dispose();
-        expect(
-            () => cache.get(cachedId, () => notCachedValue), throwsStateError);
-      });
-    });
-
     group('remove', () {
       test('should dispatch one didUpdate event when identifier is removed',
           () async {
-        cache.didUpdate.listen(expectAsync1((CacheContext context) {
+        cache.didUpdate.listen(expectAsync1((context) {
           expect(context.id, cachedId);
           expect(context.value, isNull);
         }, count: 1));
@@ -176,7 +146,7 @@ void main() {
       test(
           'should dispatch one didUpdate event when identifier is removed '
           'synchronously', () {
-        cache.didUpdate.listen(expectAsync1((CacheContext context) {
+        cache.didUpdate.listen(expectAsync1((context) {
           expect(context.id, cachedId);
           expect(context.value, isNull);
         }, count: 1));
@@ -186,7 +156,7 @@ void main() {
       test(
           'should dispatch one didRemove event when identifier is removed '
           'synchronously', () {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {
+        cache.didRemove.listen(expectAsync1((context) {
           expect(context.id, cachedId);
           expect(context.value, cachedValue);
         }, count: 1));
@@ -195,21 +165,21 @@ void main() {
 
       test('should not dispatch didUpdate event when identifier is not cached',
           () async {
-        cache.didUpdate.listen(expectAsync1((CacheContext _) {}, count: 0));
+        cache.didUpdate.listen(expectAsync1((_) {}, count: 0));
         await cache.remove(notCachedId);
       });
 
       test('should call onDidRemove when value was cached', () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        final stubCachingStrategy = new MockCachingStrategy();
+        final childCache = new Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.remove(cachedId);
         verify(stubCachingStrategy.onDidRemove(cachedId, cachedValue));
       });
 
       test('should call onWillRemove when value was cached', () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        final stubCachingStrategy = new MockCachingStrategy();
+        final childCache = new Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.remove(cachedId);
         verify(stubCachingStrategy.onWillRemove(cachedId));
@@ -217,18 +187,18 @@ void main() {
 
       test('should not call onDidRemove when identifer is not cached',
           () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        final stubCachingStrategy = new MockCachingStrategy();
+        final childCache = new Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
-        verifyNever(stubCachingStrategy.onDidRemove(typed(any), typed(any)));
+        verifyNever(stubCachingStrategy.onDidRemove(any, any));
       });
 
       test('should not call onWillRemove when identifer is not cached',
           () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        final stubCachingStrategy = new MockCachingStrategy();
+        final childCache = new Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
-        verifyNever(stubCachingStrategy.onWillRemove(typed(any)));
+        verifyNever(stubCachingStrategy.onWillRemove(any));
       });
 
       test('should remove after pending get if called synchronously', () {
@@ -237,8 +207,8 @@ void main() {
         expect(cache.didUpdate.map((context) => context.value),
             emitsInOrder([notCachedValue, null]));
 
-        cache.get(notCachedId, () => notCachedValue);
-        cache.remove(notCachedId);
+        cache..get(notCachedId, () => notCachedValue)
+        ..remove(notCachedId);
       });
 
       test('should remove after pending getAsync if called synchronously', () {
@@ -247,17 +217,17 @@ void main() {
         expect(cache.didUpdate.map((context) => context.value),
             emitsInOrder([notCachedValue, null]));
 
-        cache.getAsync(notCachedId, () async {
-          await new Future.delayed(new Duration(milliseconds: 100));
+        cache..getAsync(notCachedId, () async {
+          await new Future.delayed(const Duration(milliseconds: 100));
           return notCachedValue;
-        });
-        cache.remove(notCachedId);
+        })
+        ..remove(notCachedId);
       });
 
       test('should complete if pending get factory completes with an error',
           () {
-        var error = new StateError('Async factory error');
-        var value = cache.get(notCachedId, () => throw error);
+        final error = new StateError('Async factory error');
+        final value = cache.get(notCachedId, () => throw error);
         expect(cache.remove(notCachedId), completes);
         expect(value, throwsA(same(error)));
       });
@@ -265,8 +235,8 @@ void main() {
       test(
           'should complete if pending getAsync factory completes with an error',
           () {
-        var error = new StateError('Async factory error');
-        var value = cache.getAsync(notCachedId, () async => throw error);
+        final error = new StateError('Async factory error');
+        final value = cache.getAsync(notCachedId, () async => throw error);
         expect(cache.remove(notCachedId), completes);
         expect(value, throwsA(same(error)));
       });
@@ -280,7 +250,7 @@ void main() {
     group('release', () {
       test('should dispatch one didRelease event when identifier is released',
           () async {
-        cache.didRelease.listen(expectAsync1((CacheContext context) {
+        cache.didRelease.listen(expectAsync1((context) {
           expect(context.id, cachedId);
           expect(context.value, cachedValue);
         }, count: 1));
@@ -288,8 +258,8 @@ void main() {
       });
 
       test('should call onDidRelease when value was cached', () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        final stubCachingStrategy = new MockCachingStrategy();
+        final childCache = new Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.release(cachedId);
         verify(stubCachingStrategy.onDidRelease(
@@ -297,8 +267,8 @@ void main() {
       });
 
       test('should call onWillRelease when value was cached', () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        final stubCachingStrategy = new MockCachingStrategy();
+        final childCache = new Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.release(cachedId);
         verify(stubCachingStrategy.onWillRelease(cachedId));
@@ -306,25 +276,25 @@ void main() {
 
       test('should not call onDidRelease when identifer is not cached',
           () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        final stubCachingStrategy = new MockCachingStrategy();
+        final childCache = new Cache(stubCachingStrategy);
         await childCache.release(cachedId);
         verifyNever(stubCachingStrategy.onDidRelease(
-            typed(any), typed(any), typed(any)));
+            any, any, any));
       });
 
       test('should not call onWillRemove when identifer is not cached',
           () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        final stubCachingStrategy = new MockCachingStrategy();
+        final childCache = new Cache(stubCachingStrategy);
         await childCache.release(cachedId);
-        verifyNever(stubCachingStrategy.onWillRelease(typed(any)));
+        verifyNever(stubCachingStrategy.onWillRelease(any));
       });
 
       test('should complete if pending get factory completes with an error',
           () {
-        var error = new StateError('Async factory error');
-        var value = cache.get(notCachedId, () => throw error);
+        final error = new StateError('Async factory error');
+        final value = cache.get(notCachedId, () => throw error);
         expect(cache.release(notCachedId), completes);
         expect(value, throwsA(same(error)));
       });
@@ -332,8 +302,8 @@ void main() {
       test(
           'should complete if pending getAsync factory completes with an error',
           () {
-        var error = new StateError('Async factory error');
-        var value = cache.getAsync(notCachedId, () async => throw error);
+        final error = new StateError('Async factory error');
+        final value = cache.getAsync(notCachedId, () async => throw error);
         expect(cache.release(notCachedId), completes);
         expect(value, throwsA(same(error)));
       });
@@ -346,7 +316,7 @@ void main() {
 
     group('releasedKeys', () {
       test('should provide access to released keys', () {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {},
+        cache.didRemove.listen(expectAsync1((context) {},
             count: 0, reason: 'Ensure that cached item is not removed'));
 
         expect(cache.releasedKeys, isNot(contains(cachedId)));
@@ -356,7 +326,7 @@ void main() {
 
       test('should provide access to released keys when release is awaited',
           () async {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {},
+        cache.didRemove.listen(expectAsync1((context) {},
             count: 0, reason: 'Ensure that cached item is not removed'));
 
         expect(cache.releasedKeys, isNot(contains(cachedId)));
@@ -367,7 +337,7 @@ void main() {
 
     group('liveKeys', () {
       test('should not provide access to released keys', () {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {},
+        cache.didRemove.listen(expectAsync1((context) {},
             count: 0, reason: 'Ensure that cached item is not removed'));
 
         expect(cache.liveKeys, contains(cachedId));
@@ -377,7 +347,7 @@ void main() {
 
       test('should not provide access to released keys when release is awaited',
           () async {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {},
+        cache.didRemove.listen(expectAsync1((context) {},
             count: 0, reason: 'Ensure that cached item is not removed'));
 
         expect(cache.liveKeys, contains(cachedId));
@@ -388,7 +358,7 @@ void main() {
 
     group('liveValues', () {
       test('should not provide access to released values', () async {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {},
+        cache.didRemove.listen(expectAsync1((context) {},
             count: 0, reason: 'Ensure that cached item is not removed'));
 
         expect(await cache.liveValues, contains(cachedValue));
@@ -400,12 +370,12 @@ void main() {
       test(
           'should not provide access to released values when release is awaited',
           () async {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {},
+        cache.didRemove.listen(expectAsync1((context) {},
             count: 0, reason: 'Ensure that cached item is not removed'));
 
         expect(await cache.liveValues, contains(cachedValue));
         await cache.release(cachedId);
-        expect((await cache.liveValues), isNot(contains(cachedValue)));
+        expect(await cache.liveValues, isNot(contains(cachedValue)));
       });
     });
 
@@ -413,7 +383,7 @@ void main() {
       group('when item is in the cache', () {
         test('should run callback', () async {
           var callbackRan = false;
-          await cache.applyToItem(cachedId, (Future<Object> value) async {
+          await cache.applyToItem(cachedId, (value) async {
             callbackRan = true;
             expect(await value, cachedValue);
           });
@@ -443,7 +413,7 @@ void main() {
 
       group('when item is released but not yet removed from the cache', () {
         setUp(() {
-          cache.didRemove.listen(expectAsync1((CacheContext context) {},
+          cache.didRemove.listen(expectAsync1((context) {},
               count: 0, reason: 'Ensure that cached item is not removed'));
         });
 
@@ -475,7 +445,7 @@ void main() {
         test('when callback completes normally', () {
           var callbackCompleted = false;
 
-          cache.didRemove.listen(expectAsync1((CacheContext context) {
+          cache.didRemove.listen(expectAsync1((context) {
             expect(context.id, cachedId);
             expect(callbackCompleted, isTrue);
           }));
@@ -491,7 +461,7 @@ void main() {
         test('when callback completes with an error', () {
           var callbackCompleted = false;
 
-          cache.didRemove.listen(expectAsync1((CacheContext context) {
+          cache.didRemove.listen(expectAsync1((context) {
             expect(context.id, cachedId);
             expect(callbackCompleted, isTrue);
           }));
@@ -511,11 +481,11 @@ void main() {
       });
 
       test(
-          'should return future that completes with same error as the ' +
+          'should return future that completes with same error as the '
               'future returned from callback', () async {
         final error = new Error();
         await cache.applyToItem(cachedId, (_) async {
-          await new Future.delayed(new Duration(seconds: 1));
+          await new Future.delayed(const Duration(seconds: 1));
           throw error;
         }).catchError((e) {
           expect(e, error);
@@ -523,14 +493,14 @@ void main() {
       });
 
       test(
-          'should not add futures to applyToItemCallbacks for synchronous ' +
+          'should not add futures to applyToItemCallbacks for synchronous '
               'callbacks', () {
         cache.applyToItem(cachedId, (_) {});
         expect(cache.applyToItemCallBacks, isEmpty);
       });
 
       test(
-          'should remove futures added to applyToItemCallbacks after async ' +
+          'should remove futures added to applyToItemCallbacks after async '
               'callback completes with error', () async {
         try {
           final applyToItemFuture = cache.applyToItem(cachedId, (_) async {
@@ -538,17 +508,16 @@ void main() {
           });
           expect(cache.applyToItemCallBacks, isNotEmpty);
           await applyToItemFuture;
+          // ignore: avoid_catches_without_on_clauses
         } catch (_) {}
 
         expect(cache.applyToItemCallBacks, isEmpty);
       });
 
       test(
-          'should remove futures added to applyToItemCallbacks after async ' +
+          'should remove futures added to applyToItemCallbacks after async '
               'callback completes', () async {
-        final applyToItemFuture = cache.applyToItem(cachedId, (_) {
-          return new Future(() {});
-        });
+        final applyToItemFuture = cache.applyToItem(cachedId, (_) => new Future(() {}));
 
         expect(cache.applyToItemCallBacks, isNotEmpty);
         await applyToItemFuture;
@@ -566,11 +535,11 @@ void main() {
 class MockCachingStrategy extends Mock
     implements CachingStrategy<String, Object> {
   MockCachingStrategy() {
-    when(this.onDidGet(typed(any), typed(any)))
-        .thenReturn(new Future.value(null));
-    when(this.onDidRelease(typed(any), typed(any), typed(any)))
-        .thenReturn(new Future.value(null));
-    when(this.onDidRemove(typed(any), typed(any)))
-        .thenReturn(new Future.value(null));
+    when(onDidGet(any, any))
+        .thenAnswer((_) => new Future.value(null));
+    when(onDidRelease(any, any, any))
+        .thenAnswer((_) => new Future.value(null));
+    when(onDidRemove(any, any))
+        .thenAnswer((_) => new Future.value(null));
   }
 }

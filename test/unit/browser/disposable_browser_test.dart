@@ -40,7 +40,7 @@ void main() {
       test(
           'subscribeToDocumentEvent should remove same listener when thing is disposed',
           () async {
-        var document = new MockEventTarget();
+        final document = new MockEventTarget();
 
         disposable.subscribeToDocumentEvent(eventName, callback,
             documentObject: document, useCapture: useCapture);
@@ -52,7 +52,7 @@ void main() {
       test(
           'subscribeToWindowEvent should remove same listener when thing is disposed',
           () async {
-        var window = new MockEventTarget();
+        final window = new MockEventTarget();
 
         disposable.subscribeToWindowEvent(eventName, callback,
             windowObject: window, useCapture: useCapture);
@@ -72,14 +72,12 @@ void main() {
       test(
           'subscribeToDomElementEvent should remove listener when thing is disposed',
           () async {
-        var element = new Element.div();
-        var event = new Event('event');
-        var eventName = 'event';
-        int numberOfEventCallbacks = 0;
-        EventListener eventCallback = (_) {
-          numberOfEventCallbacks++;
-        };
-        var shouldNotListenEvent = new Event('shouldNotListenEvent');
+        final element = new Element.div();
+        final event = new Event('event');
+        const eventName = 'event';
+        var numberOfEventCallbacks = 0;
+        dynamic eventCallback(_) => numberOfEventCallbacks++;
+        final shouldNotListenEvent = new Event('shouldNotListenEvent');
 
         disposable.subscribeToDomElementEvent(
             element, eventName, eventCallback);

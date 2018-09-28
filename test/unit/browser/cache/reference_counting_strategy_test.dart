@@ -6,9 +6,9 @@ void main() {
   group('ReferenceCountingStrategy', () {
     Cache<String, Object> cache;
     ReferenceCountingStrategy<String, Object> referenceCountingStrategy;
-    final String cachedId = '1';
-    final Object cachedValue = new Object();
-    final String notCachedId = '2';
+    const cachedId = '1';
+    final cachedValue = new Object();
+    const notCachedId = '2';
 
     setUp(() async {
       referenceCountingStrategy = new ReferenceCountingStrategy();
@@ -54,7 +54,7 @@ void main() {
       test(
           'should not remove identifier form cache when reference '
           'count is greater than 1', () async {
-        cache.didUpdate.listen(expectAsync1((CacheContext _) {}, count: 0));
+        cache.didUpdate.listen(expectAsync1((_) {}, count: 0));
         await cache.get(cachedId, () => cachedValue);
         expect(referenceCountingStrategy.referenceCount(cachedId), 2);
         await cache.release(cachedId);
@@ -63,7 +63,7 @@ void main() {
       test(
           'should remove identifier from cache when last reference '
           'is released', () async {
-        cache.didUpdate.listen(expectAsync1((CacheContext context) {
+        cache.didUpdate.listen(expectAsync1((context) {
           expect(context.id, cachedId);
           expect(context.value, null);
         }));
@@ -73,7 +73,7 @@ void main() {
       test(
           'should remove identifier from cache when last reference '
           'is released', () async {
-        cache.didUpdate.listen(expectAsync1((CacheContext context) {
+        cache.didUpdate.listen(expectAsync1((context) {
           expect(context.id, cachedId);
           expect(context.value, null);
         }));

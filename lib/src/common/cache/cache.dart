@@ -14,6 +14,7 @@ class CacheContext<TIdentifier, TValue> {
   /// The current value stored in the [Cache] for the attributed [TIdentifier].
   final TValue value;
 
+  /// Create a new cache context.
   CacheContext(this.id, this.value);
 }
 
@@ -111,22 +112,24 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   final CachingStrategy<TIdentifier, TValue> _cachingStrategy;
 
   // ignore: close_sinks
-  StreamController<CacheContext<TIdentifier, TValue>> _didReleaseController =
+  final StreamController<CacheContext<TIdentifier, TValue>> _didReleaseController =
       new StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
 
   // ignore: close_sinks
-  StreamController<CacheContext<TIdentifier, TValue>> _didRemoveController =
+  final StreamController<CacheContext<TIdentifier, TValue>> _didRemoveController =
       new StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
 
   // ignore: close_sinks
-  StreamController<CacheContext<TIdentifier, TValue>> _didUpdateController =
+  final StreamController<CacheContext<TIdentifier, TValue>> _didUpdateController =
       new StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
 
+  /// Instantiate a new cache.
   Cache(this._cachingStrategy) {
     [_didReleaseController, _didRemoveController, _didUpdateController]
         .forEach(manageStreamController);
   }
 
+  /// Provide access to callbacks for testing.
   @visibleForTesting
   Map<TIdentifier, List<Future<dynamic>>> get applyToItemCallBacks =>
       _applyToItemCallBacks;
@@ -162,17 +165,17 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
 
   /// Keys that have not been released.
   Iterable<TIdentifier> get liveKeys =>
-      _cache.keys.where((TIdentifier key) => !_isReleased[key]);
+      _cache.keys.where((key) => !_isReleased[key]);
 
   /// Values that have not been released.
   ///
   /// To access a released value a [get] or [getAsync] should be used.
   Future<Iterable<TValue>> get liveValues =>
-      Future.wait(liveKeys.map((TIdentifier key) => _cache[key]));
+      Future.wait(liveKeys.map((key) => _cache[key]));
 
   /// Keys that have been released but are not yet removed.
   Iterable<TIdentifier> get releasedKeys =>
-      _cache.keys.where((TIdentifier key) => _isReleased[key]);
+      _cache.keys.where((key) => _isReleased[key]);
 
   /// Values that have not been released.
   ///
@@ -185,21 +188,6 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// [liveValues].
   @deprecated
   Future<Iterable<TValue>> get values => liveValues;
-
-  /// Does the [Cache] contain the given [TIdentifier]?
-  ///
-  /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
-  ///
-  /// Deprecated: 1.12.0
-  /// To be removed: 2.0.0
-  ///
-  /// This entry point is deprecated in favor of using [liveKeys].contains
-  /// or [releasedKeys].contains directly.
-  @deprecated
-  bool containsKey(TIdentifier id) {
-    _throwWhenDisposed('containsKey');
-    return liveKeys.contains(id) || releasedKeys.contains(id);
-  }
 
   /// Returns a value from the cache for a given [TIdentifier].
   ///
@@ -236,22 +224,23 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     _isReleased[id] = false;
     // Await any pending cached futures
     if (_cache.containsKey(id)) {
-      return _cache[id].then((TValue value) async {
+      return _cache[id].then((value) async {
         await _cachingStrategy.onDidGet(id, value);
         return value;
       });
     }
 
     // Install Future value
-    final Completer<TValue> completer = new Completer<TValue>();
+    final completer = new Completer<TValue>();
     _cache[id] = completer.future;
     try {
-      final TValue value = valueFactory.call();
+      final value = valueFactory.call();
 
-      _cachingStrategy.onDidGet(id, value).then((Null _) {
+      _cachingStrategy.onDidGet(id, value).then((_) {
         _didUpdateController.add(new CacheContext(id, value));
         completer.complete(value);
       });
+      //ignore: avoid_catches_without_on_clauses
     } catch (error, stackTrace) {
       completer.completeError(error, stackTrace);
     }
@@ -295,14 +284,14 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     _cachingStrategy.onWillGet(id);
     // Await any pending cached futures
     if (_cache.containsKey(id)) {
-      return _cache[id].then((TValue value) async {
+      return _cache[id].then((value) async {
         await _cachingStrategy.onDidGet(id, value);
         return value;
       });
     }
 
     // Install Future value
-    _cache[id] = valueFactory.call().then((TValue value) async {
+    _cache[id] = valueFactory.call().then((value) async {
       await _cachingStrategy.onDidGet(id, value);
       _didUpdateController.add(new CacheContext(id, value));
       return value;
@@ -333,12 +322,10 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     // Await any pending cached futures
     if (_cache.containsKey(id)) {
       _cachingStrategy.onWillRelease(id);
-      return _cache[id].then((TValue value) async {
+      return _cache[id].then((value) async {
         await _cachingStrategy.onDidRelease(id, value, remove);
         _didReleaseController.add(new CacheContext(id, value));
-      }).catchError((Object error, StackTrace stackTrace) {
-        return null;
-      });
+      }).catchError((error, stackTrace) => null);
     }
 
     return new Future.value();
@@ -361,16 +348,14 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     if (_cache.containsKey(id)) {
       _cachingStrategy.onWillRemove(id);
       final removedValue = _cache.remove(id);
-      return removedValue.then((TValue value) async {
+      return removedValue.then((value) async {
         if (_applyToItemCallBacks[id] != null) {
           await Future.wait(_applyToItemCallBacks[id]);
         }
         await _cachingStrategy.onDidRemove(id, value);
         _didRemoveController.add(new CacheContext(id, value));
         _didUpdateController.add(new CacheContext(id, null));
-      }).catchError((Object error, StackTrace stackTrace) {
-        return null;
-      });
+      }).catchError((error, stackTrace) => null);
     }
 
     return new Future.value();

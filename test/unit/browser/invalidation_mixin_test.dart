@@ -32,11 +32,11 @@ void main() {
 
     group('invalidate', () {
       test('marks the thing as invalid', () {
-        Future onValidation = thing.invalidate();
+        final onValidation = thing.invalidate();
 
         expect(thing.invalid, isTrue);
 
-        onValidation.then(expectAsync1((ValidationStatus status) {
+        onValidation.then(expectAsync1((status) {
           expect(status, equals(ValidationStatus.cancelled));
         }));
 
@@ -46,9 +46,7 @@ void main() {
       });
 
       test('calls validate, eventually', () {
-        Future onValidation = thing.invalidate();
-
-        onValidation.then(expectAsync1((ValidationStatus status) {
+        thing.invalidate().then(expectAsync1((status) {
           expect(status, equals(ValidationStatus.complete));
         }));
 
@@ -59,7 +57,7 @@ void main() {
 }
 
 class InvalidThing extends InvalidationMixin {
-  StreamController _onValidate = new StreamController.broadcast();
+  final _onValidate = new StreamController.broadcast();
   Stream get onValidate => _onValidate.stream;
 
   @override

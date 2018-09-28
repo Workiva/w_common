@@ -25,7 +25,7 @@ abstract class InvalidationMixin {
   bool get invalid => _onValidate != null && !_onValidate.isCompleted;
 
   /// Used to complete or error the validation
-  Completer _onValidate;
+  Completer<ValidationStatus> _onValidate;
 
   /// Mark this as invalid to be validated at a later time.
   ///
@@ -33,8 +33,10 @@ abstract class InvalidationMixin {
   /// to invalidate will not enqueue multiple validations. The [Future] returned
   /// will complete with [ValidationStatus.complete] when the class is validated
   /// and [ValidationStatus.cancelled] if invalidation is cancelled.
-  Future invalidate() {
-    if (invalid) return _onValidate.future;
+  Future<ValidationStatus> invalidate() {
+    if (invalid) {
+      return _onValidate.future;
+    }
 
     _onValidate = new Completer();
 
@@ -65,4 +67,10 @@ abstract class InvalidationMixin {
 /// An object representing the reason for the validation .
 ///
 /// A validation can be completed or it can be cancelled.
-enum ValidationStatus { complete, cancelled }
+enum ValidationStatus {
+  /// Validation has completed.
+  complete,
+
+  /// Validation has been cancelled.
+  cancelled
+}

@@ -21,18 +21,14 @@ import 'package:w_common/func.dart';
 import 'package:w_common/src/common/disposable.dart' as disposable_common;
 
 class _InnerDisposable extends disposable_common.Disposable {
-  Func<Future<Null>> onDisposeHandler;
-  Func<Future<Null>> onWillDisposeHandler;
+  Func<Future<void>> onDisposeHandler;
+  Func<Future<void>> onWillDisposeHandler;
 
   @override
-  Future<Null> onDispose() {
-    return onDisposeHandler();
-  }
+  Future<void> onDispose() => onDisposeHandler();
 
   @override
-  Future<Null> onWillDispose() {
-    return onWillDisposeHandler();
-  }
+  Future<void> onWillDispose() => onWillDisposeHandler();
 }
 
 /// Allows the creation of managed objects, including helpers for common
@@ -67,7 +63,7 @@ class _InnerDisposable extends disposable_common.Disposable {
 ///          manageStreamController(_controller);
 ///        }
 ///
-///        Future<Null> onDispose() {
+///        Future<void> onDispose() {
 ///          // Other cleanup
 ///        }
 ///      }
@@ -123,7 +119,7 @@ class _InnerDisposable extends disposable_common.Disposable {
 ///
 ///        // ...more methods
 ///
-///        Future<Null> unload() async {
+///        Future<void> unload() async {
 ///          await _disposable.dispose();
 ///        }
 ///      }
@@ -147,7 +143,7 @@ class Disposable implements disposable_common.Disposable {
   final _InnerDisposable _disposable = new _InnerDisposable();
 
   @override
-  Future<Null> get didDispose => _disposable.didDispose;
+  Future<void> get didDispose => _disposable.didDispose;
 
   @override
   int get disposalTreeSize => _disposable.disposalTreeSize;
@@ -174,10 +170,10 @@ class Disposable implements disposable_common.Disposable {
       _disposable.awaitBeforeDispose(future);
 
   @override
-  Future<Null> dispose() {
+  Future<void> dispose() {
     _disposable
-      ..onDisposeHandler = this.onDispose
-      ..onWillDisposeHandler = this.onWillDispose;
+      ..onDisposeHandler = onDispose
+      ..onWillDisposeHandler = onWillDispose;
     return _disposable.dispose().then((_) {
       // We want the description to be the runtime type of this
       // object, not the proxy disposable, so we need to reset
@@ -212,27 +208,13 @@ class Disposable implements disposable_common.Disposable {
           onError: onError, onDone: onDone, cancelOnError: cancelOnError);
 
   @override
-  disposable_common.Disposable manageAndReturnDisposable(
-          disposable_common.Disposable disposable) =>
-      _disposable.manageAndReturnDisposable(disposable);
-
-  @override
-  T manageAndReturnTypedDisposable<T extends disposable_common.Disposable>(
+  T manageDisposable<T extends disposable_common.Disposable>(
           T disposable) =>
-      _disposable.manageAndReturnTypedDisposable(disposable);
+      _disposable.manageDisposable(disposable);
 
   @override
   Completer<T> manageCompleter<T>(Completer<T> completer) =>
       _disposable.manageCompleter(completer);
-
-  @override
-  void manageDisposable(disposable_common.Disposable disposable) =>
-      _disposable.manageDisposable(disposable);
-
-  @deprecated
-  @override
-  void manageDisposer(disposable_common.Disposer disposer) =>
-      _disposable.manageDisposer(disposer);
 
   @override
   disposable_common.ManagedDisposer getManagedDisposer(
@@ -243,17 +225,10 @@ class Disposable implements disposable_common.Disposable {
   void manageStreamController(StreamController controller) =>
       _disposable.manageStreamController(controller);
 
-  @deprecated
-  @override
-  void manageStreamSubscription(StreamSubscription subscription) =>
-      _disposable.manageStreamSubscription(subscription);
-
   /// Callback to allow arbitrary cleanup on dispose.
   @override
   @protected
-  Future<Null> onDispose() async {
-    return null;
-  }
+  Future<void> onDispose() async => null;
 
   /// Callback to allow arbitrary cleanup as soon as disposal is requested (i.e.
   /// [dispose] is called) but prior to disposal actually starting.
@@ -262,9 +237,7 @@ class Disposable implements disposable_common.Disposable {
   /// completes.
   @override
   @protected
-  Future<Null> onWillDispose() async {
-    return null;
-  }
+  Future<void> onWillDispose() async => null;
 
   /// Adds an event listener to the document object and removes the event
   /// listener upon disposal.
@@ -274,9 +247,7 @@ class Disposable implements disposable_common.Disposable {
   /// the only way to remove the listener is to use the [dispose] method.
   void subscribeToDocumentEvent(String event, EventListener callback,
       {bool useCapture, EventTarget documentObject}) {
-    if (documentObject == null) {
-      documentObject = document;
-    }
+    documentObject ??= document;
     _subscribeToEvent(documentObject, event, callback, useCapture);
   }
 
@@ -300,9 +271,7 @@ class Disposable implements disposable_common.Disposable {
   /// the only way to remove the listener is to use the [dispose] method.
   void subscribeToWindowEvent(String event, EventListener callback,
       {bool useCapture, EventTarget windowObject}) {
-    if (windowObject == null) {
-      windowObject = window;
-    }
+    windowObject ??= window;
     _subscribeToEvent(windowObject, event, callback, useCapture);
   }
 

@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'dart:convert' show JSON;
+import 'dart:convert';
 
 import 'package:test/test.dart';
 import 'package:w_common/json_serializable.dart';
 
 class ExampleSerializable extends JsonSerializable {
-  Map context = new Map();
+  Map<String, dynamic> context = {};
 
   @override
   Map<String, dynamic> toJson() {
-    Map<String, dynamic> fieldMap = {};
+    final fieldMap = <String, dynamic>{};
     fieldMap['context'] = context;
     return fieldMap;
   }
@@ -31,10 +31,10 @@ class ExampleSerializable extends JsonSerializable {
 void main() {
   group('JsonSerializable : verify that', () {
     test('example object can be properly serialized', () async {
-      ExampleSerializable testSerializable = new ExampleSerializable();
+      final testSerializable = new ExampleSerializable();
       testSerializable.context['child'] = 'childName';
       expect(
-          JSON.encode(testSerializable), '{"context":{"child":"childName"}}');
+          jsonEncode(testSerializable), '{"context":{"child":"childName"}}');
     });
   });
 }

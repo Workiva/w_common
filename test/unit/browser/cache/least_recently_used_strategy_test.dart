@@ -6,8 +6,8 @@ import 'package:w_common/src/common/cache/least_recently_used_strategy.dart';
 
 void main() {
   group('MostRecentlyUsedStrategy', () {
-    var expectedId = 'expectedId';
-    var expectedValue = 'expectedValue';
+    const expectedId = 'expectedId';
+    const expectedValue = 'expectedValue';
 
     for (var i in new Iterable<int>.generate(3)) {
       Cache<String, Object> cache;
@@ -51,12 +51,12 @@ void main() {
           expect(context.value, expectedValue);
         }, count: 2));
 
-        var firstGet = cache.getAsync(expectedId, () async => expectedValue);
-        var remove = cache.remove(expectedId);
-        var secondGet = cache.getAsync(expectedId, () async => expectedValue);
+        final firstGet = cache.getAsync(expectedId, () async => expectedValue);
+        final remove = cache.remove(expectedId);
+        final secondGet = cache.getAsync(expectedId, () async => expectedValue);
 
         // release expected item
-        var release = cache.release(expectedId);
+        final release = cache.release(expectedId);
 
         await Future.wait([firstGet, remove, secondGet, release]);
 
