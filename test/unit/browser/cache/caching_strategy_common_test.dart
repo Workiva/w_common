@@ -52,7 +52,8 @@ void main() {
           'synchronous get release release get should not unnecessarily '
           'remove item from cache', () async {
         final firstGetCall = cache.getAsync('id', valueFactory);
-        final releases = Future.wait([cache.release('id'), cache.release('id')]);
+        final releases =
+            Future.wait([cache.release('id'), cache.release('id')]);
         final secondGetCall = cache.getAsync('id', valueFactory);
 
         await releases;

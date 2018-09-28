@@ -33,8 +33,7 @@ void main() {
     test('example object can be properly serialized', () async {
       final testSerializable = new ExampleSerializable();
       testSerializable.context['child'] = 'childName';
-      expect(
-          jsonEncode(testSerializable), '{"context":{"child":"childName"}}');
+      expect(jsonEncode(testSerializable), '{"context":{"child":"childName"}}');
     });
   });
 }

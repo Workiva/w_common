@@ -38,15 +38,15 @@ abstract class StubDisposable implements Disposable {
     numTimesOnDisposeCalled++;
     wasOnDisposeCalled = true;
     final future = new Future<void>(() => null)
-    ..then((_) async {
-      await new Future(() {}); // Give it a chance to update state.
-      expect(isDisposed, isTrue);
-      // ignore: deprecated_member_use
-      expect(isDisposing, isFalse);
-      // ignore: deprecated_member_use
-      expect(isDisposedOrDisposing, isTrue);
-      expect(isOrWillBeDisposed, isTrue);
-    });
+      ..then((_) async {
+        await new Future(() {}); // Give it a chance to update state.
+        expect(isDisposed, isTrue);
+        // ignore: deprecated_member_use
+        expect(isDisposing, isFalse);
+        // ignore: deprecated_member_use
+        expect(isDisposedOrDisposing, isTrue);
+        expect(isOrWillBeDisposed, isTrue);
+      });
     return future;
   }
 

@@ -19,7 +19,8 @@ void main() {
   group('Func<T>', () {
     test('works as a type', () {
       TestModel f() => new TestModel();
-      void testFunction(TestModel modelGetter()) => expect(modelGetter(), const TypeMatcher<TestModel>());
+      void testFunction(TestModel modelGetter()) =>
+          expect(modelGetter(), const TypeMatcher<TestModel>());
 
       testFunction(f);
     });

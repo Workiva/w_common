@@ -112,15 +112,18 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   final CachingStrategy<TIdentifier, TValue> _cachingStrategy;
 
   // ignore: close_sinks
-  final StreamController<CacheContext<TIdentifier, TValue>> _didReleaseController =
+  final StreamController<CacheContext<TIdentifier, TValue>>
+      _didReleaseController =
       new StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
 
   // ignore: close_sinks
-  final StreamController<CacheContext<TIdentifier, TValue>> _didRemoveController =
+  final StreamController<CacheContext<TIdentifier, TValue>>
+      _didRemoveController =
       new StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
 
   // ignore: close_sinks
-  final StreamController<CacheContext<TIdentifier, TValue>> _didUpdateController =
+  final StreamController<CacheContext<TIdentifier, TValue>>
+      _didUpdateController =
       new StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
 
   /// Instantiate a new cache.

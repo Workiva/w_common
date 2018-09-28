@@ -109,8 +109,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     final nullReturningSub = new MockStreamSubscription();
 
     when(nullReturningSub.cancel()).thenReturn(null);
-    when(stream.listen(any,
-            cancelOnError: anyNamed('cancelOnError')))
+    when(stream.listen(any, cancelOnError: anyNamed('cancelOnError')))
         .thenReturn(nullReturningSub);
 
     return stream;
@@ -125,9 +124,10 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         () async {
       final completer = new Completer<void>();
       // ignore: unawaited_futures
-      disposable..awaitBeforeDispose(completer.future)
-      // ignore: unawaited_futures
-      ..dispose();
+      disposable
+        ..awaitBeforeDispose(completer.future)
+        // ignore: unawaited_futures
+        ..dispose();
       await new Future(() {});
       expect(disposable.isOrWillBeDisposed, isTrue);
       expect(disposable.isDisposed, isFalse);
@@ -142,15 +142,15 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
   group('disposalTreeSize', () {
     test('should count all managed objects', () {
       final controller = new StreamController();
-      disposable..manageStreamController(controller)
-      ..listenToStream(controller.stream, (_) {})
-      ..manageDisposable(disposableFactory())
-      ..manageCompleter(new Completer())
-      ..getManagedTimer(new Duration(days: 1), () {})
-
-          ..getManagedDelayedFuture(new Duration(days: 1), () {})
-          .catchError((_) {}) // Because we dispose prematurely.
-      ..getManagedPeriodicTimer(new Duration(days: 1), (_) {});
+      disposable
+        ..manageStreamController(controller)
+        ..listenToStream(controller.stream, (_) {})
+        ..manageDisposable(disposableFactory())
+        ..manageCompleter(new Completer())
+        ..getManagedTimer(new Duration(days: 1), () {})
+        ..getManagedDelayedFuture(new Duration(days: 1), () {})
+            .catchError((_) {}) // Because we dispose prematurely.
+        ..getManagedPeriodicTimer(new Duration(days: 1), (_) {});
       expect(disposable.disposalTreeSize, 8);
       return disposable.dispose().then((_) {
         expect(disposable.disposalTreeSize, 1);
@@ -159,7 +159,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     test('should count nested objects', () {
       final nestedThing = disposableFactory()
-      ..manageDisposable(disposableFactory());
+        ..manageDisposable(disposableFactory());
       disposable.manageDisposable(nestedThing);
       expect(disposable.disposalTreeSize, 3);
       return disposable.dispose().then((_) {
@@ -178,8 +178,9 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     test('should complete with an error on premature dispose', () {
-          disposable.getManagedDelayedFuture(new Duration(days: 1), () => null)
-      .catchError((e) {
+      disposable
+          .getManagedDelayedFuture(new Duration(days: 1), () => null)
+          .catchError((e) {
         expect(e, const TypeMatcher<ObjectDisposedException>());
       });
       disposable.dispose();
@@ -190,9 +191,10 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         () async {
       final completer = new Completer();
       // ignore: unawaited_futures
-      disposable..awaitBeforeDispose(completer.future)
-      // ignore: unawaited_futures
-      ..dispose();
+      disposable
+        ..awaitBeforeDispose(completer.future)
+        // ignore: unawaited_futures
+        ..dispose();
       await new Future(() {});
       expect(disposable.isOrWillBeDisposed, isTrue);
       await disposable.getManagedDelayedFuture(
@@ -203,9 +205,10 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test('should throw if called while disposal is in progress', () async {
       final completer = new Completer();
       // ignore: unawaited_futures
-      disposable..awaitBeforeDispose(completer.future)
-      // ignore: unawaited_futures
-      ..dispose();
+      disposable
+        ..awaitBeforeDispose(completer.future)
+        // ignore: unawaited_futures
+        ..dispose();
       // ignore: unawaited_futures
       completer.future.then((_) async {
         await new Future(() {});
@@ -231,8 +234,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
   group('manageAndReturnTypedDisposable', () {
     void injectDisposable({Disposable injected}) {
-      disposable.injected = injected ??
-          disposable.manageDisposable(disposableFactory());
+      disposable.injected =
+          injected ?? disposable.manageDisposable(disposableFactory());
     }
 
     test('should dispose managed disposable', () async {
@@ -252,21 +255,20 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     test('should remove disposable from internal collection if disposed',
-            () async {
-          final disposeCounter = new DisposeCounter();
+        () async {
+      final disposeCounter = new DisposeCounter();
 
-          // Manage the disposable child and dispose of it independently
-          disposable.manageDisposable(disposeCounter);
-          await disposeCounter.dispose();
-          await disposable.dispose();
+      // Manage the disposable child and dispose of it independently
+      disposable.manageDisposable(disposeCounter);
+      await disposeCounter.dispose();
+      await disposable.dispose();
 
-          expect(disposeCounter.disposeCount, 1);
-        });
+      expect(disposeCounter.disposeCount, 1);
+    });
 
     testManageMethod<StubDisposable>(
         'manageAndReturnTypedDisposable',
-        (argument) =>
-            disposable.manageDisposable(argument),
+        (argument) => disposable.manageDisposable(argument),
         disposableFactory());
   });
 
@@ -345,7 +347,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
   group('listenToStream', () {
     test('should cancel subscription when parent is disposed', () async {
       final controller = new StreamController()
-      ..onCancel = expectAsync1(([_]) {}, count: 1);
+        ..onCancel = expectAsync1(([_]) {}, count: 1);
       disposable.listenToStream(
           controller.stream, expectAsync1((_) {}, count: 0));
       await disposable.dispose();
@@ -356,8 +358,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test('should not throw if stream subscription is canceled after disposal',
         () async {
       final controller = new StreamController<void>();
-      final subscription =
-          disposable.listenToStream(controller.stream, (_) {});
+      final subscription = disposable.listenToStream(controller.stream, (_) {});
       await disposable.dispose();
       expect(() async => await subscription.cancel(), returnsNormally);
       await controller.close();
@@ -368,7 +369,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         'onError handler', () {
       // ignore: close_sinks
       final controller = new StreamController<void>()
-      ..addError(new Exception('intentional'));
+        ..addError(new Exception('intentional'));
       runZoned(() {
         disposable.listenToStream(controller.stream, (_) {});
       }, onError: expectAsync2((error, _) {
@@ -398,10 +399,10 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       final controller = new StreamController<void>();
       // ignore: cancel_subscriptions
       disposable.listenToStream(controller.stream, (_) {})
-      ..onError(expectAsync2((error, _) {
-        expect(error, const TypeMatcher<Exception>());
-        expect(error.toString(), 'Exception: intentional');
-      }));
+        ..onError(expectAsync2((error, _) {
+          expect(error, const TypeMatcher<Exception>());
+          expect(error.toString(), 'Exception: intentional');
+        }));
       controller.addError(new Exception('intentional'));
     });
 
@@ -447,7 +448,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       final controller = new StreamController<void>();
       // ignore: cancel_subscriptions
       disposable.listenToStream(controller.stream, (_) {})
-      ..onDone(expectAsync0(() {}));
+        ..onDone(expectAsync0(() {}));
       controller.close();
     });
 
@@ -510,7 +511,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         // ignore: close_sinks
         final controller = new StreamController<void>();
         // ignore: cancel_subscriptions
-        final subscription = disposable.listenToStream(controller.stream, (_) {});
+        final subscription =
+            disposable.listenToStream(controller.stream, (_) {});
         final future = subscription.asFuture('intentional');
         await controller.close();
         final value = await future;
@@ -521,7 +523,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         // ignore: close_sinks
         final controller = new StreamController<void>();
         // ignore: cancel_subscriptions
-        final subscription = disposable.listenToStream(controller.stream, (_) {});
+        final subscription =
+            disposable.listenToStream(controller.stream, (_) {});
         subscription
             .asFuture('intentional')
             .then(expectAsync1((_) {}, count: 0))
@@ -539,7 +542,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         // ignore: close_sinks
         final controller = new StreamController<void>();
         // ignore: cancel_subscriptions
-        final subscription = disposable.listenToStream(controller.stream, (_) {},
+        final subscription = disposable.listenToStream(
+            controller.stream, (_) {},
             cancelOnError: false, onError: (_, [__]) {});
         final future =
             subscription.asFuture('intentional').catchError((_, [__]) {});
@@ -575,8 +579,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
       final stream = getNullReturningSubscriptionStream();
 
-      final subscription =
-          disposable.listenToStream(stream, (_) {});
+      final subscription = disposable.listenToStream(stream, (_) {});
 
       expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
 
@@ -593,8 +596,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         () async {
       final previousTreeSize = disposable.disposalTreeSize;
       final controller = new StreamController<void>();
-      final subscription =
-          disposable.listenToStream(controller.stream, (_) {});
+      final subscription = disposable.listenToStream(controller.stream, (_) {});
 
       expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
 
@@ -645,8 +647,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     test('should return a timer that can call cancel multiple times', () {
       expect(() {
-        timer..cancel()
-        ..cancel();
+        timer..cancel()..cancel();
       }, returnsNormally);
     });
 
@@ -663,9 +664,10 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         () async {
       final completer = new Completer();
       // ignore: unawaited_futures
-      disposable..awaitBeforeDispose(completer.future)
-      // ignore: unawaited_futures
-      ..dispose();
+      disposable
+        ..awaitBeforeDispose(completer.future)
+        // ignore: unawaited_futures
+        ..dispose();
       await new Future(() {});
       expect(disposable.isOrWillBeDisposed, isTrue);
       disposable.getManagedTimer(new Duration(milliseconds: 10), () => null);
@@ -675,9 +677,10 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test('should throw if called while disposal is in progress', () async {
       final completer = new Completer();
       // ignore: unawaited_futures
-      disposable..awaitBeforeDispose(completer.future)
-      // ignore: unawaited_futures
-      ..dispose();
+      disposable
+        ..awaitBeforeDispose(completer.future)
+        // ignore: unawaited_futures
+        ..dispose();
       // ignore: unawaited_futures
       completer.future.then((_) async {
         await new Future(() {});
@@ -731,8 +734,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     test('should return a timer that can call cancel multiple times', () {
       expect(() {
-        timer..cancel()
-        ..cancel();
+        timer..cancel()..cancel();
       }, returnsNormally);
     });
 
@@ -749,9 +751,10 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         () async {
       final completer = new Completer();
       // ignore: unawaited_futures
-      disposable..awaitBeforeDispose(completer.future)
-      // ignore: unawaited_futures
-      ..dispose();
+      disposable
+        ..awaitBeforeDispose(completer.future)
+        // ignore: unawaited_futures
+        ..dispose();
       await new Future(() {});
       expect(disposable.isOrWillBeDisposed, isTrue);
       disposable.getManagedPeriodicTimer(
@@ -762,9 +765,10 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test('should throw if called while disposal is in progress', () async {
       final completer = new Completer();
       // ignore: unawaited_futures
-      disposable..awaitBeforeDispose(completer.future)
-      // ignore: unawaited_futures
-      ..dispose();
+      disposable
+        ..awaitBeforeDispose(completer.future)
+        // ignore: unawaited_futures
+        ..dispose();
       // ignore: unawaited_futures
       completer.future.then((_) async {
         await new Future(() {});
@@ -873,8 +877,9 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       completer.future.catchError(expectAsync1((exception) {
         expect(exception, const TypeMatcher<ObjectDisposedException>());
       }));
-      disposable..manageCompleter(completer)
-      ..dispose();
+      disposable
+        ..manageCompleter(completer)
+        ..dispose();
     });
 
     test('should be unmanaged after completion', () {
@@ -901,9 +906,9 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test('should close a single-subscription stream when parent is disposed',
         () async {
       final controller = new StreamController();
-      final subscription =
-          controller.stream.listen(expectAsync1(([_]) {}, count: 0))
-      ..onDone(expectAsync1(([_]) {}));
+      final subscription = controller.stream
+          .listen(expectAsync1(([_]) {}, count: 0))
+            ..onDone(expectAsync1(([_]) {}));
       disposable.manageStreamController(controller);
       expect(controller.isClosed, isFalse);
       await disposable.dispose();

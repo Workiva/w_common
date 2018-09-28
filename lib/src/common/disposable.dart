@@ -408,9 +408,8 @@ class Disposable implements _Disposable, DisposableManager, LeakFlagger {
 
     if (_debugMode) {
       stopwatch.stop();
-      _logger
-          .info('$runtimeType $hashCode took ${stopwatch.elapsedMicroseconds /
-          1000000.0} seconds to dispose');
+      _logger.info(
+          '$runtimeType $hashCode took ${stopwatch.elapsedMicroseconds / 1000000.0} seconds to dispose');
     }
 
     flagLeak();
@@ -620,8 +619,7 @@ class Disposable implements _Disposable, DisposableManager, LeakFlagger {
   Future<void> onWillDispose() async => null;
 
   void _addObservableTimerDisposable(_ObservableTimer timer) {
-    final disposable =
-        new ManagedDisposer(() async => timer.cancel());
+    final disposable = new ManagedDisposer(() async => timer.cancel());
     _internalDisposables.add(disposable);
     timer.didConclude.then((_) {
       // ignore: deprecated_member_use

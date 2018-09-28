@@ -32,7 +32,8 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
   bool get isPaused => _subscription.isPaused;
 
   @override
-  Future<E> asFuture<E>([E futureValue]) => _subscription.asFuture(futureValue).whenComplete(_complete);
+  Future<E> asFuture<E>([E futureValue]) =>
+      _subscription.asFuture(futureValue).whenComplete(_complete);
 
   @override
   Future<Null> cancel() {
