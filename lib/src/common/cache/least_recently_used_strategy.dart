@@ -17,7 +17,6 @@ class LeastRecentlyUsedStrategy<TIdentifier, TValue>
   /// cache before removing the least recently used pair from the cache.
   final int _keep;
 
-  /// Instantiate an LRU strategy.
   LeastRecentlyUsedStrategy(this._keep) {
     if (_keep < 0) {
       throw new ArgumentError(
@@ -26,8 +25,8 @@ class LeastRecentlyUsedStrategy<TIdentifier, TValue>
   }
 
   @override
-  Future<Null> onDidRelease(
-      TIdentifier id, TValue value, Future<Null> remove(TIdentifier id)) async {
+  Future<void> onDidRelease(
+      TIdentifier id, TValue value, Future<void> remove(TIdentifier id)) async {
     // If there are more than _keep items in the queue remove the least recently
     // used.
     while (_removalQueue.length > _keep) {

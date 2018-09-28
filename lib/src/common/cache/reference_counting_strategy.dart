@@ -11,8 +11,8 @@ class ReferenceCountingStrategy<TIdentifier, TValue>
   int referenceCount(TIdentifier id) => _count[id];
 
   @override
-  Future<Null> onDidRelease(
-      TIdentifier id, TValue value, Future<Null> remove(TIdentifier id)) async {
+  Future<void> onDidRelease(
+      TIdentifier id, TValue value, Future<void> remove(TIdentifier id)) async {
     if (!_count.containsKey(id)) {
       return null;
     }
@@ -23,7 +23,7 @@ class ReferenceCountingStrategy<TIdentifier, TValue>
   }
 
   @override
-  Future<Null> onDidRemove(TIdentifier id, TValue value) async {
+  Future<void> onDidRemove(TIdentifier id, TValue value) async {
     _count.remove(id);
   }
 
