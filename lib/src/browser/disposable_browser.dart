@@ -176,8 +176,8 @@ class Disposable implements disposable_common.Disposable {
   @override
   Future<Null> dispose() {
     _disposable
-      ..onDisposeHandler = this.onDispose
-      ..onWillDisposeHandler = this.onWillDispose;
+      ..onDisposeHandler = onDispose
+      ..onWillDisposeHandler = onWillDispose;
     return _disposable.dispose().then((_) {
       // We want the description to be the runtime type of this
       // object, not the proxy disposable, so we need to reset
