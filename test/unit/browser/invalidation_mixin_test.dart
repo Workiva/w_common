@@ -60,7 +60,8 @@ void main() {
 }
 
 class InvalidThing extends InvalidationMixin {
-  final StreamController<ValidationStatus> _onValidate = new StreamController<ValidationStatus>.broadcast();
+  final StreamController<ValidationStatus> _onValidate =
+      new StreamController<ValidationStatus>.broadcast();
 
   Stream<ValidationStatus> get onValidate => _onValidate.stream;
 

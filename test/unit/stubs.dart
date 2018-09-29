@@ -81,7 +81,8 @@ typedef void OnDoneCallback();
 
 class StubStream<T> extends Stream<T> {
   @override
-  StreamSubscription<T> listen(OnDataCallback<T> onData, {Function onError, OnDoneCallback onDone, bool cancelOnError}) {
+  StreamSubscription<T> listen(OnDataCallback<T> onData,
+      {Function onError, OnDoneCallback onDone, bool cancelOnError}) {
     final sub = new MockStreamSubscription<T>();
     when(sub.cancel()).thenReturn(null);
     return sub;
