@@ -106,16 +106,23 @@ void main() {
         var childCache = new Cache(mockCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
 
-        verify(mockCachingStrategy.onDidGet(cachedId, cachedValue));
+        expect(mockCachingStrategy.onDidGetCalled == 1, isTrue);
+        expect(mockCachingStrategy.onDidGetCalledWithId, cachedId);
+        expect(mockCachingStrategy.onDidGetCalledWithValue, cachedValue);
       });
 
       test('should call onDidGet when value is cached', () async {
         var mockCachingStrategy = new MockCachingStrategy();
         var childCache = new Cache(mockCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
+        expect(mockCachingStrategy.onDidGetCalledWithId, cachedId);
+        expect(mockCachingStrategy.onDidGetCalledWithValue, cachedValue);
+
         await childCache.get(cachedId, () => cachedValue);
 
-        verify(mockCachingStrategy.onDidGet(cachedId, cachedValue)).called(2);
+        expect(mockCachingStrategy.onDidGetCalled == 2, isTrue);
+        expect(mockCachingStrategy.onDidGetCalledWithId, cachedId);
+        expect(mockCachingStrategy.onDidGetCalledWithValue, cachedValue);
       });
 
       test('should throw when disposed', () async {
@@ -219,7 +226,10 @@ void main() {
         var childCache = new Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.remove(cachedId);
-        verify(stubCachingStrategy.onDidRemove(cachedId, cachedValue));
+
+        expect(stubCachingStrategy.onDidRemoveCalled == 1, isTrue);
+        expect(stubCachingStrategy.onDidRemoveCalledWithId, cachedId);
+        expect(stubCachingStrategy.onDidRemoveCalledWithValue, cachedValue);
       });
 
       test('should call onWillRemove when value was cached', () async {
@@ -227,7 +237,8 @@ void main() {
         var childCache = new Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.remove(cachedId);
-        verify(stubCachingStrategy.onWillRemove(cachedId));
+        expect(stubCachingStrategy.onWillRemoveCalled == 1, isTrue);
+        expect(stubCachingStrategy.onWillRemoveCalledWith, cachedId);
       });
 
       test('should not call onDidRemove when identifer is not cached',
@@ -235,7 +246,8 @@ void main() {
         var stubCachingStrategy = new MockCachingStrategy();
         var childCache = new Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
-        verifyNever(stubCachingStrategy.onDidRemove(typed(any), typed(any)));
+
+        expect(stubCachingStrategy.onDidRemoveCalled == 0, isTrue);
       });
 
       test('should not call onWillRemove when identifer is not cached',
@@ -243,7 +255,8 @@ void main() {
         var stubCachingStrategy = new MockCachingStrategy();
         var childCache = new Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
-        verifyNever(stubCachingStrategy.onWillRemove(typed(any)));
+
+        expect(stubCachingStrategy.onWillRemoveCalled == 0, isTrue);
       });
 
       test('should remove after pending get if called synchronously', () {
@@ -307,8 +320,11 @@ void main() {
         var childCache = new Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.release(cachedId);
-        verify(stubCachingStrategy.onDidRelease(
-            cachedId, cachedValue, childCache.remove));
+
+        expect(stubCachingStrategy.onDidReleaseCalled == 1, isTrue);
+        expect(stubCachingStrategy.onDidReleaseCalledWithId, cachedId);
+        expect(stubCachingStrategy.onDidReleaseCalledWithValue, cachedValue);
+        expect(stubCachingStrategy.onDidReleaseCalledWithFn, childCache.remove);
       });
 
       test('should call onWillRelease when value was cached', () async {
@@ -316,7 +332,9 @@ void main() {
         var childCache = new Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.release(cachedId);
-        verify(stubCachingStrategy.onWillRelease(cachedId));
+
+        expect(stubCachingStrategy.onWillReleaseCalled == 1, isTrue);
+        expect(stubCachingStrategy.onWillReleaseCalledWith, cachedId);
       });
 
       test('should not call onDidRelease when identifer is not cached',
@@ -324,8 +342,7 @@ void main() {
         var stubCachingStrategy = new MockCachingStrategy();
         var childCache = new Cache(stubCachingStrategy);
         await childCache.release(cachedId);
-        verifyNever(stubCachingStrategy.onDidRelease(
-            typed(any), typed(any), typed(any)));
+        expect(stubCachingStrategy.onDidReleaseCalled == 0, isTrue);
       });
 
       test('should not call onWillRemove when identifer is not cached',
@@ -333,7 +350,7 @@ void main() {
         var stubCachingStrategy = new MockCachingStrategy();
         var childCache = new Cache(stubCachingStrategy);
         await childCache.release(cachedId);
-        verifyNever(stubCachingStrategy.onWillRelease(typed(any)));
+        expect(stubCachingStrategy.onWillReleaseCalled == 0, isTrue);
       });
 
       test('should complete if pending get factory completes with an error',
@@ -578,14 +595,72 @@ void main() {
   });
 }
 
-class MockCachingStrategy extends Mock
-    implements CachingStrategy<String, Object> {
-  MockCachingStrategy() {
-    when(this.onDidGet(typed(any), typed(any)))
-        .thenReturn(new Future.value(null));
-    when(this.onDidRelease(typed(any), typed(any), typed(any)))
-        .thenReturn(new Future.value(null));
-    when(this.onDidRemove(typed(any), typed(any)))
-        .thenReturn(new Future.value(null));
+class MockCachingStrategy //extends Mock
+    implements
+        CachingStrategy<String, Object> {
+  int onWillRemoveCalled = 0;
+  String onWillRemoveCalledWith;
+
+  int onWillReleaseCalled = 0;
+  String onWillReleaseCalledWith;
+
+  int onWillGetCalled = 0;
+  String onWillGetCalledWith;
+
+  int onDidGetCalled = 0;
+  String onDidGetCalledWithId;
+  Object onDidGetCalledWithValue;
+
+  int onDidRemoveCalled = 0;
+  String onDidRemoveCalledWithId;
+  Object onDidRemoveCalledWithValue;
+
+  int onDidReleaseCalled = 0;
+  String onDidReleaseCalledWithId;
+  Object onDidReleaseCalledWithValue;
+  Function onDidReleaseCalledWithFn;
+  MockCachingStrategy();
+  @override
+  Future<Null> onDidGet(String id, Object value) async {
+    onDidGetCalled++;
+    onDidGetCalledWithId = id;
+    onDidGetCalledWithValue = value;
+    return null;
+  }
+
+  @override
+  Future<Null> onDidRelease(
+      String id, Object value, Future<Null> remove(String id)) async {
+    onDidReleaseCalled++;
+    onDidReleaseCalledWithId = id;
+    onDidReleaseCalledWithValue = value;
+    onDidReleaseCalledWithFn = remove;
+    return null;
+  }
+
+  @override
+  Future<Null> onDidRemove(String id, Object value) async {
+    onDidRemoveCalled++;
+    onDidRemoveCalledWithId = id;
+    onDidRemoveCalledWithValue = value;
+    return null;
+  }
+
+  @override
+  void onWillRemove(String s) {
+    onWillRemoveCalled++;
+    onWillRemoveCalledWith = s;
+  }
+
+  @override
+  void onWillRelease(String s) {
+    onWillReleaseCalled++;
+    onWillReleaseCalledWith = s;
+  }
+
+  @override
+  void onWillGet(String s) {
+    onWillGetCalled++;
+    onWillGetCalledWith = s;
   }
 }
