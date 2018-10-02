@@ -14,9 +14,12 @@
 @TestOn('browser')
 
 import 'dart:html';
+import 'dart:js' as js;
 
-import 'package:test/test.dart';
 import 'package:mockito/mockito.dart';
+import 'package:test/test.dart';
+import 'package:w_common/src/browser/disposable_browser.dart';
+import 'package:w_common/src/common/disposable.dart' show LeakFlag;
 
 import '../disposable_common.dart';
 import './browser_stubs.dart';
@@ -97,6 +100,28 @@ void main() {
 
         element.dispatchEvent(event);
         expect(numberOfEventCallbacks, equals(0));
+      });
+    });
+
+    group('debug mode', () {
+      test('should not add leak flag factory to window by default', () {
+        expect(js.context.hasProperty(Disposable.leakFlagFactoryName), isFalse);
+      });
+
+      test('should add leak flag factory to window when enabled', () {
+        Disposable.enableDebugMode();
+        final LeakFlag leakFlag =
+            js.context.callMethod(Disposable.leakFlagFactoryName, ['foo']);
+        expect(leakFlag, isNotNull);
+        expect(leakFlag.description, equals('foo'));
+      });
+
+      test('should remove leak flag factory from window when disabled', () {
+        Disposable.enableDebugMode();
+        expect(js.context.hasProperty(Disposable.leakFlagFactoryName), isTrue);
+
+        Disposable.disableDebugMode();
+        expect(js.context.hasProperty(Disposable.leakFlagFactoryName), isFalse);
       });
     });
   });
