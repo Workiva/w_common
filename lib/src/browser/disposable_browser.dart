@@ -14,6 +14,7 @@
 
 import 'dart:async';
 import 'dart:html';
+import 'dart:js' as js;
 
 import 'package:meta/meta.dart';
 import 'package:w_common/func.dart';
@@ -133,16 +134,40 @@ class _InnerDisposable extends disposable_common.Disposable {
 /// composition to include the [Disposable] machinery without changing
 /// the public interface of our class or polluting its lifecycle.
 class Disposable implements disposable_common.Disposable {
+  /// The name of the factory function added to the window that produces
+  /// [LeakFlag] objects when called (with a single argument: a [String]
+  /// description).
+  static const String leakFlagFactoryName = 'leakFlagFactory';
+
   /// Disables logging enabled by [enableDebugMode].
-  static void disableDebugMode() =>
-      disposable_common.Disposable.disableDebugMode();
+  static void disableDebugMode() {
+    disposable_common.Disposable.disableDebugMode();
+
+    // If there is a leak flag factory function on the window, remove it.
+    if (js.context.hasProperty(leakFlagFactoryName)) {
+      js.context.deleteProperty(leakFlagFactoryName);
+    }
+  }
 
   /// Causes messages to be logged for various lifecycle and management events.
   ///
   /// This should only be used for debugging and profiling as it can result
   /// in a huge number of messages being generated.
-  static void enableDebugMode() =>
-      disposable_common.Disposable.enableDebugMode();
+  ///
+  /// Also attaches a method named `leakFlagFactory` to the window which
+  /// consumers can call, with a [String] description as its sole argument, to
+  /// generate a [LeakFlag] object. This can be used to generate a [LeakFlag]
+  /// and manually attach it to an object. For example, this may be useful in
+  /// code transpiled to JavaScript from another language.
+  static void enableDebugMode() {
+    disposable_common.Disposable.enableDebugMode();
+
+    // Attach a leak flag factory function to the window to allow consumers to
+    // attach leak flags to arbitrary objects.
+    if (!js.context.hasProperty(leakFlagFactoryName)) {
+      js.context[leakFlagFactoryName] = _leakFlagFactory;
+    }
+  }
 
   final _InnerDisposable _disposable = new _InnerDisposable();
 
@@ -313,4 +338,8 @@ class Disposable implements disposable_common.Disposable {
       eventTarget.removeEventListener(event, callback, useCapture);
     });
   }
+}
+
+disposable_common.LeakFlag _leakFlagFactory(String description) {
+  return new disposable_common.LeakFlag(description);
 }
