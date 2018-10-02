@@ -135,7 +135,8 @@ class _InnerDisposable extends disposable_common.Disposable {
 /// the public interface of our class or polluting its lifecycle.
 class Disposable implements disposable_common.Disposable {
   /// The name of the factory function added to the window that produces
-  /// [LeakFlag] objects when called.
+  /// [LeakFlag] objects when called (with a single argument: a [String]
+  /// description).
   static const String leakFlagFactoryName = 'leakFlagFactory';
 
   /// Disables logging enabled by [enableDebugMode].
@@ -152,6 +153,12 @@ class Disposable implements disposable_common.Disposable {
   ///
   /// This should only be used for debugging and profiling as it can result
   /// in a huge number of messages being generated.
+  ///
+  /// Also attaches a method named `leakFlagFactory` to the window which
+  /// consumers can call, with a [String] description as its sole argument, to
+  /// generate a [LeakFlag] object. This can be used to generate a [LeakFlag]
+  /// and manually attach it to an object. For example, this may be useful in
+  /// code transpiled to JavaScript from another language.
   static void enableDebugMode() {
     disposable_common.Disposable.enableDebugMode();
 
