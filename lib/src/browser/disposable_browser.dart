@@ -141,7 +141,7 @@ class Disposable implements disposable_common.Disposable {
 
   /// Disables logging enabled by [enableDebugMode].
   static void disableDebugMode() {
-      disposable_common.Disposable.disableDebugMode();
+    disposable_common.Disposable.disableDebugMode();
 
     // If there is a leak flag factory function on the window, remove it.
     if (js.context.hasProperty(leakFlagFactoryName)) {
@@ -160,7 +160,7 @@ class Disposable implements disposable_common.Disposable {
   /// and manually attach it to an object. For example, this may be useful in
   /// code transpiled to JavaScript from another language.
   static void enableDebugMode() {
-      disposable_common.Disposable.enableDebugMode();
+    disposable_common.Disposable.enableDebugMode();
 
     // Attach a leak flag factory function to the window to allow consumers to
     // attach leak flags to arbitrary objects.
