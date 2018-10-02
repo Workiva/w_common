@@ -1,5 +1,19 @@
-import 'dart:async';
+// Copyright 2016-2018 Workiva Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+@TestOn('browser')
 
+import 'dart:async';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:w_common/src/common/cache/cache.dart';
@@ -90,7 +104,6 @@ void main() {
         var mockCachingStrategy = new MockCachingStrategy();
         var childCache = new Cache(mockCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
-
         verify(mockCachingStrategy.onDidGet(cachedId, cachedValue));
       });
 
@@ -204,6 +217,7 @@ void main() {
         var childCache = new Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.remove(cachedId);
+
         verify(stubCachingStrategy.onDidRemove(cachedId, cachedValue));
       });
 
@@ -220,6 +234,7 @@ void main() {
         var stubCachingStrategy = new MockCachingStrategy();
         var childCache = new Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
+
         verifyNever(stubCachingStrategy.onDidRemove(typed(any), typed(any)));
       });
 
@@ -228,6 +243,7 @@ void main() {
         var stubCachingStrategy = new MockCachingStrategy();
         var childCache = new Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
+
         verifyNever(stubCachingStrategy.onWillRemove(typed(any)));
       });
 
@@ -292,6 +308,7 @@ void main() {
         var childCache = new Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.release(cachedId);
+
         verify(stubCachingStrategy.onDidRelease(
             cachedId, cachedValue, childCache.remove));
       });
@@ -301,6 +318,7 @@ void main() {
         var childCache = new Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.release(cachedId);
+
         verify(stubCachingStrategy.onWillRelease(cachedId));
       });
 
@@ -566,11 +584,11 @@ void main() {
 class MockCachingStrategy extends Mock
     implements CachingStrategy<String, Object> {
   MockCachingStrategy() {
-    when(this.onDidGet(typed(any), typed(any)))
-        .thenReturn(new Future.value(null));
-    when(this.onDidRelease(typed(any), typed(any), typed(any)))
-        .thenReturn(new Future.value(null));
-    when(this.onDidRemove(typed(any), typed(any)))
-        .thenReturn(new Future.value(null));
+    when(onDidGet(typed(any), typed(any)))
+        .thenAnswer((i) => new Future.value(null));
+    when(onDidRelease(typed(any), typed(any), typed(any)))
+        .thenAnswer((i) => new Future.value(null));
+    when(onDidRemove(typed(any), typed(any)))
+        .thenAnswer((i) => new Future.value(null));
   }
 }

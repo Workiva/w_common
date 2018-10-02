@@ -1,17 +1,14 @@
 language: dart
 sudo: required
+addons:
+  chrome: stable
 
 dart:
   - 1.24.3
-dart_task:
-  - test: --platform vm
-  - test: --platform dartium
-  - install_dartium: true
+  - stable
 
 script:
-  - pub publish --dry-run # Validate package
-  - pub run dart_dev gen-test-runner --check
-  - pub run dart_dev format --check
-  - pub run dart_dev analyze
-  #- pub run dart_dev coverage --no-html
-  - bash <(curl -s https://codecov.io/bash) -f coverage/coverage.lcov
+  - dartfmt -n --set-exit-if-changed example lib test tool
+  - dartanalyzer lib test/unit
+  - pub publish --dry-run
+  - xvfb-run --server-args="-screen 0 1024x768x24" tool/test.sh

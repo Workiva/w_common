@@ -73,9 +73,21 @@ class DisposeCounter extends Disposable {
   }
 }
 
-class MockStreamSubscription extends Mock implements StreamSubscription {}
+class MockStreamSubscription<T> extends Mock implements StreamSubscription<T> {}
 
-class MockStream extends Mock implements Stream {}
+typedef void OnDataCallback<T>(T event);
+
+typedef void OnDoneCallback();
+
+class StubStream<T> extends Stream<T> {
+  @override
+  StreamSubscription<T> listen(OnDataCallback<T> onData,
+      {Function onError, OnDoneCallback onDone, bool cancelOnError}) {
+    final sub = new MockStreamSubscription<T>();
+    when(sub.cancel()).thenReturn(null);
+    return sub;
+  }
+}
 
 class TimerHarness {
   bool _didCancelTimer = true;

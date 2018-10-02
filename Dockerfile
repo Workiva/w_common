@@ -1,4 +1,4 @@
-FROM drydock-prod.workiva.net/workiva/smithy-runner-generator:355624 as build
+FROM google/dart:2.0.0 as build
 
 # Build Environment Vars
 ARG BUILD_ID
@@ -13,9 +13,6 @@ ARG GIT_MERGE_HEAD
 ARG GIT_MERGE_BRANCH
 WORKDIR /build/
 ADD . /build/
-RUN echo "Starting the script sections" && \
-		pub get --packages-dir && \
-		xvfb-run -s '-screen 0 1024x768x24' pub run dart_dev test --pub-serve --web-compiler=dartdevc -p chrome -p vm && \
-		echo "Script sections completed"
+RUN pub get && pub run dependency_validator -i build_runner,build_test,build_web_compilers
 ARG BUILD_ARTIFACTS_BUILD=/build/pubspec.lock
 FROM scratch
