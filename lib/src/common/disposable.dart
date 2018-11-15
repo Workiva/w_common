@@ -429,6 +429,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   void flagLeak([String description]) {
     if (_debugMode && _leakFlag == null) {
       _leakFlag = new LeakFlag(description ?? runtimeType.toString());
+      _logger.info('LeakFlag created, ${_leakFlag.description}');
     }
   }
 
