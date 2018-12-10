@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   intl: ">=0.14.0 <0.16.0"
-  js: any # TODO figure out this range
+  js: ^0.6.1+1 # TODO figure out this range
   logging: ^0.11.0
   meta: ^1.0.4
 
