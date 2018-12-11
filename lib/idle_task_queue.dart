@@ -1,22 +1,22 @@
-@JS()
+// @JS()
 library idle_task_queue;
 
 import 'dart:async';
 import 'dart:html';
 import 'dart:js';
 
-import 'package:js/js.dart';
+// import 'package:js/js.dart';
 import 'package:meta/meta.dart';
 
-/// This calls the [requestIdleCallback] API directly.
+// / This calls the [requestIdleCallback] API directly.
 ///
 /// Note that `requestIdleCallbackPolyfill.js` or another polyfill like it must
 /// be included in order to use this API in browsers such as IE 11 or Edge which
 /// do not support it.
 ///
 /// Most tasks could be added using [enqueueIdleTask] instead.
-@JS()
-external num requestIdleCallback(Function callback, [Map options]);
+// @JS()
+// external int requestIdleCallback(IdleRequestCallback callback, [Map options]);
 
 /// A handler which will be called during idle time.
 typedef void IdleTaskHandler<T>(T input);
@@ -44,7 +44,7 @@ void enqueueIdleTask<T>(IdleTaskHandler<T> handler, T input) {
   // If there is a task, the queue is already running and doesn't
   // need to be started again.
   if (_currentTask == null) {
-    _currentTask = requestIdleCallback(
+    _currentTask = window.requestIdleCallback(
       allowInterop(_runQueue),
       <String, dynamic>{'timeout': 1000},
     );
@@ -60,7 +60,7 @@ void _runQueue(IdleDeadline deadline) {
   }
 
   if (_taskQueue.isNotEmpty) {
-    _currentTask = requestIdleCallback(
+    _currentTask = window.requestIdleCallback(
       allowInterop(_runQueue),
       <String, dynamic>{
         'timeout': 1000,
@@ -75,4 +75,4 @@ bool get _doesBrowserSupportIdleCallback =>
     context['requestIdleCallback'] != null;
 
 final List<_IdleTask> _taskQueue = [];
-num _currentTask;
+int _currentTask;
