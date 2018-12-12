@@ -7,18 +7,15 @@ import 'dart:js';
 
 import 'package:meta/meta.dart';
 
-const Duration _immediately = const Duration();
-
 /// A handler which will be called during idle time.
-typedef void IdleTaskHandler<T>(T input);
+typedef FutureOr<R> IdleTaskHandler<R>();
 
 @immutable
-class _IdleTask<T> {
-  final IdleTaskHandler<T> handler;
-  final T input;
-  final Completer<Null> completer = new Completer<Null>();
+class _IdleTask<R> {
+  final IdleTaskHandler<R> handler;
+  final Completer<R> completer = new Completer<R>();
 
-  _IdleTask(this.handler, this.input);
+  _IdleTask(this.handler);
 }
 
 /// Adds the task to a queue which will be called during idle time.
@@ -26,16 +23,16 @@ class _IdleTask<T> {
 /// Returns the `Future` which will complete when the task has run.
 ///
 /// May complete with an error if the task throws when called.
-Future<Null> enqueueIdleTask<T>(IdleTaskHandler<T> handler, T input) {
+Future<R> enqueueIdleTask<R>(IdleTaskHandler<R> handler) {
   // For unsupported browsers when the polyfill is not available,
   // we still want the task to be called eventually.
   if (!_doesBrowserSupportIdleCallback) {
-    return new Future.delayed(_immediately).then((_) async {
-      handler(input);
+    return new Future.delayed(Duration.ZERO).then((_) async {
+      return handler();
     });
   }
 
-  final task = new _IdleTask<T>(handler, input);
+  final task = new _IdleTask<R>(handler);
   _taskQueue.add(task);
 
   // Start running the queue if it has not been started.
@@ -43,7 +40,7 @@ Future<Null> enqueueIdleTask<T>(IdleTaskHandler<T> handler, T input) {
   // need to be started again.
   if (_currentTask == null) {
     _currentTask = window.requestIdleCallback(
-      allowInterop(_runQueue),
+      _runQueue,
       <String, dynamic>{'timeout': 1000},
     );
   }
@@ -51,14 +48,14 @@ Future<Null> enqueueIdleTask<T>(IdleTaskHandler<T> handler, T input) {
   return task.completer.future;
 }
 
-void _runQueue(IdleDeadline deadline) {
+Future _runQueue(IdleDeadline deadline) async {
   while (!deadline.didTimeout &&
       deadline.timeRemaining() > 0 &&
       _taskQueue.isNotEmpty) {
     final task = _taskQueue.removeAt(0);
     try {
-      task.handler(task.input);
-      task.completer.complete();
+      final r = await task.handler();
+      task.completer.complete(r);
     } catch (e, t) {
       // Listeners to the completer future might throw.
       if (!task.completer.isCompleted) {
@@ -71,7 +68,7 @@ void _runQueue(IdleDeadline deadline) {
 
   if (_taskQueue.isNotEmpty) {
     _currentTask = window.requestIdleCallback(
-      allowInterop(_runQueue),
+      _runQueue,
       <String, dynamic>{
         'timeout': 1000,
       },
