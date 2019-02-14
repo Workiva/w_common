@@ -159,8 +159,8 @@ class Disposable implements disposable_common.Disposable {
   /// generate a [LeakFlag] object. This can be used to generate a [LeakFlag]
   /// and manually attach it to an object. For example, this may be useful in
   /// code transpiled to JavaScript from another language.
-  static void enableDebugMode() {
-    disposable_common.Disposable.enableDebugMode();
+  static void enableDebugMode({bool logging: true, bool telemetry: true}) {
+    disposable_common.Disposable.enableDebugMode(logging: logging, telemetry: telemetry);
 
     // Attach a leak flag factory function to the window to allow consumers to
     // attach leak flags to arbitrary objects.
