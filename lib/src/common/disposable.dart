@@ -58,7 +58,7 @@ class ManagedDisposer implements _Disposable {
 
   /// Dispose of the object, cleaning up to prevent memory leaks.
   @override
-  Future<Null> dispose({bool flag}) {
+  Future<Null> dispose() {
     if (isDisposedOrDisposing) {
       return didDispose;
     }
