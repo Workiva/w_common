@@ -161,7 +161,7 @@ class Disposable implements disposable_common.Disposable {
   /// code transpiled to JavaScript from another language.
   static void enableDebugMode({bool logging: true, bool telemetry: true}) {
     disposable_common.Disposable
-        .enableDebugMode(logging: logging, telemetry: telemetry);
+        .enableDebugMode(enableLogging: logging, enableTelemetry: telemetry);
 
     // Attach a leak flag factory function to the window to allow consumers to
     // attach leak flags to arbitrary objects.

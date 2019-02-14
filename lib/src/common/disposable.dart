@@ -246,7 +246,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   static bool _debugModeTelemetry = false;
   static Logger _logger;
 
-  /// Disables logging enabled by [enableDebugMode].
+  /// Disables all debug features enabled by [enableDebugMode].
   static void disableDebugMode() {
     if (_debugMode) {
       _debugMode = false;
@@ -261,11 +261,11 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   ///
   /// This should only be used for debugging and profiling as it can result
   /// in a huge number of messages being generated.
-  static void enableDebugMode({bool logging, bool telemetry}) {
+  static void enableDebugMode({bool enableLogging, bool enableTelemetry}) {
     if (!_debugMode) {
       _debugMode = true;
-      _debugModeLogging = logging ?? true;
-      _debugModeTelemetry = telemetry ?? true;
+      _debugModeLogging = enableLogging ?? true;
+      _debugModeTelemetry = enableTelemetry ?? true;
       if (_debugModeLogging) {
         _logger = new Logger('w_common.Disposable');
       }
@@ -638,7 +638,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
         _logUnmanageMessage(controller);
         _internalDisposables.remove(disposable);
       }
-      disposable.dispose(flag: false);
+      disposable.dispose();
     });
 
     _internalDisposables.add(disposable);
