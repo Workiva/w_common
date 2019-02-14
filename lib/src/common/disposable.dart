@@ -640,7 +640,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
         _logUnmanageMessage(controller);
         _internalDisposables.remove(disposable);
       }
-      disposable.dispose();
+      disposable.dispose(flag: false);
     });
 
     _internalDisposables.add(disposable);
