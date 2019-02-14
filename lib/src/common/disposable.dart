@@ -261,11 +261,11 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   ///
   /// This should only be used for debugging and profiling as it can result
   /// in a huge number of messages being generated.
-  static void enableDebugMode({bool enableLogging, bool enableTelemetry}) {
+  static void enableDebugMode({bool disableLogging, bool disableTelemetry}) {
     if (!_debugMode) {
       _debugMode = true;
-      _debugModeLogging = enableLogging ?? true;
-      _debugModeTelemetry = enableTelemetry ?? true;
+      _debugModeLogging = !(disableLogging ?? false);
+      _debugModeTelemetry = !(disableTelemetry ?? false);
       if (_debugModeLogging) {
         _logger = new Logger('w_common.Disposable');
       }
