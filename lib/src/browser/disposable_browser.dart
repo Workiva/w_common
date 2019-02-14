@@ -159,8 +159,9 @@ class Disposable implements disposable_common.Disposable {
   /// generate a [LeakFlag] object. This can be used to generate a [LeakFlag]
   /// and manually attach it to an object. For example, this may be useful in
   /// code transpiled to JavaScript from another language.
-  static void enableDebugMode() {
-    disposable_common.Disposable.enableDebugMode();
+  static void enableDebugMode({bool disableLogging, bool disableTelemetry}) {
+    disposable_common.Disposable
+        .enableDebugMode(disableLogging: disableLogging, disableTelemetry: disableTelemetry);
 
     // Attach a leak flag factory function to the window to allow consumers to
     // attach leak flags to arbitrary objects.
@@ -203,17 +204,17 @@ class Disposable implements disposable_common.Disposable {
     _disposable
       ..onDisposeHandler = onDispose
       ..onWillDisposeHandler = onWillDispose;
-    return _disposable.dispose().then((_) {
-      // We want the description to be the runtime type of this
-      // object, not the proxy disposable, so we need to reset
-      // the leak flag here.
-      flagLeak(runtimeType.toString());
-    });
+    // We want the description to be the runtime type of this
+    // object, not the proxy disposable, so we need to set
+    // the leak flag here, before we delegate the `dispose`
+    // call.
+    flagLeak();
+    return _disposable.dispose();
   }
 
   @override
   void flagLeak([String description]) {
-    _disposable.flagLeak(description);
+    _disposable.flagLeak(description ?? runtimeType.toString());
   }
 
   @override
