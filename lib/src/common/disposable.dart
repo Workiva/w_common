@@ -24,7 +24,7 @@ import 'package:w_common/src/common/managed_stream_subscription.dart';
 
 // ignore: one_member_abstracts
 abstract class _Disposable {
-  Future<Null> dispose({bool flag});
+  Future<Null> dispose();
 }
 
 /// Used to invoke, and remove references to, a [Disposer] before disposal
@@ -383,7 +383,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   /// Dispose of the object, cleaning up to prevent memory leaks.
   @override
-  Future<Null> dispose({bool flag}) async {
+  Future<Null> dispose() async {
     Stopwatch stopwatch;
     if (_debugModeTelemetry) {
       stopwatch = new Stopwatch()..start();
@@ -411,7 +411,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _state = DisposableState.disposing;
 
     for (var disposable in _internalDisposables) {
-      await disposable.dispose(flag: false);
+      await disposable.dispose();
     }
     _internalDisposables.clear();
 
@@ -429,9 +429,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
       _logger.info('$runtimeType $hashCode took $t seconds to dispose');
     }
 
-    if (flag != false) {
-      flagLeak();
-    }
+    flagLeak();
   }
 
   @mustCallSuper
