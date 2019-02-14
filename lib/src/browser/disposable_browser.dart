@@ -199,15 +199,17 @@ class Disposable implements disposable_common.Disposable {
       _disposable.awaitBeforeDispose(future);
 
   @override
-  Future<Null> dispose() {
+  Future<Null> dispose({bool flag}) {
     _disposable
       ..onDisposeHandler = onDispose
       ..onWillDisposeHandler = onWillDispose;
-    return _disposable.dispose().then((_) {
+    return _disposable.dispose(flag: false).then((_) {
       // We want the description to be the runtime type of this
       // object, not the proxy disposable, so we need to reset
       // the leak flag here.
-      flagLeak(runtimeType.toString());
+      if (flag != false) {
+        flagLeak(runtimeType.toString());
+      }
     });
   }
 

@@ -24,7 +24,7 @@ import 'package:w_common/src/common/managed_stream_subscription.dart';
 
 // ignore: one_member_abstracts
 abstract class _Disposable {
-  Future<Null> dispose();
+  Future<Null> dispose({bool flag});
 }
 
 /// Used to invoke, and remove references to, a [Disposer] before disposal
@@ -58,7 +58,7 @@ class ManagedDisposer implements _Disposable {
 
   /// Dispose of the object, cleaning up to prevent memory leaks.
   @override
-  Future<Null> dispose() {
+  Future<Null> dispose({bool flag}) {
     if (isDisposedOrDisposing) {
       return didDispose;
     }
@@ -242,13 +242,17 @@ typedef Future<dynamic> Disposer();
 /// the public interface of our class or polluting its lifecycle.
 class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   static bool _debugMode = false;
+  static bool _debugModeLogging = false;
+  static bool _debugModeTelemetry = false;
   static Logger _logger;
 
   /// Disables logging enabled by [enableDebugMode].
   static void disableDebugMode() {
     if (_debugMode) {
       _debugMode = false;
-      _logger.clearListeners();
+      _debugModeLogging = false;
+      _debugModeTelemetry = false;
+      _logger?.clearListeners();
       _logger = null;
     }
   }
@@ -257,10 +261,14 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   ///
   /// This should only be used for debugging and profiling as it can result
   /// in a huge number of messages being generated.
-  static void enableDebugMode() {
+  static void enableDebugMode({bool logging, bool telemetry}) {
     if (!_debugMode) {
       _debugMode = true;
-      _logger = new Logger('w_common.Disposable');
+      _debugModeLogging = logging ?? true;
+      _debugModeTelemetry = telemetry ?? true;
+      if (_debugModeLogging) {
+        _logger = new Logger('w_common.Disposable');
+      }
     }
   }
 
@@ -375,9 +383,9 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   /// Dispose of the object, cleaning up to prevent memory leaks.
   @override
-  Future<Null> dispose() async {
+  Future<Null> dispose({bool flag}) async {
     Stopwatch stopwatch;
-    if (_debugMode) {
+    if (_debugModeTelemetry) {
       stopwatch = new Stopwatch()..start();
     }
 
@@ -403,7 +411,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _state = DisposableState.disposing;
 
     for (var disposable in _internalDisposables) {
-      await disposable.dispose();
+      await disposable.dispose(flag: false);
     }
     _internalDisposables.clear();
 
@@ -411,17 +419,19 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
     _didDispose.complete();
     _state = DisposableState.disposed;
-    if (_debugMode) {
+    if (_debugModeLogging) {
       _logger.info('Disposed object $hashCode of type $runtimeType');
     }
 
-    if (_debugMode) {
+    if (_debugModeTelemetry) {
       stopwatch.stop();
       var t = stopwatch.elapsedMicroseconds / 1000000.0;
       _logger.info('$runtimeType $hashCode took $t seconds to dispose');
     }
 
-    flagLeak();
+    if (flag != false) {
+      flagLeak();
+    }
   }
 
   @mustCallSuper
@@ -676,20 +686,20 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   }
 
   void _logDispose() {
-    if (_debugMode) {
+    if (_debugModeLogging) {
       _logger.info('Disposing object $hashCode of type $runtimeType');
     }
   }
 
   void _logUnmanageMessage(Object target) {
-    if (_debugMode) {
+    if (_debugModeLogging) {
       _logger.info(
           '$runtimeType $hashCode unmanaging ${target.runtimeType} ${target.hashCode}');
     }
   }
 
   void _logManageMessage(Object target) {
-    if (_debugMode) {
+    if (_debugModeLogging) {
       _logger.info(
           '$runtimeType $hashCode managing ${target.runtimeType} ${target.hashCode}');
     }

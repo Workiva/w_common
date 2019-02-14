@@ -67,7 +67,7 @@ abstract class StubDisposable implements Disposable {
 class DisposeCounter extends Disposable {
   int disposeCount = 0;
   @override
-  Future<Null> dispose() {
+  Future<Null> dispose({bool flag}) {
     disposeCount++;
     return super.dispose();
   }
