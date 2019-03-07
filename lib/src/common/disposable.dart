@@ -710,11 +710,11 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     }
     // ignore: deprecated_member_use
     if (isDisposing) {
-      throw new StateError('$methodName not allowed, object is disposing');
+      throw new StateError('$runtimeType.$methodName not allowed, object is disposing');
     }
     if (isDisposed) {
       throw new StateError(
-          '$methodName not allowed, object is already disposed');
+          '$runtimeType.$methodName not allowed, object is already disposed');
     }
   }
 
