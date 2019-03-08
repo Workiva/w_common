@@ -8,6 +8,9 @@ import 'package:w_common/disposable.dart';
 Logger errorLogger = new Logger('w_common.ErrorExample');
 
 class RandomDisposableAdder extends Disposable {
+  @override
+  String get disposableTypeName => 'RandomDisposableAdder';
+
   void addRandomManager() {
     print('adding a random manager');
     switch (new Random().nextInt(6)) {
@@ -38,6 +41,9 @@ class MyManager extends RandomDisposableAdder {
   }
 
   @override
+  String get disposableTypeName => 'MyManager';
+
+  @override
   Future<Null> onDispose() {
     print('disposing MyManager');
     return super.onDispose();
@@ -48,6 +54,9 @@ class ErrorCreator extends RandomDisposableAdder {
   ErrorCreator() {
     print('creating ErrorCreator!');
   }
+
+  @override
+  String get disposableTypeName => 'ErrorCreator';
 
   @override
   Future<Null> onWillDispose() {
