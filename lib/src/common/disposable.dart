@@ -22,6 +22,9 @@ import 'package:w_common/src/common/disposable_manager.dart';
 import 'package:w_common/src/common/disposable_state.dart';
 import 'package:w_common/src/common/managed_stream_subscription.dart';
 
+/// The default value of the `disposableTypeName` field.
+const String defaultDisposableTypeName = 'Disposable';
+
 // ignore: one_member_abstracts
 abstract class _Disposable {
   Future<Null> dispose();
@@ -280,6 +283,14 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   /// A [Future] that will complete when this object has been disposed.
   Future<Null> get didDispose => _didDispose.future;
+
+  /// A type name, similar to [runtimeType] but intended to work
+  /// with minified code.
+  ///
+  /// Consumers should override if they would like to provide a type
+  /// name for use in debugging. This name is included in exceptions
+  /// thrown by this class.
+  String get disposableTypeName => defaultDisposableTypeName;
 
   /// The total size of the disposal tree rooted at the current Disposable
   /// instance.
@@ -710,11 +721,12 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     }
     // ignore: deprecated_member_use
     if (isDisposing) {
-      throw new StateError('$methodName not allowed, object is disposing');
+      throw new StateError(
+          '$disposableTypeName.$methodName not allowed, object is disposing');
     }
     if (isDisposed) {
       throw new StateError(
-          '$methodName not allowed, object is already disposed');
+          '$disposableTypeName.$methodName not allowed, object is already disposed');
     }
   }
 
