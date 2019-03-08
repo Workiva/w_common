@@ -31,7 +31,6 @@
 
 @dustinlessard-wf
 @evanweible-wf
-@jayudey-wf
 @maxwellpeterson-wf
 @sebastianmalysa-wf
 @trentgrover-wf
