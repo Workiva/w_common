@@ -160,8 +160,8 @@ class Disposable implements disposable_common.Disposable {
   /// and manually attach it to an object. For example, this may be useful in
   /// code transpiled to JavaScript from another language.
   static void enableDebugMode({bool disableLogging, bool disableTelemetry}) {
-    disposable_common.Disposable
-        .enableDebugMode(disableLogging: disableLogging, disableTelemetry: disableTelemetry);
+    disposable_common.Disposable.enableDebugMode(
+        disableLogging: disableLogging, disableTelemetry: disableTelemetry);
 
     // Attach a leak flag factory function to the window to allow consumers to
     // attach leak flags to arbitrary objects.
@@ -174,6 +174,9 @@ class Disposable implements disposable_common.Disposable {
 
   @override
   Future<Null> get didDispose => _disposable.didDispose;
+
+  @override
+  String get disposableTypeName => disposable_common.defaultDisposableTypeName;
 
   @override
   int get disposalTreeSize => _disposable.disposalTreeSize;
