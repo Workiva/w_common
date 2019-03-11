@@ -12,7 +12,7 @@ class RandomDisposableAdder extends Disposable {
   String get disposableTypeName => 'RandomDisposableAdder';
 
   void addRandomManager() {
-    print('adding a random manager');
+    print('RandomDisposableAdder.addRandomManager');
     switch (new Random().nextInt(6)) {
       case 0:
         listenToStream(new Stream.empty(), (_) {});
@@ -37,7 +37,7 @@ class RandomDisposableAdder extends Disposable {
 
 class MyManager extends RandomDisposableAdder {
   MyManager() {
-    print('creating MyManager!');
+    print('creating MyManager');
   }
 
   @override
@@ -45,14 +45,14 @@ class MyManager extends RandomDisposableAdder {
 
   @override
   Future<Null> onDispose() {
-    print('disposing MyManager');
+    print('MyManager.onDispose');
     return super.onDispose();
   }
 }
 
 class ErrorCreator extends RandomDisposableAdder {
   ErrorCreator() {
-    print('creating ErrorCreator!');
+    print('creating ErrorCreator');
   }
 
   @override
