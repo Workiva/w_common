@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Errors Example</title>
+    <style>
+        body {
+            font: 11pt/15pt 'segoe ui', verdana, arial;
+            margin: auto;
+            max-width: 850px;
+        }
+        
+        button {
+            padding: 6px 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Disposable Errors Example</h1>
+    <p>Open your console to see logs printed out.</p>
+    <br>
+    <h2>Valid Lifecycle Interactions</h2>
+    <p>The class `MyManager` can be created, add random disposable method calls to, and disposed as you please.</p>
+    <button id="create-MyManager-button">Create MyManager</button>
+    <button id="dispose-MyManager-button">Dispose MyManager</button>
+    <button id="posthumous-MyManager-button">Call disposable method on MyManager</button>
+    <br>
+    <h2>Accidental Invalid Lifecycle Interactions</h2>
+    <p>The class `ErrorCreator` can be created and disposed. When it's disposed, it will attempt to add managers in `onWillDispose` and `onDispose`</p>
+    <button id="create-ErrorCreator-button">Create ErrorCreator</button>
+    <button id="dispose-ErrorCreator-button">Dispose ErrorCreator</button>
+</body>
+
+<script defer src="example.dart.js"></script>
+
+
+</html>
