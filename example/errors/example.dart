@@ -82,9 +82,12 @@ void main() {
 
   MyManager myManager;
 
-  ButtonElement createMyManagerButton = querySelector('#create-MyManager-button');
-  ButtonElement disposeMyManagerButton = querySelector('#dispose-MyManager-button');
-  ButtonElement posthumousMyManagerButton = querySelector('#posthumous-MyManager-button');
+  ButtonElement createMyManagerButton =
+      querySelector('#create-MyManager-button');
+  ButtonElement disposeMyManagerButton =
+      querySelector('#dispose-MyManager-button');
+  ButtonElement posthumousMyManagerButton =
+      querySelector('#posthumous-MyManager-button');
 
   createMyManagerButton.onClick.listen((_) {
     myManager = new MyManager();
@@ -107,8 +110,10 @@ void main() {
   });
 
   ErrorCreator errorCreator;
-  ButtonElement createErrorCreatorButton = querySelector('#create-ErrorCreator-button');
-  ButtonElement disposeErrorCreatorButton = querySelector('#dispose-ErrorCreator-button');
+  ButtonElement createErrorCreatorButton =
+      querySelector('#create-ErrorCreator-button');
+  ButtonElement disposeErrorCreatorButton =
+      querySelector('#dispose-ErrorCreator-button');
 
   createErrorCreatorButton.onClick.listen((_) {
     errorCreator = new ErrorCreator();
