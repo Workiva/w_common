@@ -453,7 +453,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   @mustCallSuper
   @override
-  Future<T> getManagedDelayedFuture<T>(Duration duration, T callback()) {
+  Future<T> getManagedDelayedFuture<T>(Duration duration, FutureOr<T> callback()) {
     _throwOnInvalidCall2(
         'getManagedDelayedFuture', 'duration', 'callback', duration, callback);
     var completer = new Completer<T>();

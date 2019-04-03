@@ -138,7 +138,7 @@ abstract class DisposableManagerV3 implements DisposableManagerV2 {
   ///
   /// If the object is disposed before the time has elapsed the future
   /// will complete with an [ObjectDisposedException] error.
-  Future<T> getManagedDelayedFuture<T>(Duration duration, T callback());
+  Future<T> getManagedDelayedFuture<T>(Duration duration, FutureOr<T> callback());
 
   /// Ensure that a completer is completed when the object is disposed.
   ///

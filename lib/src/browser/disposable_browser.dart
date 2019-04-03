@@ -221,7 +221,7 @@ class Disposable implements disposable_common.Disposable {
   }
 
   @override
-  Future<T> getManagedDelayedFuture<T>(Duration duration, T callback()) =>
+  Future<T> getManagedDelayedFuture<T>(Duration duration, FutureOr<T> callback()) =>
       _disposable.getManagedDelayedFuture(duration, callback);
 
   @override
