@@ -17,7 +17,7 @@ dependencies:
   package_resolver: ^1.0.2
   package_config: any
   path: ^1.5.1
-  sass: ^1.0.0
+  sass: ^1.6.0 # NOTE: Need 1.18.0 when using Dart 2 SDK
   source_maps: any # allow the version constraint within the sass package determine this since it is pre-1.0.0
 
 dev_dependencies:
