@@ -78,7 +78,9 @@ void main(List<String> args) {
         results[expandedOutputStyleFileExtensionArg];
     compressedOutputStyleFileExtensionValue =
         // Have to use something different for the compressed output if both expanded and compressed are being used.
-        outputStylesValue.length > 1 ? '.min.css' : results[compressedOutputStyleFileExtensionArg];
+        outputStylesValue.length > 1
+            ? '.min.css'
+            : results[compressedOutputStyleFileExtensionArg];
     sourceDirValue =
         results[sourceDirArg] ?? results[outputDirArg] ?? sourceDirDefaultValue;
     outputDirValue =
@@ -157,8 +159,10 @@ int compileCss({
       var cssPath = path.setExtension(
           path.join(outputDir, path.basename(target)),
           outputStyleArgToOutputStyleFileExtension[style]);
-      var cssSrc = sass.compile(target, style: outputStyle, color: true , packageResolver: _getPackageResolver(),
-          sourceMap: (map) {
+      var cssSrc = sass.compile(target,
+          style: outputStyle,
+          color: true,
+          packageResolver: _getPackageResolver(), sourceMap: (map) {
         if (sourceDir != outputDir) {
           final relativePathOutToSassDir =
               path.dirname(path.relative(target, from: cssPath));
@@ -261,9 +265,11 @@ SyncPackageResolver _getPackageResolver() {
   final packagesFile = new File('$root.packages');
 
   if (!packagesFile.existsSync()) {
-    throw new StateError('The "$root.packages" does not exist. You must run `pub get` before running `compile_css`.');
+    throw new StateError(
+        'The "$root.packages" does not exist. You must run `pub get` before running `compile_css`.');
   }
 
-  final config = pkg.parse(packagesFile.readAsStringSync().codeUnits, new Uri.directory(root));
+  final config = pkg.parse(
+      packagesFile.readAsStringSync().codeUnits, new Uri.directory(root));
   return _packageResolver = new SyncPackageResolver.config(config);
 }
