@@ -30,16 +30,12 @@ const Map<String, sass.OutputStyle> outputStyleArgToOutputStyleValue = const {
   'expanded': sass.OutputStyle.expanded,
 };
 
-const Map<String, String> outputStyleArgToOutputStyleFileExtension = const {
-  'compressed': expandedOutputStyleFileExtensionDefaultValue,
-  'expanded': compressedOutputStyleFileExtensionDefaultValue,
-};
-
 void main(List<String> args) {
   final parser = new ArgParser()
     ..addMultiOption(outputStyleArg,
         help: 'The output style used to format the compiled CSS.',
-        defaultsTo: outputStyleDefaultValue)
+        defaultsTo: outputStyleDefaultValue,
+        splitCommas: true)
     ..addOption(expandedOutputStyleFileExtensionArg,
         help:
             'The file extension that will be used for the CSS compiled using `expanded` outputStyle.',
@@ -149,6 +145,11 @@ int compileCss({
     print(
         '\nReady to compile ${compileTargets.length} .scss files to $outputStyleMsg ...');
 
+    final Map<String, String> outputStyleArgToOutputStyleFileExtension = {
+      'compressed': compressedOutputStyleFileExtension,
+      'expanded': expandedOutputStyleFileExtension,
+    };
+
     for (var target in compileTargets) {
       final singleCompileTimer = new Stopwatch()..start();
 
@@ -158,9 +159,6 @@ int compileCss({
           outputStyleArgToOutputStyleFileExtension[style]);
       var cssSrc = sass.compile(target, style: outputStyle, color: true , packageResolver: _getPackageResolver(),
           sourceMap: (map) {
-        // Update the sourceRoot to point to our pre-existing
-        // symlinked location of .scss sources within package:web_skin/sass
-        // TODO: Do we need anything else here, or possibly just an optional arg
         if (sourceDir != outputDir) {
           final relativePathOutToSassDir =
               path.dirname(path.relative(target, from: cssPath));
@@ -202,8 +200,7 @@ int compileCss({
           ..reset();
       } else {
         cssTarget.writeAsStringSync(cssSrc);
-        final sourceMapTarget = new File(path.setExtension(
-            cssPath, '${outputStyleArgToOutputStyleFileExtension[style]}.map'));
+        final sourceMapTarget = new File('${cssTarget.path}.map');
 
         if (!sourceMapTarget.existsSync()) {
           sourceMapTarget.createSync(recursive: true);
