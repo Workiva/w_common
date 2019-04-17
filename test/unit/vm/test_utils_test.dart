@@ -11,7 +11,7 @@ void main() {
           () {
         final c = new MismatchClass();
         expect(() => verifyDisposableTypeName(c, makeAssertion: true),
-            throwsA(isInstanceOf<AssertionError>()));
+            throwsA(const isInstanceOf<AssertionError>()));
       });
 
       test(
