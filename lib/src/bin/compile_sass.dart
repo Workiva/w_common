@@ -266,7 +266,7 @@ SyncPackageResolver _getPackageResolver() {
 
   if (!packagesFile.existsSync()) {
     throw new StateError(
-        'The "$root.packages" does not exist. You must run `pub get` before running `compile_css`.');
+        'The "$root.packages" does not exist. You must run `pub get` before running `compile_sass`.');
   }
 
   final config = pkg.parse(

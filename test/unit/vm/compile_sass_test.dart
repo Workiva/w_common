@@ -17,10 +17,10 @@ import 'dart:io';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
-import 'package:w_common/src/bin/compile_css.dart' as compiler;
+import 'package:w_common/src/bin/compile_sass.dart' as compiler;
 
 void main() {
-  group('pub run w_common:compile_css', () {
+  group('pub run w_common:compile_sass', () {
     const defaultSourceDir = 'test/unit/vm/fixtures/sass/';
     const specificOutputDir = 'test/unit/vm/fixtures/css/';
 

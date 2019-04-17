@@ -13,12 +13,12 @@ includes the following:
   to JSON.
   * A CSS compilation executable that can be run via 
     ```
-    pub run w_common:compile_css
+    pub run w_common:compile_sass
     ```
     from the root of your package that depends on w_common.
     * Run 
       ```
-      pub run w_common:compile_css -h
+      pub run w_common:compile_sass -h
       ```
       for more usage details / instructions.
 
