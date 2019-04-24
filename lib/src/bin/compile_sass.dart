@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:async/async.dart';
+import 'package:colorize/colorize.dart';
 import 'package:dart2_constant/convert.dart' as convert;
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
@@ -14,6 +15,13 @@ import 'package:source_maps/source_maps.dart';
 import 'package:watcher/watcher.dart';
 
 Stopwatch taskTimer;
+
+final Colorize errorMessageHeading =
+    new Colorize().apply(Styles.RED, '[ERROR]');
+final Colorize failureMessageHeading =
+    new Colorize().apply(Styles.YELLOW, '[FAILURE]');
+final Colorize successMessageHeading =
+    new Colorize().apply(Styles.GREEN, '[SUCCESS]');
 
 const String outputStyleArg = 'outputStyle';
 const List<String> outputStyleDefaultValue = const ['compressed'];
@@ -93,7 +101,7 @@ class SassCompilationOptions {
     String srcRootDirName;
     for (var target in compileTargets) {
       if (!new File(target).existsSync()) {
-        print('[ERROR]: "$target" does not exist');
+        print('$errorMessageHeading "$target" does not exist');
         exitCode = 1;
         break;
       } else {
@@ -103,7 +111,7 @@ class SassCompilationOptions {
         if (srcRootDirName != null) {
           if (targetRootDirName != srcRootDirName) {
             print(
-                '[ERROR]: All targets must share the same root directory. Expected "$target" to exist within "$srcRootDirName".');
+                '$errorMessageHeading All targets must share the same root directory. Expected "$target" to exist within "$srcRootDirName".');
             exitCode = 1;
             break;
           }
@@ -222,7 +230,7 @@ Future<Null> watch(SassCompilationOptions options) async {
     for (var sassFileToWatch in sassFilesToWatch) {
       watchers.add(new FileWatcher(sassFileToWatch));
     }
-    print('\nWatching for changes in ${watchers.length} .scss files...');
+    print('\nWatching for changes in ${watchers.length} .scss files ...');
   }
 
   final watcherEvents = new StreamGroup<WatchEvent>();
@@ -238,10 +246,10 @@ Future<Null> watch(SassCompilationOptions options) async {
 
         if (isSassPartial(e.path)) {
           print(
-              '\n$changeMessage... recompiling ${options.compileTargets.length} targets');
+              '\n$changeMessage... recompiling ${options.compileTargets.length} targets ...');
           compileSass(options, printReadyMessage: false);
         } else {
-          print('\n$changeMessage... recompiling 1 target');
+          print('\n$changeMessage... recompiling 1 target ...');
           compileSass(options,
               compileTargets: [e.path], printReadyMessage: false);
         }
@@ -259,7 +267,7 @@ Future<Null> watch(SassCompilationOptions options) async {
         break;
     }
 
-    print('\nWatching for changes in ${watchers.length} .scss files...');
+    print('\nWatching for changes in ${watchers.length} .scss files ...');
   });
 
   await watcherEvents.close();
@@ -323,14 +331,14 @@ void compileSass(SassCompilationOptions options,
           if (!cssTarget.existsSync()) {
             exitCode = 1;
             print(
-                '[ERROR] ${cssTarget.path} was generated during the build, but has not been committed. Commit this file and push to rebuild.');
+                '$errorMessageHeading ${cssTarget.path} was generated during the build, but has not been committed. Commit this file and push to rebuild.');
           } else if (cssSrcTempFile.readAsStringSync() !=
               cssTarget.readAsStringSync()) {
             exitCode = 1;
             print(
-                '[ERROR] ${cssTarget.path} is out of date, and needs to be committed / pushed.');
+                '$errorMessageHeading ${cssTarget.path} is out of date, and needs to be committed / pushed.');
           } else {
-            print('[SUCCESS] ${cssTarget.path} is up to date!');
+            print('$successMessageHeading ${cssTarget.path} is up to date!');
           }
 
           cssSrcTempFile.deleteSync();
@@ -350,13 +358,13 @@ void compileSass(SassCompilationOptions options,
 
           singleCompileTimer.stop();
           print(
-              '"$target" => "$cssPath" (${singleCompileTimer.elapsedMilliseconds}ms)');
+              '  "$target" => "$cssPath" (${singleCompileTimer.elapsedMilliseconds}ms)');
           singleCompileTimer.reset();
         }
       } catch (e) {
         exitCode = 1;
         failureCount++;
-        print('\n[ERROR] Failed to compile $target: \n\n$e\n');
+        print('\n$errorMessageHeading Failed to compile $target: \n\n$e\n');
       }
     }
   }
@@ -370,10 +378,10 @@ void compileSass(SassCompilationOptions options,
 
     if (exitCode == 0) {
       print(
-          '\n[SUCCESS] Compiled ${compileTargets.length * options.outputStyles.length} CSS file(s) in $durationString');
+          '\n$successMessageHeading Compiled ${compileTargets.length * options.outputStyles.length} CSS file(s) in $durationString');
     } else {
       print(
-          '\n[FAILURE] $failureCount/${compileTargets.length} targets failed to compile');
+          '\n$failureMessageHeading $failureCount/${compileTargets.length} targets failed to compile');
     }
   }
   taskTimer.reset();
