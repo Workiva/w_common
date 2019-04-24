@@ -38,23 +38,24 @@ const Map<String, sass.OutputStyle> outputStyleArgToOutputStyleValue = const {
 Future<Null> main(List<String> args) async {
   final parser = new ArgParser()
     ..addMultiOption(outputStyleArg,
+        abbr: 's',
         help: 'The output style used to format the compiled CSS.',
         defaultsTo: outputStyleDefaultValue,
         splitCommas: true)
     ..addOption(expandedOutputStyleFileExtensionArg,
         help:
-            'The file extension that will be used for the CSS compiled using `expanded` outputStyle.',
+            'The file extension that will be used for the CSS compiled using \n`expanded` outputStyle.',
         defaultsTo: expandedOutputStyleFileExtensionDefaultValue)
     ..addOption(compressedOutputStyleFileExtensionArg,
         help:
-            'The file extension that will be used for the CSS compiled using `compressed` outputStyle unless more than one `--$outputStyleArg` is defined. When more than one outputStyle is used, the extension for compressed CSS will be `.min.css` no matter what.',
+            'The file extension that will be used for the CSS compiled using \n`compressed` outputStyle unless more than one `--$outputStyleArg` \nis defined. \nWhen more than one outputStyle is used, the extension for \ncompressed CSS will be `.min.css` no matter what.',
         defaultsTo: compressedOutputStyleFileExtensionDefaultValue)
     ..addOption(sourceDirArg,
         help:
-            'The directory where the `.scss` files that you want to compile live. Defaults to $sourceDirDefaultValue, or the value of `--$outputDirArg`, if specified.')
+            'The directory where the `.scss` files that you want to compile live. \n(defaults to $sourceDirDefaultValue, or the value of `--$outputDirArg`, if specified.)')
     ..addOption(outputDirArg,
         help:
-            'The directory where the compiled CSS should go. Defaults to $outputDirDefaultValue, or the value of `--$sourceDirArg`, if specified.')
+            'The directory where the compiled CSS should go. \n(defaults to $outputDirDefaultValue, or the value of `--$sourceDirArg`, if specified.)')
     ..addMultiOption(watchDirsArg,
         splitCommas: true,
         defaultsTo: const <String>[],
@@ -65,13 +66,11 @@ Future<Null> main(List<String> args) async {
         help: 'Watch stylesheets and recompile when they change.')
     ..addFlag(checkFlag,
         abbr: 'c',
-        defaultsTo: false,
         negatable: false,
         help:
-            'When set to true, no `.css` outputs will be written to disk, and a non-zero exit code will be returned if `sass.compile()` produces results that differ from those found in the committed `.css` files. Intended only for use as a CI safeguard.')
+            'When set to true, no `.css` outputs will be written to disk, \nand a non-zero exit code will be returned if `sass.compile()` \nproduces results that differ from those found in the committed \n`.css` files. \nIntended only for use as a CI safeguard.')
     ..addFlag(helpFlag,
         abbr: 'h',
-        defaultsTo: false,
         negatable: false,
         help: 'Prints usage instructions to the terminal.');
 
