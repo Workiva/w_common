@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:async/async.dart';
 import 'package:dart2_constant/convert.dart' as convert;
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
@@ -9,6 +11,7 @@ import 'package:package_config/packages_file.dart' as pkg;
 import 'package:path/path.dart' as path;
 import 'package:sass/sass.dart' as sass;
 import 'package:source_maps/source_maps.dart';
+import 'package:watcher/watcher.dart';
 
 const String outputStyleArg = 'outputStyle';
 const List<String> outputStyleDefaultValue = const ['compressed'];
@@ -19,9 +22,11 @@ const String compressedOutputStyleFileExtensionArg =
     'compressedOutputStyleFileExtension';
 const String compressedOutputStyleFileExtensionDefaultValue = '.css';
 const String sourceDirArg = 'sourceDir';
+const String watchDirsArg = 'watchDirs';
 const String sourceDirDefaultValue = 'lib/sass/';
 const String outputDirArg = 'outputDir';
 const String outputDirDefaultValue = sourceDirDefaultValue;
+const String watchFlag = 'watch';
 const String checkFlag = 'check';
 const String helpFlag = 'help';
 
@@ -30,7 +35,7 @@ const Map<String, sass.OutputStyle> outputStyleArgToOutputStyleValue = const {
   'expanded': sass.OutputStyle.expanded,
 };
 
-void main(List<String> args) {
+Future<Null> main(List<String> args) async {
   final parser = new ArgParser()
     ..addMultiOption(outputStyleArg,
         help: 'The output style used to format the compiled CSS.',
@@ -50,6 +55,14 @@ void main(List<String> args) {
     ..addOption(outputDirArg,
         help:
             'The directory where the compiled CSS should go. Defaults to $outputDirDefaultValue, or the value of `--$sourceDirArg`, if specified.')
+    ..addMultiOption(watchDirsArg,
+        splitCommas: true,
+        defaultsTo: const <String>[],
+        help:
+            'Directories that should be watched in addition to `sourceDir`. \nOnly valid with --watch.')
+    ..addFlag(watchFlag,
+        negatable: false,
+        help: 'Watch stylesheets and recompile when they change.')
     ..addFlag(checkFlag,
         abbr: 'c',
         defaultsTo: false,
@@ -68,6 +81,8 @@ void main(List<String> args) {
   String compressedOutputStyleFileExtensionValue;
   String sourceDirValue;
   String outputDirValue;
+  List<String> watchDirsValue;
+  bool watchValue;
   bool checkValue;
   bool helpValue;
   try {
@@ -85,6 +100,8 @@ void main(List<String> args) {
         results[sourceDirArg] ?? results[outputDirArg] ?? sourceDirDefaultValue;
     outputDirValue =
         results[outputDirArg] ?? results[sourceDirArg] ?? outputDirDefaultValue;
+    watchDirsValue = [sourceDirValue]..addAll(results[watchDirsArg]);
+    watchValue = results[watchFlag];
     checkValue = results[checkFlag];
     helpValue = results[helpFlag];
   } on FormatException {
@@ -96,21 +113,23 @@ void main(List<String> args) {
   if (helpValue) {
     print(parser.usage);
     exitCode = 0;
-    return;
+    return new Future(() {});
   }
 
-  exitCode = compileCss(
+  await initialize(
     sourceDir: sourceDirValue,
     outputDir: outputDirValue,
     compressedOutputStyleFileExtension: compressedOutputStyleFileExtensionValue,
     expandedOutputStyleFileExtension: expandedOutputStyleFileExtensionValue,
     unparsedArgs: unparsedArgs,
     outputStyles: outputStylesValue,
+    watchDirs: watchDirsValue,
+    watch: watchValue,
     check: checkValue,
   );
 }
 
-int compileCss({
+Future<Null> initialize({
   @required String sourceDir,
   @required String outputDir,
   @required String compressedOutputStyleFileExtension,
@@ -118,9 +137,10 @@ int compileCss({
       expandedOutputStyleFileExtensionDefaultValue,
   List<String> unparsedArgs,
   List<String> outputStyles = outputStyleDefaultValue,
+  List<String> watchDirs,
+  bool watch = false,
   bool check = false,
-}) {
-  int exitCode = 0;
+}) async {
   final taskTimer = new Stopwatch()..start();
 
   List<String> compileTargets;
@@ -133,19 +153,135 @@ int compileCss({
   } else {
     compileTargets = new Glob('$sourceDir/**.scss', recursive: true)
         .listSync()
-        .where((file) => !path.basename(file.path).startsWith('_'))
+        .where((file) => !isSassPartial(file.path))
         .map((file) => path.relative(file.path))
         .toList();
   }
 
-  if (exitCode != 0) return exitCode;
+  if (exitCode != 0) return new Future(() {});
 
+  compileSass(
+    compileTargets: compileTargets,
+    sourceDir: sourceDir,
+    outputDir: outputDir,
+    compressedOutputStyleFileExtension: compressedOutputStyleFileExtension,
+    expandedOutputStyleFileExtension: expandedOutputStyleFileExtension,
+    outputStyles: outputStyles,
+    check: check,
+  );
+
+  if (exitCode != 0) return new Future(() {});
+
+  taskTimer.stop();
+  if (!check) {
+    print(
+        '\n[SUCCESS] Compiled ${compileTargets.length * outputStyles.length} CSS files in ${taskTimer.elapsed.inSeconds} seconds.');
+    taskTimer.reset();
+  }
+
+  if (!watch) return new Future(() {});
+
+  void recompileSass(List<String> targets) {
+    taskTimer.start();
+    try {
+      compileSass(
+        compileTargets: targets,
+        sourceDir: sourceDir,
+        outputDir: outputDir,
+        compressedOutputStyleFileExtension: compressedOutputStyleFileExtension,
+        expandedOutputStyleFileExtension: expandedOutputStyleFileExtension,
+        outputStyles: outputStyles,
+        printReadyMessage: false,
+      );
+      taskTimer.stop();
+
+      print(
+          '\n[SUCCESS] Compiled ${targets.length * outputStyles.length} CSS files in ${taskTimer.elapsed.inSeconds} seconds.');
+    } catch (e) {
+      print(
+          '\n[ERROR] Failed to compiled ${targets.length * outputStyles.length} CSS files: \n\n$e');
+    }
+
+    taskTimer.stop();
+    taskTimer.reset();
+  }
+
+  var watchers = <FileWatcher>[];
+  for (var target in compileTargets) {
+    watchers.add(new FileWatcher(target));
+  }
+
+  for (var watchDir in watchDirs) {
+    final sassFilesToWatch = new Glob('$watchDir/**.scss', recursive: true)
+        .listSync()
+        .where((file) => isSassPartial(file.path))
+        .map((file) => path.relative(file.path))
+        .toList();
+
+    for (var sassFileToWatch in sassFilesToWatch) {
+      watchers.add(new FileWatcher(sassFileToWatch));
+    }
+    print('\nWatching for changes in ${watchers.length} .scss files...');
+  }
+
+  final watcherEvents = new StreamGroup<WatchEvent>();
+  watchers.map((watcher) => watcher.events).forEach(watcherEvents.add);
+
+  watcherEvents.stream.listen((e) {
+    String changeMessage = '${e.path} was';
+
+    switch (e.type) {
+      case ChangeType.MODIFY:
+        changeMessage = '$changeMessage modified';
+
+        if (isSassPartial(e.path)) {
+          print(
+              '\n$changeMessage... recompiling ${compileTargets.length} targets');
+          recompileSass(compileTargets);
+        } else {
+          print('\n$changeMessage... recompiling 1 target');
+          recompileSass([e.path]);
+        }
+
+        break;
+      case ChangeType.REMOVE:
+        changeMessage = '$changeMessage removed';
+
+        if (!isSassPartial(e.path)) {
+          compileTargets.removeWhere((target) => target == e.path);
+        }
+
+        print('\n$changeMessage... the watcher for it has been removed');
+
+        break;
+    }
+
+    print('\nWatching for changes in ${watchers.length} .scss files...');
+  });
+
+  await watcherEvents.close();
+}
+
+void compileSass({
+  @required List<String> compileTargets,
+  @required String sourceDir,
+  @required String outputDir,
+  @required String compressedOutputStyleFileExtension,
+  String expandedOutputStyleFileExtension =
+      expandedOutputStyleFileExtensionDefaultValue,
+  List<String> outputStyles = outputStyleDefaultValue,
+  bool check = false,
+  bool printReadyMessage = true,
+}) {
   for (var style in outputStyles) {
     final outputStyle = outputStyleArgToOutputStyleValue[style];
     final outputStyleMsg =
         outputStyle == sass.OutputStyle.compressed ? 'minified .css' : '.css';
-    print(
-        '\nReady to compile ${compileTargets.length} .scss files to $outputStyleMsg ...');
+
+    if (printReadyMessage) {
+      print(
+          '\nReady to compile ${compileTargets.length} .scss files to $outputStyleMsg ...');
+    }
 
     final Map<String, String> outputStyleArgToOutputStyleFileExtension = {
       'compressed': compressedOutputStyleFileExtension,
@@ -219,14 +355,6 @@ int compileCss({
       }
     }
   }
-
-  taskTimer.stop();
-  if (!check) {
-    print(
-        '\n[SUCCESS] Compiled ${compileTargets.length * outputStyles.length} CSS files in ${taskTimer.elapsed.inSeconds} seconds.');
-  }
-
-  return exitCode;
 }
 
 int validateCompileTargets(List<String> compileTargets) {
@@ -256,6 +384,8 @@ int validateCompileTargets(List<String> compileTargets) {
 
   return exitCode;
 }
+
+bool isSassPartial(String filePath) => path.basename(filePath).startsWith('_');
 
 SyncPackageResolver _packageResolver;
 SyncPackageResolver _getPackageResolver() {
