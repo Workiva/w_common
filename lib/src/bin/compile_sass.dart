@@ -13,6 +13,8 @@ import 'package:sass/sass.dart' as sass;
 import 'package:source_maps/source_maps.dart';
 import 'package:watcher/watcher.dart';
 
+Stopwatch taskTimer;
+
 const String outputStyleArg = 'outputStyle';
 const List<String> outputStyleDefaultValue = const ['compressed'];
 const String expandedOutputStyleFileExtensionArg =
@@ -35,7 +37,88 @@ const Map<String, sass.OutputStyle> outputStyleArgToOutputStyleValue = const {
   'expanded': sass.OutputStyle.expanded,
 };
 
+class SassCompilationOptions {
+  final List<String> unparsedArgs;
+  final String outputDir;
+  final String compressedOutputStyleFileExtension;
+  final String expandedOutputStyleFileExtension;
+  final List<String> outputStyles;
+  final bool watch;
+  final bool check;
+
+  SassCompilationOptions({
+    @required this.unparsedArgs,
+    @required this.outputDir,
+    String sourceDir,
+    this.compressedOutputStyleFileExtension =
+        compressedOutputStyleFileExtensionDefaultValue,
+    this.expandedOutputStyleFileExtension =
+        expandedOutputStyleFileExtensionDefaultValue,
+    this.outputStyles = outputStyleDefaultValue,
+    List<String> watchDirs = const <String>[],
+    this.watch = false,
+    this.check = false,
+  }) {
+    if (unparsedArgs != null && unparsedArgs.isNotEmpty) {
+      compileTargets = unparsedArgs.map(path.relative).toList();
+      exitCode = _validateCompileTargets();
+      if (exitCode == 0 && sourceDir != null) {
+        _sourceDir = path.split(compileTargets.first).first;
+      } else {
+        _sourceDir = sourceDir ?? sourceDirDefaultValue;
+      }
+    } else {
+      _sourceDir = sourceDir ?? sourceDirDefaultValue;
+
+      compileTargets = new Glob('$_sourceDir/**.scss', recursive: true)
+          .listSync()
+          .where((file) => !isSassPartial(file.path))
+          .map((file) => path.relative(file.path))
+          .toList();
+    }
+
+    _watchDirs = [_sourceDir]..addAll(watchDirs);
+  }
+
+  List<String> get watchDirs => _watchDirs;
+  List<String> _watchDirs;
+
+  String get sourceDir => _sourceDir;
+  String _sourceDir;
+
+  List<String> compileTargets;
+
+  int _validateCompileTargets() {
+    var exitCode = 0;
+    String srcRootDirName;
+    for (var target in compileTargets) {
+      if (!new File(target).existsSync()) {
+        print('[ERROR]: "$target" does not exist');
+        exitCode = 1;
+        break;
+      } else {
+        final targetRootDirName =
+            '${path.rootPrefix(target)}${path.split(target).first}';
+
+        if (srcRootDirName != null) {
+          if (targetRootDirName != srcRootDirName) {
+            print(
+                '[ERROR]: All targets must share the same root directory. Expected "$target" to exist within "$srcRootDirName".');
+            exitCode = 1;
+            break;
+          }
+        } else {
+          srcRootDirName = targetRootDirName;
+        }
+      }
+    }
+
+    return exitCode;
+  }
+}
+
 Future<Null> main(List<String> args) async {
+  taskTimer = new Stopwatch();
   final parser = new ArgParser()
     ..addMultiOption(outputStyleArg,
         abbr: 's',
@@ -74,35 +157,34 @@ Future<Null> main(List<String> args) async {
         negatable: false,
         help: 'Prints usage instructions to the terminal.');
 
-  List<String> unparsedArgs;
   List<String> outputStylesValue;
-  String expandedOutputStyleFileExtensionValue;
-  String compressedOutputStyleFileExtensionValue;
-  String sourceDirValue;
-  String outputDirValue;
-  List<String> watchDirsValue;
-  bool watchValue;
-  bool checkValue;
   bool helpValue;
+
+  SassCompilationOptions options;
+
   try {
     final results = parser.parse(args);
-    unparsedArgs = results.rest;
     outputStylesValue = results[outputStyleArg];
-    expandedOutputStyleFileExtensionValue =
-        results[expandedOutputStyleFileExtensionArg];
-    compressedOutputStyleFileExtensionValue =
-        // Have to use something different for the compressed output if both expanded and compressed are being used.
-        outputStylesValue.length > 1
-            ? '.min.css'
-            : results[compressedOutputStyleFileExtensionArg];
-    sourceDirValue =
-        results[sourceDirArg] ?? results[outputDirArg] ?? sourceDirDefaultValue;
-    outputDirValue =
-        results[outputDirArg] ?? results[sourceDirArg] ?? outputDirDefaultValue;
-    watchDirsValue = [sourceDirValue]..addAll(results[watchDirsArg]);
-    watchValue = results[watchFlag];
-    checkValue = results[checkFlag];
     helpValue = results[helpFlag];
+
+    options = new SassCompilationOptions(
+      unparsedArgs: results.rest,
+      outputDir: results[outputDirArg] ??
+          results[sourceDirArg] ??
+          outputDirDefaultValue,
+      sourceDir: results[sourceDirArg] ?? results[outputDirArg],
+      compressedOutputStyleFileExtension:
+          // Have to use something different for the compressed output if both expanded and compressed are being used.
+          outputStylesValue.length > 1
+              ? '.min.css'
+              : results[compressedOutputStyleFileExtensionArg],
+      expandedOutputStyleFileExtension:
+          results[expandedOutputStyleFileExtensionArg],
+      outputStyles: outputStylesValue,
+      watchDirs: results[watchDirsArg],
+      watch: results[watchFlag],
+      check: results[checkFlag],
+    );
   } on FormatException {
     print(parser.usage);
     exitCode = 1;
@@ -115,102 +197,22 @@ Future<Null> main(List<String> args) async {
     return new Future(() {});
   }
 
-  await initialize(
-    sourceDir: sourceDirValue,
-    outputDir: outputDirValue,
-    compressedOutputStyleFileExtension: compressedOutputStyleFileExtensionValue,
-    expandedOutputStyleFileExtension: expandedOutputStyleFileExtensionValue,
-    unparsedArgs: unparsedArgs,
-    outputStyles: outputStylesValue,
-    watchDirs: watchDirsValue,
-    watch: watchValue,
-    check: checkValue,
-  );
+  if (exitCode != 0) return new Future(() {});
+
+  compileSass(options);
+
+  if (exitCode != 0 || !options.watch) return new Future(() {});
+
+  await watch(options);
 }
 
-Future<Null> initialize({
-  @required String sourceDir,
-  @required String outputDir,
-  @required String compressedOutputStyleFileExtension,
-  String expandedOutputStyleFileExtension =
-      expandedOutputStyleFileExtensionDefaultValue,
-  List<String> unparsedArgs,
-  List<String> outputStyles = outputStyleDefaultValue,
-  List<String> watchDirs,
-  bool watch = false,
-  bool check = false,
-}) async {
-  final taskTimer = new Stopwatch()..start();
-
-  List<String> compileTargets;
-  if (unparsedArgs != null && unparsedArgs.isNotEmpty) {
-    compileTargets = unparsedArgs.map(path.relative).toList();
-    exitCode = validateCompileTargets(compileTargets);
-    if (exitCode == 0) {
-      sourceDir = path.split(compileTargets.first).first;
-    }
-  } else {
-    compileTargets = new Glob('$sourceDir/**.scss', recursive: true)
-        .listSync()
-        .where((file) => !isSassPartial(file.path))
-        .map((file) => path.relative(file.path))
-        .toList();
-  }
-
-  if (exitCode != 0) return new Future(() {});
-
-  compileSass(
-    compileTargets: compileTargets,
-    sourceDir: sourceDir,
-    outputDir: outputDir,
-    compressedOutputStyleFileExtension: compressedOutputStyleFileExtension,
-    expandedOutputStyleFileExtension: expandedOutputStyleFileExtension,
-    outputStyles: outputStyles,
-    check: check,
-  );
-
-  if (exitCode != 0) return new Future(() {});
-
-  taskTimer.stop();
-  if (!check) {
-    print(
-        '\n[SUCCESS] Compiled ${compileTargets.length * outputStyles.length} CSS files in ${taskTimer.elapsed.inSeconds} seconds.');
-    taskTimer.reset();
-  }
-
-  if (!watch) return new Future(() {});
-
-  void recompileSass(List<String> targets) {
-    taskTimer.start();
-    try {
-      compileSass(
-        compileTargets: targets,
-        sourceDir: sourceDir,
-        outputDir: outputDir,
-        compressedOutputStyleFileExtension: compressedOutputStyleFileExtension,
-        expandedOutputStyleFileExtension: expandedOutputStyleFileExtension,
-        outputStyles: outputStyles,
-        printReadyMessage: false,
-      );
-      taskTimer.stop();
-
-      print(
-          '\n[SUCCESS] Compiled ${targets.length * outputStyles.length} CSS files in ${taskTimer.elapsed.inSeconds} seconds.');
-    } catch (e) {
-      print(
-          '\n[ERROR] Failed to compiled ${targets.length * outputStyles.length} CSS files: \n\n$e');
-    }
-
-    taskTimer.stop();
-    taskTimer.reset();
-  }
-
+Future<Null> watch(SassCompilationOptions options) async {
   var watchers = <FileWatcher>[];
-  for (var target in compileTargets) {
+  for (var target in options.compileTargets) {
     watchers.add(new FileWatcher(target));
   }
 
-  for (var watchDir in watchDirs) {
+  for (var watchDir in options.watchDirs) {
     final sassFilesToWatch = new Glob('$watchDir/**.scss', recursive: true)
         .listSync()
         .where((file) => isSassPartial(file.path))
@@ -227,6 +229,7 @@ Future<Null> initialize({
   watchers.map((watcher) => watcher.events).forEach(watcherEvents.add);
 
   watcherEvents.stream.listen((e) {
+    exitCode = 0;
     String changeMessage = '${e.path} was';
 
     switch (e.type) {
@@ -235,11 +238,12 @@ Future<Null> initialize({
 
         if (isSassPartial(e.path)) {
           print(
-              '\n$changeMessage... recompiling ${compileTargets.length} targets');
-          recompileSass(compileTargets);
+              '\n$changeMessage... recompiling ${options.compileTargets.length} targets');
+          compileSass(options, printReadyMessage: false);
         } else {
           print('\n$changeMessage... recompiling 1 target');
-          recompileSass([e.path]);
+          compileSass(options,
+              compileTargets: [e.path], printReadyMessage: false);
         }
 
         break;
@@ -247,7 +251,7 @@ Future<Null> initialize({
         changeMessage = '$changeMessage removed';
 
         if (!isSassPartial(e.path)) {
-          compileTargets.removeWhere((target) => target == e.path);
+          options.compileTargets.removeWhere((target) => target == e.path);
         }
 
         print('\n$changeMessage... the watcher for it has been removed');
@@ -261,18 +265,14 @@ Future<Null> initialize({
   await watcherEvents.close();
 }
 
-void compileSass({
-  @required List<String> compileTargets,
-  @required String sourceDir,
-  @required String outputDir,
-  @required String compressedOutputStyleFileExtension,
-  String expandedOutputStyleFileExtension =
-      expandedOutputStyleFileExtensionDefaultValue,
-  List<String> outputStyles = outputStyleDefaultValue,
-  bool check = false,
-  bool printReadyMessage = true,
-}) {
-  for (var style in outputStyles) {
+void compileSass(SassCompilationOptions options,
+    {List<String> compileTargets, bool printReadyMessage = true}) {
+  taskTimer.start();
+
+  compileTargets ??= options.compileTargets;
+  int failureCount = 0;
+
+  for (var style in options.outputStyles) {
     final outputStyle = outputStyleArgToOutputStyleValue[style];
     final outputStyleMsg =
         outputStyle == sass.OutputStyle.compressed ? 'minified .css' : '.css';
@@ -283,105 +283,100 @@ void compileSass({
     }
 
     final Map<String, String> outputStyleArgToOutputStyleFileExtension = {
-      'compressed': compressedOutputStyleFileExtension,
-      'expanded': expandedOutputStyleFileExtension,
+      'compressed': options.compressedOutputStyleFileExtension,
+      'expanded': options.expandedOutputStyleFileExtension,
     };
 
     for (var target in compileTargets) {
-      final singleCompileTimer = new Stopwatch()..start();
+      try {
+        final singleCompileTimer = new Stopwatch()..start();
 
-      SingleMapping sourceMap;
-      var cssPath = path.setExtension(
-          path.join(outputDir, path.basename(target)),
-          outputStyleArgToOutputStyleFileExtension[style]);
-      var cssSrc = sass.compile(target,
-          style: outputStyle,
-          color: true,
-          packageResolver: _getPackageResolver(), sourceMap: (map) {
-        if (sourceDir != outputDir) {
-          final relativePathOutToSassDir =
-              path.dirname(path.relative(target, from: cssPath));
-          map.sourceRoot = relativePathOutToSassDir;
-        }
+        SingleMapping sourceMap;
+        var cssPath = path.setExtension(
+            path.join(options.outputDir, path.basename(target)),
+            outputStyleArgToOutputStyleFileExtension[style]);
+        var cssSrc = sass.compile(target,
+            style: outputStyle,
+            color: true,
+            packageResolver: _getPackageResolver(), sourceMap: (map) {
+          if (options.sourceDir != options.outputDir) {
+            final relativePathOutToSassDir =
+                path.dirname(path.relative(target, from: cssPath));
+            map.sourceRoot = relativePathOutToSassDir;
+          }
 
-        sourceMap = map;
-      });
+          sourceMap = map;
+        });
 
-      cssSrc =
-          '$cssSrc\n\n/*# sourceMappingURL=${'${path.basename(cssPath)}.map'} */';
-      final cssTarget = new File(cssPath);
-      if (!cssTarget.existsSync()) {
-        cssTarget.createSync(recursive: true);
-      }
-
-      if (check) {
-        final cssSrcTempFile = new File('$cssPath.tmp');
-        // Writing a temporary file since the string value read from the committed file does not seem to be equivalent to one that has not yet been written to a file.
-        cssSrcTempFile.writeAsStringSync(cssSrc);
-
+        cssSrc =
+            '$cssSrc\n\n/*# sourceMappingURL=${'${path.basename(cssPath)}.map'} */';
+        final cssTarget = new File(cssPath);
         if (!cssTarget.existsSync()) {
-          exitCode = 1;
-          print(
-              '[ERROR] ${cssTarget.path} was generated during the build, but has not been committed. Commit this file and push to rebuild.');
-        } else if (cssSrcTempFile.readAsStringSync() !=
-            cssTarget.readAsStringSync()) {
-          exitCode = 1;
-          print(
-              '[ERROR] ${cssTarget.path} is out of date, and needs to be committed / pushed.');
+          cssTarget.createSync(recursive: true);
+        }
+
+        if (options.check) {
+          final cssSrcTempFile = new File('$cssPath.tmp');
+          // Writing a temporary file since the string value read from the committed file does not seem to be equivalent to one that has not yet been written to a file.
+          cssSrcTempFile.writeAsStringSync(cssSrc);
+
+          if (!cssTarget.existsSync()) {
+            exitCode = 1;
+            print(
+                '[ERROR] ${cssTarget.path} was generated during the build, but has not been committed. Commit this file and push to rebuild.');
+          } else if (cssSrcTempFile.readAsStringSync() !=
+              cssTarget.readAsStringSync()) {
+            exitCode = 1;
+            print(
+                '[ERROR] ${cssTarget.path} is out of date, and needs to be committed / pushed.');
+          } else {
+            print('[SUCCESS] ${cssTarget.path} is up to date!');
+          }
+
+          cssSrcTempFile.deleteSync();
+
+          singleCompileTimer
+            ..stop()
+            ..reset();
         } else {
-          print('[SUCCESS] ${cssTarget.path} is up to date!');
-        }
+          cssTarget.writeAsStringSync(cssSrc);
+          final sourceMapTarget = new File('${cssTarget.path}.map');
 
-        cssSrcTempFile.deleteSync();
+          if (!sourceMapTarget.existsSync()) {
+            sourceMapTarget.createSync(recursive: true);
+          }
+          sourceMapTarget
+              .writeAsStringSync(convert.json.encode(sourceMap.toJson()));
 
-        singleCompileTimer
-          ..stop()
-          ..reset();
-      } else {
-        cssTarget.writeAsStringSync(cssSrc);
-        final sourceMapTarget = new File('${cssTarget.path}.map');
-
-        if (!sourceMapTarget.existsSync()) {
-          sourceMapTarget.createSync(recursive: true);
-        }
-        sourceMapTarget
-            .writeAsStringSync(convert.json.encode(sourceMap.toJson()));
-
-        singleCompileTimer.stop();
-        print(
-            '"$target" => "$cssPath" (${singleCompileTimer.elapsedMilliseconds}ms)');
-        singleCompileTimer.reset();
-      }
-    }
-  }
-}
-
-int validateCompileTargets(List<String> compileTargets) {
-  var exitCode = 0;
-  String srcRootDirName;
-  for (var target in compileTargets) {
-    if (!new File(target).existsSync()) {
-      print('[ERROR]: "$target" does not exist');
-      exitCode = 1;
-      break;
-    } else {
-      final targetRootDirName =
-          '${path.rootPrefix(target)}${path.split(target).first}';
-
-      if (srcRootDirName != null) {
-        if (targetRootDirName != srcRootDirName) {
+          singleCompileTimer.stop();
           print(
-              '[ERROR]: All targets must share the same root directory. Expected "$target" to exist within "$srcRootDirName".');
-          exitCode = 1;
-          break;
+              '"$target" => "$cssPath" (${singleCompileTimer.elapsedMilliseconds}ms)');
+          singleCompileTimer.reset();
         }
-      } else {
-        srcRootDirName = targetRootDirName;
+      } catch (e) {
+        exitCode = 1;
+        failureCount++;
+        print('\n[ERROR] Failed to compile $target: \n\n$e\n');
       }
     }
   }
 
-  return exitCode;
+  taskTimer.stop();
+  if (!options.check) {
+    final elapsedTime = taskTimer.elapsed;
+    final durationString = elapsedTime.inSeconds > 0
+        ? '${elapsedTime.inSeconds} seconds.'
+        : '${elapsedTime.inMilliseconds} milliseconds.';
+
+    if (exitCode == 0) {
+      print(
+          '\n[SUCCESS] Compiled ${compileTargets.length * options.outputStyles.length} CSS file(s) in $durationString');
+    } else {
+      print(
+          '\n[FAILURE] $failureCount/${compileTargets.length} targets failed to compile');
+    }
+  }
+  taskTimer.reset();
 }
 
 bool isSassPartial(String filePath) => path.basename(filePath).startsWith('_');
