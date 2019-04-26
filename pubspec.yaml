@@ -9,6 +9,7 @@ environment:
 
 dependencies:
   args: ^1.5.1
+  async: ">=1.13.3 <3.0.0"
   colorize: <3.0.0
   dart2_constant: ^1.0.0
   glob: ^1.1.7
