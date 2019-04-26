@@ -25,6 +25,10 @@ void main() {
     const defaultSourceDir = 'test/unit/vm/fixtures/sass/';
     const specificOutputDir = 'test/unit/vm/fixtures/css/';
 
+    setUp(() {
+      exitCode = 0;
+    });
+
     tearDown(() {
       final compiledCssFiles =
           new Glob('$defaultSourceDir**.css', recursive: true).listSync();
@@ -50,15 +54,16 @@ void main() {
       }
     });
 
-    test('runs successfully', () {
-      expect(() => compiler.main(['--sourceDir', defaultSourceDir]),
-          returnsNormally);
+    test('runs successfully', () async {
+      await compiler.main(['--sourceDir', defaultSourceDir]);
+
+      expect(exitCode, 0);
     });
 
     group('generates .css / .css.map file(s)', () {
       group('in the expected directory', () {
-        test('by default', () {
-          compiler.main(['--sourceDir', defaultSourceDir]);
+        test('by default', () async {
+          await compiler.main(['--sourceDir', defaultSourceDir]);
 
           expect(new File(path.join(defaultSourceDir, 'test.css')).existsSync(),
               isTrue);
@@ -68,8 +73,8 @@ void main() {
               isTrue);
         });
 
-        test('when the --outputDir argument is specified', () {
-          compiler.main([
+        test('when the --outputDir argument is specified', () async {
+          await compiler.main([
             '--sourceDir',
             defaultSourceDir,
             '--outputDir',
@@ -93,8 +98,8 @@ void main() {
       });
 
       group('with the expected file names', () {
-        test('when the --outputStyle argument contains both styles', () {
-          compiler.main([
+        test('when the --outputStyle argument contains both styles', () async {
+          await compiler.main([
             '--sourceDir',
             defaultSourceDir,
             '--outputStyle',
@@ -117,8 +122,8 @@ void main() {
               isTrue);
         });
 
-        test('when there are multiple --outputStyle arguments', () {
-          compiler.main([
+        test('when there are multiple --outputStyle arguments', () async {
+          await compiler.main([
             '--sourceDir',
             defaultSourceDir,
             '--outputStyle',
@@ -183,8 +188,8 @@ void main() {
 
           group('when the --outputStyle argument contains only "compressed"',
               () {
-            test('', () {
-              compiler.main([
+            test('', () async {
+              await compiler.main([
                 '--sourceDir',
                 defaultSourceDir,
                 '--outputStyle',
@@ -203,8 +208,8 @@ void main() {
 
             test(
                 'and the --compressedOutputStyleFileExtension argument is specified',
-                () {
-              compiler.main([
+                () async {
+              await compiler.main([
                 '--sourceDir',
                 defaultSourceDir,
                 '--outputStyle',
@@ -236,8 +241,8 @@ void main() {
         group('(expanded)', () {
           group('when the --outputStyle argument contains both styles', () {
             test('and the --expandedOutputStyleFileExtension argument is set',
-                () {
-              compiler.main([
+                () async {
+              await compiler.main([
                 '--sourceDir',
                 defaultSourceDir,
                 '--outputStyle',
@@ -272,8 +277,8 @@ void main() {
           });
 
           group('when the --outputStyle argument contains only "expanded"', () {
-            test('', () {
-              compiler.main([
+            test('', () async {
+              await compiler.main([
                 '--sourceDir',
                 defaultSourceDir,
                 '--outputStyle',
@@ -292,8 +297,8 @@ void main() {
 
             test(
                 'and the --expandedOutputStyleFileExtension argument is specified',
-                () {
-              compiler.main([
+                () async {
+              await compiler.main([
                 '--sourceDir',
                 defaultSourceDir,
                 '--outputStyle',
@@ -329,8 +334,8 @@ void main() {
         });
       });
 
-      test('with the expected CSS output', () {
-        compiler.main(['--sourceDir', defaultSourceDir]);
+      test('with the expected CSS output', () async {
+        await compiler.main(['--sourceDir', defaultSourceDir]);
 
         final content = new File(path.join(defaultSourceDir, 'test.css'))
             .readAsStringSync();
@@ -340,8 +345,8 @@ void main() {
       });
 
       group('with the expected source map pathing', () {
-        test('when the --outputDir is the same as the --sourceDir', () {
-          compiler.main(['--sourceDir', defaultSourceDir]);
+        test('when the --outputDir is the same as the --sourceDir', () async {
+          await compiler.main(['--sourceDir', defaultSourceDir]);
           final cssContent = new File(path.join(defaultSourceDir, 'test.css'))
               .readAsStringSync();
           final sourceMapContent =
@@ -352,8 +357,9 @@ void main() {
           expect(sourceMapContent, contains('"sourceRoot":""'));
         });
 
-        test('when the --outputDir is the different than the --sourceDir', () {
-          compiler.main([
+        test('when the --outputDir is the different than the --sourceDir',
+            () async {
+          await compiler.main([
             '--sourceDir',
             defaultSourceDir,
             '--outputDir',
