@@ -48,7 +48,6 @@ const Map<String, sass.OutputStyle> outputStyleArgToOutputStyleValue = const {
 class SassCompilationOptions {
   final List<String> unparsedArgs;
   final String outputDir;
-  final String compressedOutputStyleFileExtension;
   final String expandedOutputStyleFileExtension;
   final List<String> outputStyles;
   final bool watch;
@@ -58,8 +57,7 @@ class SassCompilationOptions {
     @required this.unparsedArgs,
     @required this.outputDir,
     String sourceDir,
-    this.compressedOutputStyleFileExtension =
-        compressedOutputStyleFileExtensionDefaultValue,
+    String compressedOutputStyleFileExtension,
     this.expandedOutputStyleFileExtension =
         expandedOutputStyleFileExtensionDefaultValue,
     this.outputStyles = outputStyleDefaultValue,
@@ -67,6 +65,25 @@ class SassCompilationOptions {
     this.watch = false,
     this.check = false,
   }) {
+    // Have to use something different for the compressed output if both expanded and compressed are being used.
+    _compressedOutputStyleFileExtension =
+        outputStyles.length > 1 && compressedOutputStyleFileExtension == null
+            ? '.min.css'
+            : compressedOutputStyleFileExtension ??
+                compressedOutputStyleFileExtensionDefaultValue;
+    print(
+        '_compressedOutputStyleFileExtension: $_compressedOutputStyleFileExtension');
+
+    if (outputStyles.length > 1 &&
+        this.compressedOutputStyleFileExtension ==
+            expandedOutputStyleFileExtension) {
+      print(
+          '$errorMessageHeading when using more than one output style, `--$expandedOutputStyleFileExtensionArg` ($expandedOutputStyleFileExtension) \n'
+          'and `--$compressedOutputStyleFileExtensionArg` ($_compressedOutputStyleFileExtension) cannot match.');
+      exitCode = 1;
+      return;
+    }
+
     if (unparsedArgs != null && unparsedArgs.isNotEmpty) {
       compileTargets = unparsedArgs.map(path.relative).toList();
       exitCode = _validateCompileTargets();
@@ -93,6 +110,10 @@ class SassCompilationOptions {
 
   String get sourceDir => _sourceDir;
   String _sourceDir;
+
+  String get compressedOutputStyleFileExtension =>
+      _compressedOutputStyleFileExtension;
+  String _compressedOutputStyleFileExtension;
 
   List<String> compileTargets;
 
@@ -139,8 +160,9 @@ Future<Null> main(List<String> args) async {
         defaultsTo: expandedOutputStyleFileExtensionDefaultValue)
     ..addOption(compressedOutputStyleFileExtensionArg,
         help:
-            'The file extension that will be used for the CSS compiled using \n`compressed` outputStyle unless more than one `--$outputStyleArg` \nis defined. \nWhen more than one outputStyle is used, the extension for \ncompressed CSS will be `.min.css` no matter what.',
-        defaultsTo: compressedOutputStyleFileExtensionDefaultValue)
+            'The file extension that will be used for the CSS compiled using \n`compressed` outputStyle.\n'
+            '(defaults to $compressedOutputStyleFileExtensionDefaultValue, or .min.css\n'
+            ' if `--$outputStyleArg` contains more than one style)')
     ..addOption(sourceDirArg,
         help:
             'The directory where the `.scss` files that you want to compile live. \n(defaults to $sourceDirDefaultValue, or the value of `--$outputDirArg`, if specified.)')
@@ -182,10 +204,7 @@ Future<Null> main(List<String> args) async {
           outputDirDefaultValue,
       sourceDir: results[sourceDirArg] ?? results[outputDirArg],
       compressedOutputStyleFileExtension:
-          // Have to use something different for the compressed output if both expanded and compressed are being used.
-          outputStylesValue.length > 1
-              ? '.min.css'
-              : results[compressedOutputStyleFileExtensionArg],
+          results[compressedOutputStyleFileExtensionArg],
       expandedOutputStyleFileExtension:
           results[expandedOutputStyleFileExtensionArg],
       outputStyles: outputStylesValue,

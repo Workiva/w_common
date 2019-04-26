@@ -150,39 +150,60 @@ void main() {
 
         group('(compressed)', () {
           group('when the --outputStyle argument contains both styles', () {
-            test('and the --compressedOutputStyleFileExtension argument is set',
+            group(
+                'and the --compressedOutputStyleFileExtension argument is set',
                 () {
-              compiler.main([
-                '--sourceDir',
-                defaultSourceDir,
-                '--outputStyle',
-                'expanded,compressed',
-                '--compressedOutputStyleFileExtension',
-                '.min.foo.css',
-              ]);
+              test(
+                  'to something that does not match --compressedOutputStyleFileExtension',
+                  () async {
+                await compiler.main([
+                  '--sourceDir',
+                  defaultSourceDir,
+                  '--outputStyle',
+                  'expanded,compressed',
+                  '--compressedOutputStyleFileExtension',
+                  '.min.foo.css',
+                ]);
 
-              expect(
-                  new File(path.join(defaultSourceDir, 'test.min.foo.css'))
-                      .existsSync(),
-                  isFalse,
-                  reason:
-                      'The file extension for compressed output should not be customizable when both '
-                      'outputStyle values are specified');
-              expect(
-                  new File(path.join(defaultSourceDir, 'test.min.foo.css.map'))
-                      .existsSync(),
-                  isFalse,
-                  reason:
-                      'The file extension for compressed output should not be customizable when both '
-                      'outputStyle values are specified');
-              expect(
-                  new File(path.join(defaultSourceDir, 'test.min.css'))
-                      .existsSync(),
-                  isTrue);
-              expect(
-                  new File(path.join(defaultSourceDir, 'test.min.css.map'))
-                      .existsSync(),
-                  isTrue);
+                expect(
+                    new File(path.join(defaultSourceDir, 'test.min.foo.css'))
+                        .existsSync(),
+                    isTrue);
+                expect(
+                    new File(
+                            path.join(defaultSourceDir, 'test.min.foo.css.map'))
+                        .existsSync(),
+                    isTrue);
+              });
+
+              test(
+                  'to something that matches --compressedOutputStyleFileExtension',
+                  () async {
+                await compiler.main([
+                  '--sourceDir',
+                  defaultSourceDir,
+                  '--outputStyle',
+                  'expanded,compressed',
+                  '--compressedOutputStyleFileExtension',
+                  '.foo.css',
+                  '--expandedOutputStyleFileExtension',
+                  '.foo.css',
+                ]);
+
+                expect(exitCode, 1);
+                expect(
+                    new File(path.join(defaultSourceDir, 'test.foo.css'))
+                        .existsSync(),
+                    isFalse,
+                    reason:
+                        'The file extension for compressed output cannot match the one for expanded output');
+                expect(
+                    new File(path.join(defaultSourceDir, 'test.foo.css.map'))
+                        .existsSync(),
+                    isFalse,
+                    reason:
+                        'The file extension for compressed output cannot match the one for expanded output');
+              });
             });
           });
 
