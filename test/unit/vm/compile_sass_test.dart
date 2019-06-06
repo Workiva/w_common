@@ -23,6 +23,8 @@ import 'package:w_common/src/bin/compile_sass.dart' as compiler;
 void main() {
   group('pub run w_common:compile_sass', () {
     const defaultSourceDir = 'test/unit/vm/fixtures/sass/';
+    const nestedSourceDirName = 'nested_directory';
+    const defaultNestedSourceDir = '$defaultSourceDir$nestedSourceDirName/';
     const specificOutputDir = 'test/unit/vm/fixtures/css/';
 
     setUp(() {
@@ -62,38 +64,88 @@ void main() {
 
     group('generates .css / .css.map file(s)', () {
       group('in the expected directory', () {
-        test('by default', () async {
-          await compiler.main(['--sourceDir', defaultSourceDir]);
+        group('by default', () {
+          setUp(() async {
+            await compiler.main(['--sourceDir', defaultSourceDir]);
+          });
 
-          expect(new File(path.join(defaultSourceDir, 'test.css')).existsSync(),
-              isTrue);
-          expect(
-              new File(path.join(defaultSourceDir, 'test.css.map'))
-                  .existsSync(),
-              isTrue);
+          test('when the source is in the root of the sourceDir', () {
+            final expectedCssFile =
+                new File(path.join(defaultSourceDir, 'test.css'));
+            expect(expectedCssFile.existsSync(), isTrue,
+                reason: '$expectedCssFile does not exist.');
+
+            final expectedCssMapFile =
+                new File(path.join(defaultSourceDir, 'test.css.map'));
+            expect(expectedCssMapFile.existsSync(), isTrue,
+                reason: '$expectedCssMapFile does not exist.');
+          });
+
+          test(
+              'when the source is in a subdirectory of the root of the sourceDir',
+              () {
+            final expectedCssFile =
+                new File(path.join(defaultNestedSourceDir, 'nested_test.css'));
+            expect(expectedCssFile.existsSync(), isTrue,
+                reason: '$expectedCssFile does not exist.');
+
+            final expectedCssMapFile = new File(
+                path.join(defaultNestedSourceDir, 'nested_test.css.map'));
+            expect(expectedCssMapFile.existsSync(), isTrue,
+                reason: '$expectedCssMapFile does not exist.');
+          });
         });
 
-        test('when the --outputDir argument is specified', () async {
-          await compiler.main([
-            '--sourceDir',
-            defaultSourceDir,
-            '--outputDir',
-            specificOutputDir,
-          ]);
+        group('when the --outputDir argument is specified', () {
+          setUp(() async {
+            await compiler.main([
+              '--sourceDir',
+              defaultSourceDir,
+              '--outputDir',
+              specificOutputDir,
+            ]);
+          });
 
-          expect(new File(path.join(defaultSourceDir, 'test.css')).existsSync(),
-              isFalse);
-          expect(
-              new File(path.join(defaultSourceDir, 'test.css.map'))
-                  .existsSync(),
-              isFalse);
-          expect(
-              new File(path.join(specificOutputDir, 'test.css')).existsSync(),
-              isTrue);
-          expect(
-              new File(path.join(specificOutputDir, 'test.css.map'))
-                  .existsSync(),
-              isTrue);
+          test('when the source is in the root of the sourceDir', () {
+            expect(
+                new File(path.join(defaultSourceDir, 'test.css')).existsSync(),
+                isFalse);
+            expect(
+                new File(path.join(defaultSourceDir, 'test.css.map'))
+                    .existsSync(),
+                isFalse);
+            expect(
+                new File(path.join(specificOutputDir, 'test.css')).existsSync(),
+                isTrue);
+            expect(
+                new File(path.join(specificOutputDir, 'test.css.map'))
+                    .existsSync(),
+                isTrue);
+          });
+
+          test(
+              'when the source is in a subdirectory of the root of the sourceDir',
+              () {
+            expect(
+                new File(path.join(defaultNestedSourceDir, 'nested_test.css'))
+                    .existsSync(),
+                isFalse);
+            expect(
+                new File(path.join(
+                        defaultNestedSourceDir, 'nested_test.css.map'))
+                    .existsSync(),
+                isFalse);
+            expect(
+                new File(path.join(specificOutputDir,
+                        '$nestedSourceDirName/nested_test.css'))
+                    .existsSync(),
+                isTrue);
+            expect(
+                new File(path.join(specificOutputDir,
+                        '$nestedSourceDirName/nested_test.css.map'))
+                    .existsSync(),
+                isTrue);
+          });
         });
       });
 
@@ -366,41 +418,90 @@ void main() {
       });
 
       group('with the expected source map pathing', () {
-        test('when the --outputDir is the same as the --sourceDir', () async {
-          await compiler.main(['--sourceDir', defaultSourceDir]);
-          final cssContent = new File(path.join(defaultSourceDir, 'test.css'))
-              .readAsStringSync();
-          final sourceMapContent =
-              new File(path.join(defaultSourceDir, 'test.css.map'))
-                  .readAsStringSync();
+        group('when the --outputDir is the same as the --sourceDir', () {
+          setUp(() async {
+            await compiler.main(['--sourceDir', defaultSourceDir]);
+          });
 
-          expect(cssContent, endsWith('/*# sourceMappingURL=test.css.map */'));
-          expect(sourceMapContent, contains('"sourceRoot":""'));
+          test('and the source is in the root of the sourceDir', () {
+            final cssContent = new File(path.join(defaultSourceDir, 'test.css'))
+                .readAsStringSync();
+            final sourceMapContent =
+                new File(path.join(defaultSourceDir, 'test.css.map'))
+                    .readAsStringSync();
+
+            expect(
+                cssContent, endsWith('/*# sourceMappingURL=test.css.map */'));
+            expect(sourceMapContent, contains('"sourceRoot":""'));
+          });
+
+          test(
+              'and the source is in a subdirectory of the root of the sourceDir',
+              () {
+            final cssContent =
+                new File(path.join(defaultNestedSourceDir, 'nested_test.css'))
+                    .readAsStringSync();
+            final sourceMapContent = new File(
+                    path.join(defaultNestedSourceDir, 'nested_test.css.map'))
+                .readAsStringSync();
+
+            expect(cssContent,
+                endsWith('/*# sourceMappingURL=nested_test.css.map */'));
+            expect(sourceMapContent, contains('"sourceRoot":""'));
+          });
         });
 
-        test('when the --outputDir is the different than the --sourceDir',
-            () async {
-          await compiler.main([
-            '--sourceDir',
-            defaultSourceDir,
-            '--outputDir',
-            specificOutputDir,
-          ]);
-          final cssTarget = new File(path.join(specificOutputDir, 'test.css'));
-          final cssContent = cssTarget.readAsStringSync();
-          final sourceMapContent =
-              new File(path.join(specificOutputDir, 'test.css.map'))
-                  .readAsStringSync();
+        group('when the --outputDir is the different than the --sourceDir', () {
+          setUp(() async {
+            await compiler.main([
+              '--sourceDir',
+              defaultSourceDir,
+              '--outputDir',
+              specificOutputDir,
+            ]);
+          });
 
-          expect(cssContent, endsWith('/*# sourceMappingURL=test.css.map */'));
+          test('and the source is in the root of the sourceDir', () {
+            final cssTarget =
+                new File(path.join(specificOutputDir, 'test.css'));
+            final cssContent = cssTarget.readAsStringSync();
+            final sourceMapContent =
+                new File(path.join(specificOutputDir, 'test.css.map'))
+                    .readAsStringSync();
 
-          final relativePathToSassFileFromCompiledCss = path.dirname(
-              path.relative(path.join(defaultSourceDir, 'test.scss'),
-                  from: cssTarget.path));
-          expect(
-              sourceMapContent,
-              contains(
-                  '"sourceRoot":"$relativePathToSassFileFromCompiledCss"'));
+            expect(
+                cssContent, endsWith('/*# sourceMappingURL=test.css.map */'));
+
+            final relativePathToSassFileFromCompiledCss = path.dirname(
+                path.relative(path.join(defaultSourceDir, 'test.scss'),
+                    from: cssTarget.path));
+            expect(
+                sourceMapContent,
+                contains(
+                    '"sourceRoot":"$relativePathToSassFileFromCompiledCss"'));
+          });
+
+          test(
+              'and the source is in a subdirectory of the root of the sourceDir',
+              () {
+            final cssTarget = new File(path.join(
+                specificOutputDir, '$nestedSourceDirName/nested_test.css'));
+            final cssContent = cssTarget.readAsStringSync();
+            final sourceMapContent = new File(path.join(specificOutputDir,
+                    '$nestedSourceDirName/nested_test.css.map'))
+                .readAsStringSync();
+
+            expect(cssContent,
+                endsWith('/*# sourceMappingURL=nested_test.css.map */'));
+
+            final relativePathToSassFileFromCompiledCss = path.dirname(path
+                .relative(path.join(defaultNestedSourceDir, 'nested_test.scss'),
+                    from: cssTarget.path));
+            expect(
+                sourceMapContent,
+                contains(
+                    '"sourceRoot":"$relativePathToSassFileFromCompiledCss"'));
+          });
         });
       });
     });

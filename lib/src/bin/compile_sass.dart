@@ -317,10 +317,16 @@ void compileSass(SassCompilationOptions options,
     for (var target in compileTargets) {
       try {
         final singleCompileTimer = new Stopwatch()..start();
+        final outputSubDir = target.substring(
+            options.sourceDir.length, target.indexOf(path.basename(target)));
+        var outputDir = options.outputDir;
+        if (outputSubDir.isNotEmpty) {
+          outputDir = path.join(outputDir, outputSubDir);
+        }
 
         SingleMapping sourceMap;
         var cssPath = path.setExtension(
-            path.join(options.outputDir, path.basename(target)),
+            path.join(outputDir, path.basename(target)),
             outputStyleArgToOutputStyleFileExtension[style]);
         var cssSrc = sass.compile(target,
             style: outputStyle,
