@@ -100,17 +100,18 @@ void main() {
 
         group('when the --sourceDir argument has no trailing slash', () {
           setUp(() async {
-            await compiler.main(['--sourceDir', defaultSourceDirWithoutTrailingSlash]);
+            await compiler
+                .main(['--sourceDir', defaultSourceDirWithoutTrailingSlash]);
           });
 
           test('when the source is in the root of the sourceDir', () {
-            final expectedCssFile =
-                new File(path.join(defaultSourceDirWithoutTrailingSlash, 'test.css'));
+            final expectedCssFile = new File(
+                path.join(defaultSourceDirWithoutTrailingSlash, 'test.css'));
             expect(expectedCssFile.existsSync(), isTrue,
                 reason: '$expectedCssFile does not exist.');
 
-            final expectedCssMapFile =
-                new File(path.join(defaultSourceDirWithoutTrailingSlash, 'test.css.map'));
+            final expectedCssMapFile = new File(path.join(
+                defaultSourceDirWithoutTrailingSlash, 'test.css.map'));
             expect(expectedCssMapFile.existsSync(), isTrue,
                 reason: '$expectedCssMapFile does not exist.');
           });
@@ -182,7 +183,9 @@ void main() {
           });
         });
 
-        group('when the --outputDir argument is specified and the --sourceDir argument has no trailing slash', () {
+        group(
+            'when the --outputDir argument is specified and the --sourceDir argument has no trailing slash',
+            () {
           setUp(() async {
             await compiler.main([
               '--sourceDir',
@@ -194,10 +197,13 @@ void main() {
 
           test('when the source is in the root of the sourceDir', () {
             expect(
-                new File(path.join(defaultSourceDirWithoutTrailingSlash, 'test.css')).existsSync(),
+                new File(path.join(
+                        defaultSourceDirWithoutTrailingSlash, 'test.css'))
+                    .existsSync(),
                 isFalse);
             expect(
-                new File(path.join(defaultSourceDirWithoutTrailingSlash, 'test.css.map'))
+                new File(path.join(
+                        defaultSourceDirWithoutTrailingSlash, 'test.css.map'))
                     .existsSync(),
                 isFalse);
             expect(
@@ -234,7 +240,9 @@ void main() {
           });
         });
 
-        group('when both the --outputDir and --sourceDir arguments have no trailing slash', () {
+        group(
+            'when both the --outputDir and --sourceDir arguments have no trailing slash',
+            () {
           setUp(() async {
             await compiler.main([
               '--sourceDir',
@@ -246,17 +254,23 @@ void main() {
 
           test('when the source is in the root of the sourceDir', () {
             expect(
-                new File(path.join(defaultSourceDirWithoutTrailingSlash, 'test.css')).existsSync(),
-                isFalse);
-            expect(
-                new File(path.join(defaultSourceDirWithoutTrailingSlash, 'test.css.map'))
+                new File(path.join(
+                        defaultSourceDirWithoutTrailingSlash, 'test.css'))
                     .existsSync(),
                 isFalse);
             expect(
-                new File(path.join(specificOutputDirWithoutTrailingSlash, 'test.css')).existsSync(),
+                new File(path.join(
+                        defaultSourceDirWithoutTrailingSlash, 'test.css.map'))
+                    .existsSync(),
+                isFalse);
+            expect(
+                new File(path.join(
+                        specificOutputDirWithoutTrailingSlash, 'test.css'))
+                    .existsSync(),
                 isTrue);
             expect(
-                new File(path.join(specificOutputDirWithoutTrailingSlash, 'test.css.map'))
+                new File(path.join(
+                        specificOutputDirWithoutTrailingSlash, 'test.css.map'))
                     .existsSync(),
                 isTrue);
           });
