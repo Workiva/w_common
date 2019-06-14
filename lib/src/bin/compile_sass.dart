@@ -47,7 +47,6 @@ const Map<String, sass.OutputStyle> outputStyleArgToOutputStyleValue = const {
 
 class SassCompilationOptions {
   final List<String> unparsedArgs;
-  final String outputDir;
   final String expandedOutputStyleFileExtension;
   final List<String> outputStyles;
   final bool watch;
@@ -55,7 +54,7 @@ class SassCompilationOptions {
 
   SassCompilationOptions({
     @required this.unparsedArgs,
-    @required this.outputDir,
+    @required String outputDir,
     String sourceDir,
     String compressedOutputStyleFileExtension,
     this.expandedOutputStyleFileExtension =
@@ -103,6 +102,15 @@ class SassCompilationOptions {
     }
 
     _watchDirs = [_sourceDir]..addAll(watchDirs);
+
+    if (!_sourceDir.endsWith('/')) {
+      _sourceDir = '$_sourceDir/';
+    }
+
+    _outputDir = outputDir;
+    if (!_outputDir.endsWith('/')) {
+      _outputDir = '$_outputDir/';
+    }
   }
 
   List<String> get watchDirs => _watchDirs;
@@ -110,6 +118,9 @@ class SassCompilationOptions {
 
   String get sourceDir => _sourceDir;
   String _sourceDir;
+
+  String get outputDir => _outputDir;
+  String _outputDir;
 
   String get compressedOutputStyleFileExtension =>
       _compressedOutputStyleFileExtension;
