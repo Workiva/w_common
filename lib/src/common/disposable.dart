@@ -447,7 +447,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @override
   void flagLeak([String description]) {
     if (_debugMode && _leakFlag == null) {
-      _leakFlag = new LeakFlag(description ?? disposableTypeName);
+      _leakFlag = new LeakFlag('${description ?? disposableTypeName} | runtimeType: $runtimeType');
     }
   }
 
