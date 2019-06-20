@@ -110,8 +110,6 @@ class SassCompilationOptions {
             ? '.min.css'
             : compressedOutputStyleFileExtension ??
                 compressedOutputStyleFileExtensionDefaultValue;
-    print(
-        '_compressedOutputStyleFileExtension: $_compressedOutputStyleFileExtension');
 
     if (outputStyles.length > 1 &&
         this.compressedOutputStyleFileExtension ==
