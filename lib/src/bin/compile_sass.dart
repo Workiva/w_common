@@ -45,6 +45,46 @@ const Map<String, sass.OutputStyle> outputStyleArgToOutputStyleValue = const {
   'expanded': sass.OutputStyle.expanded,
 };
 
+/// The CLI options for `pub run w_common compile_sass`.
+final ArgParser sassCliArgs = new ArgParser()
+  ..addMultiOption(outputStyleArg,
+      abbr: 's',
+      help: 'The output style used to format the compiled CSS.',
+      defaultsTo: outputStyleDefaultValue,
+      splitCommas: true)
+  ..addOption(expandedOutputStyleFileExtensionArg,
+      help:
+          'The file extension that will be used for the CSS compiled using \n`expanded` outputStyle.',
+      defaultsTo: expandedOutputStyleFileExtensionDefaultValue)
+  ..addOption(compressedOutputStyleFileExtensionArg,
+      help:
+          'The file extension that will be used for the CSS compiled using \n`compressed` outputStyle.\n'
+          '(defaults to $compressedOutputStyleFileExtensionDefaultValue, or .min.css\n'
+          ' if `--$outputStyleArg` contains more than one style)')
+  ..addOption(sourceDirArg,
+      help:
+          'The directory where the `.scss` files that you want to compile live. \n(defaults to $sourceDirDefaultValue, or the value of `--$outputDirArg`, if specified.)')
+  ..addOption(outputDirArg,
+      help:
+          'The directory where the compiled CSS should go. \n(defaults to $outputDirDefaultValue, or the value of `--$sourceDirArg`, if specified.)')
+  ..addMultiOption(watchDirsArg,
+      splitCommas: true,
+      defaultsTo: const <String>[],
+      help:
+          'Directories that should be watched in addition to `sourceDir`. \nOnly valid with --watch.')
+  ..addFlag(watchFlag,
+      negatable: false,
+      help: 'Watch stylesheets and recompile when they change.')
+  ..addFlag(checkFlag,
+      abbr: 'c',
+      negatable: false,
+      help:
+          'When set to true, no `.css` outputs will be written to disk, \nand a non-zero exit code will be returned if `sass.compile()` \nproduces results that differ from those found in the committed \n`.css` files. \nIntended only for use as a CI safeguard.')
+  ..addFlag(helpFlag,
+      abbr: 'h',
+      negatable: false,
+      help: 'Prints usage instructions to the terminal.');
+
 class SassCompilationOptions {
   final List<String> unparsedArgs;
   final String expandedOutputStyleFileExtension;
@@ -159,44 +199,6 @@ class SassCompilationOptions {
 
 Future<Null> main(List<String> args) async {
   taskTimer = new Stopwatch();
-  final parser = new ArgParser()
-    ..addMultiOption(outputStyleArg,
-        abbr: 's',
-        help: 'The output style used to format the compiled CSS.',
-        defaultsTo: outputStyleDefaultValue,
-        splitCommas: true)
-    ..addOption(expandedOutputStyleFileExtensionArg,
-        help:
-            'The file extension that will be used for the CSS compiled using \n`expanded` outputStyle.',
-        defaultsTo: expandedOutputStyleFileExtensionDefaultValue)
-    ..addOption(compressedOutputStyleFileExtensionArg,
-        help:
-            'The file extension that will be used for the CSS compiled using \n`compressed` outputStyle.\n'
-            '(defaults to $compressedOutputStyleFileExtensionDefaultValue, or .min.css\n'
-            ' if `--$outputStyleArg` contains more than one style)')
-    ..addOption(sourceDirArg,
-        help:
-            'The directory where the `.scss` files that you want to compile live. \n(defaults to $sourceDirDefaultValue, or the value of `--$outputDirArg`, if specified.)')
-    ..addOption(outputDirArg,
-        help:
-            'The directory where the compiled CSS should go. \n(defaults to $outputDirDefaultValue, or the value of `--$sourceDirArg`, if specified.)')
-    ..addMultiOption(watchDirsArg,
-        splitCommas: true,
-        defaultsTo: const <String>[],
-        help:
-            'Directories that should be watched in addition to `sourceDir`. \nOnly valid with --watch.')
-    ..addFlag(watchFlag,
-        negatable: false,
-        help: 'Watch stylesheets and recompile when they change.')
-    ..addFlag(checkFlag,
-        abbr: 'c',
-        negatable: false,
-        help:
-            'When set to true, no `.css` outputs will be written to disk, \nand a non-zero exit code will be returned if `sass.compile()` \nproduces results that differ from those found in the committed \n`.css` files. \nIntended only for use as a CI safeguard.')
-    ..addFlag(helpFlag,
-        abbr: 'h',
-        negatable: false,
-        help: 'Prints usage instructions to the terminal.');
 
   List<String> outputStylesValue;
   bool helpValue;
@@ -204,7 +206,7 @@ Future<Null> main(List<String> args) async {
   SassCompilationOptions options;
 
   try {
-    final results = parser.parse(args);
+    final results = sassCliArgs.parse(args);
     outputStylesValue = results[outputStyleArg];
     helpValue = results[helpFlag];
 
@@ -224,13 +226,13 @@ Future<Null> main(List<String> args) async {
       check: results[checkFlag],
     );
   } on FormatException {
-    print(parser.usage);
+    print(sassCliArgs.usage);
     exitCode = 1;
     rethrow;
   }
 
   if (helpValue) {
-    print(parser.usage);
+    print(sassCliArgs.usage);
     exitCode = 0;
     return new Future(() {});
   }
