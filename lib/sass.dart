@@ -17,6 +17,7 @@ library w_common.sass;
 
 export 'src/bin/compile_sass.dart'
     show
+        main,
         sassCliArgs,
         sourceDirArg,
         sourceDirDefaultValue,
