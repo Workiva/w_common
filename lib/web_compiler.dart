@@ -12,4 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export 'package:w_common/src/browser/web_compiler.dart' show isCompiledWithDart2Js;
+export 'package:w_common/src/browser/web_compiler.dart' show isCompiledWithDdc;
