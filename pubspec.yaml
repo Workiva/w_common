@@ -14,6 +14,7 @@ dependencies:
   dart2_constant: ^1.0.0
   glob: ^1.1.7
   intl: ">=0.14.0 <0.16.0"
+  js: ^0.6.1+1
   logging: ^0.11.0
   meta: ^1.0.4
   package_resolver: ^1.0.2
