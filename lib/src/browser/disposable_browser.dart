@@ -217,7 +217,8 @@ class Disposable implements disposable_common.Disposable {
 
   @override
   void flagLeak([String description]) {
-    _disposable.flagLeak(description ?? disposableTypeName);
+    _disposable.flagLeak(
+        description ?? '$disposableTypeName (runtimeType: $runtimeType)');
   }
 
   @override
