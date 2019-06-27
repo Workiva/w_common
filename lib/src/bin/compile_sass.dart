@@ -6,6 +6,7 @@ import 'package:async/async.dart';
 import 'package:colorize/colorize.dart';
 import 'package:dart2_constant/convert.dart' as convert;
 import 'package:glob/glob.dart';
+import 'package:matcher/matcher.dart';
 import 'package:meta/meta.dart';
 import 'package:package_resolver/package_resolver.dart';
 import 'package:package_config/packages_file.dart' as pkg;
@@ -368,13 +369,21 @@ void compileSass(SassCompilationOptions options,
             exitCode = 1;
             print(
                 '$errorMessageHeading ${cssTarget.path} was generated during the build, but has not been committed. Commit this file and push to rebuild.');
-          } else if (cssSrcTempFile.readAsStringSync() !=
-              cssTarget.readAsStringSync()) {
-            exitCode = 1;
-            print(
-                '$errorMessageHeading ${cssTarget.path} is out of date, and needs to be committed / pushed.');
           } else {
-            print('$successMessageHeading ${cssTarget.path} is up to date!');
+            final goldFileContents =
+                cssTarget.readAsStringSync().trimRight().trimLeft();
+            final generatedFileContents =
+                cssSrcTempFile.readAsStringSync().trimRight().trimLeft();
+            Map matchState = {};
+            final matcher = equals(generatedFileContents);
+            if (!matcher.matches(goldFileContents, matchState)) {
+              exitCode = 1;
+              print(
+                  '$errorMessageHeading ${cssTarget.path} is out of date, and needs to be committed / pushed.'
+                  '\n\n${matcher.describeMismatch(goldFileContents, new StringDescription(), matchState, false)}');
+            } else {
+              print('$successMessageHeading ${cssTarget.path} is up to date! TODO: REMOVE ME');
+            }
           }
 
           cssSrcTempFile.deleteSync();
