@@ -345,5 +345,5 @@ class Disposable implements disposable_common.Disposable {
 }
 
 disposable_common.LeakFlag _leakFlagFactory(String description) {
-  return new disposable_common.LeakFlag(description);
+  return new disposable_common.JsLeakFlag(description);
 }

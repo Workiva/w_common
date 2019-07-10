@@ -126,14 +126,41 @@ class _ObservableTimer implements Timer {
 }
 
 /// A class used as a marker for potential memory leaks.
-class LeakFlag {
+abstract class LeakFlag {
+  LeakFlag(this.description);
+
   final String description;
 
-  LeakFlag(this.description);
+  String get flagType;
 
   @override
   String toString() =>
-      description == null ? 'LeakFlag' : 'LeakFlag: $description';
+      description == null ? flagType : '$flagType: $description';
+}
+
+/// A [LeakFlag] implementation set on un-managed (top-level) classes.
+class TopLevelLeakFlag extends LeakFlag {
+  TopLevelLeakFlag(String description) : super(description);
+
+  @override
+  final String flagType = 'TopLevelLeakFlag';
+}
+
+/// A [LeakFlag] implementation set on objects that have been managed
+/// by another object.
+class CollateralLeakFlag extends LeakFlag {
+  CollateralLeakFlag(String description) : super(description);
+
+  @override
+  final String flagType = 'CollateralLeakFlag';
+}
+
+/// A [LeakFlag] implementation for use by JS (or other non-Dart) code.
+class JsLeakFlag extends LeakFlag {
+  JsLeakFlag(String description) : super(description);
+
+  @override
+  final String flagType = 'JsLeakFlag';
 }
 
 /// A function that, when called, disposes of one or more objects.
@@ -277,8 +304,17 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   final _awaitableFutures = new HashSet<Future>();
   final _didDispose = new Completer<Null>();
-  LeakFlag _leakFlag;
   final _internalDisposables = new HashSet<_Disposable>();
+
+  /// Set to `true` when the object is managed by another [Disposable].
+  ///
+  /// This allows us to set a different leak flag to improve debugging
+  /// efficiency by clearing up some of the clutter that results from
+  /// an object with many children leaking since each node in the tree
+  /// gets its own flag.
+  bool _isManaged = false;
+
+  LeakFlag _leakFlag;
   DisposableState _state = DisposableState.initialized;
 
   /// A [Future] that will complete when this object has been disposed.
@@ -447,7 +483,11 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @override
   void flagLeak([String description]) {
     if (_debugMode && _leakFlag == null) {
-      _leakFlag = new LeakFlag(description ?? runtimeType.toString());
+      if (_isManaged) {
+        _leakFlag = new CollateralLeakFlag(description ?? runtimeType.toString());
+      } else {
+        _leakFlag = new TopLevelLeakFlag(description ?? runtimeType.toString());
+      }
     }
   }
 
@@ -549,6 +589,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @override
   Disposable manageAndReturnDisposable(Disposable disposable) {
     _throwOnInvalidCall('manageAndReturnDisposable', 'disposable', disposable);
+    disposable._isManaged = true;
     manageDisposable(disposable);
 
     return disposable;
@@ -558,6 +599,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @override
   T manageAndReturnTypedDisposable<T extends Disposable>(T disposable) {
     _throwOnInvalidCall('manageAndReturnDisposable', 'disposable', disposable);
+    disposable._isManaged = true;
     manageDisposable(disposable);
 
     return disposable;
@@ -598,6 +640,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   void manageDisposable(Disposable disposable) {
     _throwOnInvalidCall('manageDisposable', 'disposable', disposable);
     _logManageMessage(disposable);
+    disposable._isManaged = true;
 
     _internalDisposables.add(disposable);
     disposable.didDispose.then((_) {
