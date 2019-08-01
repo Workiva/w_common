@@ -63,7 +63,8 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
   void onError(Function handleError) => _wrapOnError(handleError);
 
   @override
-  void pause([Future resumeSignal]) => _subscription.pause(resumeSignal);
+  void pause([Future<dynamic> resumeSignal]) =>
+      _subscription.pause(resumeSignal);
 
   @override
   void resume() => _subscription.resume();

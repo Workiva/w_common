@@ -1,5 +1,8 @@
 # analysis_options.yaml docs: https://www.dartlang.org/guides/language/analysis-options 
 analyzer:
+  language:
+    strict-inference: true
+    strict-raw-types: true
   # Strong mode is required. Applies to the current project.
   strong-mode:
     # When compiling to JS, both implicit options apply to the current 
@@ -584,7 +587,7 @@ linter:
     # http://dart-lang.github.io/linter/lints/sort_constructors_first.html
     # recommendation: optional
     # 0 issues
-    - sort_constructors_first
+    # - sort_constructors_first
 
     # Sort unnamed constructor declarations first.
     # http://dart-lang.github.io/linter/lints/sort_unnamed_constructors_first.html

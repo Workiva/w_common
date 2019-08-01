@@ -135,8 +135,8 @@ class _InnerDisposable extends disposable_common.Disposable {
 /// the public interface of our class or polluting its lifecycle.
 class Disposable implements disposable_common.Disposable {
   /// The name of the factory function added to the window that produces
-  /// [LeakFlag] objects when called (with a single argument: a [String]
-  /// description).
+  /// [disposable_common.LeakFlag] objects when called (with a single
+  /// argument: a [String] description).
   static const String leakFlagFactoryName = 'leakFlagFactory';
 
   /// Disables logging enabled by [enableDebugMode].
@@ -156,7 +156,8 @@ class Disposable implements disposable_common.Disposable {
   ///
   /// Also attaches a method named `leakFlagFactory` to the window which
   /// consumers can call, with a [String] description as its sole argument, to
-  /// generate a [LeakFlag] object. This can be used to generate a [LeakFlag]
+  /// generate a [disposable_common.LeakFlag] object. This can be used to
+  /// generate a [disposable_common.LeakFlag]
   /// and manually attach it to an object. For example, this may be useful in
   /// code transpiled to JavaScript from another language.
   static void enableDebugMode({bool disableLogging, bool disableTelemetry}) {
@@ -270,12 +271,12 @@ class Disposable implements disposable_common.Disposable {
       _disposable.getManagedDisposer(disposer);
 
   @override
-  void manageStreamController(StreamController controller) =>
+  void manageStreamController(StreamController<dynamic> controller) =>
       _disposable.manageStreamController(controller);
 
   @deprecated
   @override
-  void manageStreamSubscription(StreamSubscription subscription) =>
+  void manageStreamSubscription(StreamSubscription<dynamic> subscription) =>
       _disposable.manageStreamSubscription(subscription);
 
   /// Callback to allow arbitrary cleanup on dispose.
@@ -341,6 +342,7 @@ class Disposable implements disposable_common.Disposable {
     eventTarget.addEventListener(event, callback, useCapture);
     _disposable.getManagedDisposer(() {
       eventTarget.removeEventListener(event, callback, useCapture);
+      return new Future.value();
     });
   }
 }
