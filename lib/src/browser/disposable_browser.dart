@@ -342,7 +342,7 @@ class Disposable implements disposable_common.Disposable {
     eventTarget.addEventListener(event, callback, useCapture);
     _disposable.getManagedDisposer(() {
       eventTarget.removeEventListener(event, callback, useCapture);
-      return Future.value();
+      return new Future.value();
     });
   }
 }
