@@ -15,13 +15,13 @@ class RandomDisposableAdder extends Disposable {
     print('RandomDisposableAdder.addRandomManager');
     switch (new Random().nextInt(6)) {
       case 0:
-        listenToStream(new Stream.empty(), (_) {});
+        listenToStream(new Stream<Null>.empty(), (_) {});
         break;
       case 1:
         manageStreamController(new StreamController());
         break;
       case 2:
-        manageCompleter(new Completer());
+        manageCompleter(new Completer<Null>());
         break;
       case 3:
         manageAndReturnDisposable(new Disposable());

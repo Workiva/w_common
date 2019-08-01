@@ -29,7 +29,7 @@ void main() {
       // less than 24 hours ago && same day
       newDay = new DateTime.utc(2018, 1, 1, 23, 59, 59);
       oldDay = new DateTime.utc(2018, 1, 1);
-      expect(formatTimeDifference(oldDay, now: newDay), startsWith("Today, "));
+      expect(formatTimeDifference(oldDay, now: newDay), startsWith('Today, '));
 
       // yesterday
 
@@ -37,13 +37,13 @@ void main() {
       newDay = new DateTime.utc(2018, 1, 1);
       oldDay = newDay.subtract(const Duration(seconds: 1));
       expect(
-          formatTimeDifference(oldDay, now: newDay), startsWith("Yesterday, "));
+          formatTimeDifference(oldDay, now: newDay), startsWith('Yesterday, '));
 
       // very nearly 48 hours
       newDay = new DateTime.utc(2018, 1, 2, 23, 59, 59);
       oldDay = new DateTime.utc(2018, 1, 1);
       expect(
-          formatTimeDifference(oldDay, now: newDay), startsWith("Yesterday, "));
+          formatTimeDifference(oldDay, now: newDay), startsWith('Yesterday, '));
 
       // week
 
@@ -51,13 +51,13 @@ void main() {
       newDay = new DateTime.utc(2018, 1, 1);
       oldDay = newDay.subtract(const Duration(days: 1, seconds: 1));
       expect(formatTimeDifference(oldDay, now: newDay),
-          startsWith("${weekdayFormat.format(oldDay)}, "));
+          startsWith('${weekdayFormat.format(oldDay)}, '));
 
       // less than 7 days diff, and not on the same week day
       newDay = new DateTime.utc(2018, 1, 1, 1);
       oldDay = newDay.subtract(const Duration(days: 6, seconds: 1));
       expect(formatTimeDifference(oldDay, now: newDay),
-          startsWith("${weekdayFormat.format(oldDay)}, "));
+          startsWith('${weekdayFormat.format(oldDay)}, '));
 
       // month
 
@@ -65,19 +65,19 @@ void main() {
       newDay = new DateTime.utc(2018, 1, 1, 1);
       oldDay = newDay.subtract(const Duration(days: 6, hours: 23));
       expect(formatTimeDifference(oldDay, now: newDay),
-          startsWith("${monthDayFormat.format(oldDay)}, "));
+          startsWith('${monthDayFormat.format(oldDay)}, '));
 
       // 7 day diff
       newDay = new DateTime.utc(2018, 1, 1, 23, 59, 59);
       oldDay = newDay.subtract(const Duration(days: 7));
       expect(formatTimeDifference(oldDay, now: newDay),
-          startsWith("${monthDayFormat.format(oldDay)}, "));
+          startsWith('${monthDayFormat.format(oldDay)}, '));
 
       // 9 day diff
       newDay = new DateTime.utc(2018, 1, 1, 23, 59, 59);
       oldDay = newDay.subtract(const Duration(days: 9));
       expect(formatTimeDifference(oldDay, now: newDay),
-          startsWith("${monthDayFormat.format(oldDay)}, "));
+          startsWith('${monthDayFormat.format(oldDay)}, '));
 
       // year
 
@@ -85,11 +85,11 @@ void main() {
       newDay = new DateTime.utc(2018, 1, 1);
       oldDay = newDay.subtract(const Duration(days: 365));
       expect(formatTimeDifference(oldDay, now: newDay),
-          "${yearMonthDayFormat.format(oldDay)}");
+          '${yearMonthDayFormat.format(oldDay)}');
 
       // look out a ways
       past = new DateTime.now().subtract(const Duration(days: 9999));
-      expect(formatTimeDifference(past), "${yearMonthDayFormat.format(past)}");
+      expect(formatTimeDifference(past), '${yearMonthDayFormat.format(past)}');
     });
   });
 }

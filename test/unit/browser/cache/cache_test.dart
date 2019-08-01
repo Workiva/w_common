@@ -22,9 +22,9 @@ import 'package:w_common/src/common/cache/least_recently_used_strategy.dart';
 void main() {
   group('Cache', () {
     Cache<String, Object> cache;
-    final String cachedId = '1';
+    const String cachedId = '1';
     final Object cachedValue = new Object();
-    final String notCachedId = '2';
+    const String notCachedId = '2';
     final Object notCachedValue = new Object();
 
     setUp(() async {
@@ -87,13 +87,15 @@ void main() {
       });
 
       test('should not dispatch didUpdate event on cached get', () async {
-        cache.didUpdate
-            .listen(expectAsync1((CacheContext context) {}, count: 0));
+        cache.didUpdate.listen(expectAsync1(
+            (CacheContext<dynamic, dynamic> context) {},
+            count: 0));
         await cache.get(cachedId, () => new Object());
       });
 
       test('should dispatch didUpdate event on uncached get', () async {
-        cache.didUpdate.listen(expectAsync1((CacheContext context) {
+        cache.didUpdate
+            .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
           expect(context.id, notCachedId);
           expect(context.value, notCachedValue);
         }));
@@ -126,7 +128,8 @@ void main() {
           'is not complete', () async {
         final value1 = new Object();
         final value2 = new Object();
-        cache.didRemove.listen(expectAsync1((CacheContext context) {
+        cache.didRemove
+            .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
           expect(context.id, notCachedId);
           expect(context.value, value2);
         }));
@@ -178,7 +181,8 @@ void main() {
     group('remove', () {
       test('should dispatch one didUpdate event when identifier is removed',
           () async {
-        cache.didUpdate.listen(expectAsync1((CacheContext context) {
+        cache.didUpdate
+            .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
           expect(context.id, cachedId);
           expect(context.value, isNull);
         }, count: 1));
@@ -189,7 +193,8 @@ void main() {
       test(
           'should dispatch one didUpdate event when identifier is removed '
           'synchronously', () {
-        cache.didUpdate.listen(expectAsync1((CacheContext context) {
+        cache.didUpdate
+            .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
           expect(context.id, cachedId);
           expect(context.value, isNull);
         }, count: 1));
@@ -199,7 +204,8 @@ void main() {
       test(
           'should dispatch one didRemove event when identifier is removed '
           'synchronously', () {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {
+        cache.didRemove
+            .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
           expect(context.id, cachedId);
           expect(context.value, cachedValue);
         }, count: 1));
@@ -208,7 +214,8 @@ void main() {
 
       test('should not dispatch didUpdate event when identifier is not cached',
           () async {
-        cache.didUpdate.listen(expectAsync1((CacheContext _) {}, count: 0));
+        cache.didUpdate.listen(
+            expectAsync1((CacheContext<dynamic, dynamic> _) {}, count: 0));
         await cache.remove(notCachedId);
       });
 
@@ -264,7 +271,7 @@ void main() {
             emitsInOrder([notCachedValue, null]));
 
         cache.getAsync(notCachedId, () async {
-          await new Future.delayed(new Duration(milliseconds: 100));
+          await new Future<dynamic>.delayed(new Duration(milliseconds: 100));
           return notCachedValue;
         });
         cache.remove(notCachedId);
@@ -296,7 +303,8 @@ void main() {
     group('release', () {
       test('should dispatch one didRelease event when identifier is released',
           () async {
-        cache.didRelease.listen(expectAsync1((CacheContext context) {
+        cache.didRelease
+            .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
           expect(context.id, cachedId);
           expect(context.value, cachedValue);
         }, count: 1));
@@ -364,8 +372,10 @@ void main() {
 
     group('releasedKeys', () {
       test('should provide access to released keys', () {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {},
-            count: 0, reason: 'Ensure that cached item is not removed'));
+        cache.didRemove.listen(expectAsync1(
+            (CacheContext<dynamic, dynamic> context) {},
+            count: 0,
+            reason: 'Ensure that cached item is not removed'));
 
         expect(cache.releasedKeys, isNot(contains(cachedId)));
         cache.release(cachedId);
@@ -374,8 +384,10 @@ void main() {
 
       test('should provide access to released keys when release is awaited',
           () async {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {},
-            count: 0, reason: 'Ensure that cached item is not removed'));
+        cache.didRemove.listen(expectAsync1(
+            (CacheContext<dynamic, dynamic> context) {},
+            count: 0,
+            reason: 'Ensure that cached item is not removed'));
 
         expect(cache.releasedKeys, isNot(contains(cachedId)));
         await cache.release(cachedId);
@@ -385,8 +397,10 @@ void main() {
 
     group('liveKeys', () {
       test('should not provide access to released keys', () {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {},
-            count: 0, reason: 'Ensure that cached item is not removed'));
+        cache.didRemove.listen(expectAsync1(
+            (CacheContext<dynamic, dynamic> context) {},
+            count: 0,
+            reason: 'Ensure that cached item is not removed'));
 
         expect(cache.liveKeys, contains(cachedId));
         cache.release(cachedId);
@@ -395,8 +409,10 @@ void main() {
 
       test('should not provide access to released keys when release is awaited',
           () async {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {},
-            count: 0, reason: 'Ensure that cached item is not removed'));
+        cache.didRemove.listen(expectAsync1(
+            (CacheContext<dynamic, dynamic> context) {},
+            count: 0,
+            reason: 'Ensure that cached item is not removed'));
 
         expect(cache.liveKeys, contains(cachedId));
         await cache.release(cachedId);
@@ -406,8 +422,10 @@ void main() {
 
     group('liveValues', () {
       test('should not provide access to released values', () async {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {},
-            count: 0, reason: 'Ensure that cached item is not removed'));
+        cache.didRemove.listen(expectAsync1(
+            (CacheContext<dynamic, dynamic> context) {},
+            count: 0,
+            reason: 'Ensure that cached item is not removed'));
 
         expect(await cache.liveValues, contains(cachedValue));
         // ignore: unawaited_futures
@@ -418,12 +436,14 @@ void main() {
       test(
           'should not provide access to released values when release is awaited',
           () async {
-        cache.didRemove.listen(expectAsync1((CacheContext context) {},
-            count: 0, reason: 'Ensure that cached item is not removed'));
+        cache.didRemove.listen(expectAsync1(
+            (CacheContext<dynamic, dynamic> context) {},
+            count: 0,
+            reason: 'Ensure that cached item is not removed'));
 
         expect(await cache.liveValues, contains(cachedValue));
         await cache.release(cachedId);
-        expect((await cache.liveValues), isNot(contains(cachedValue)));
+        expect(await cache.liveValues, isNot(contains(cachedValue)));
       });
     });
 
@@ -461,8 +481,10 @@ void main() {
 
       group('when item is released but not yet removed from the cache', () {
         setUp(() {
-          cache.didRemove.listen(expectAsync1((CacheContext context) {},
-              count: 0, reason: 'Ensure that cached item is not removed'));
+          cache.didRemove.listen(expectAsync1(
+              (CacheContext<dynamic, dynamic> context) {},
+              count: 0,
+              reason: 'Ensure that cached item is not removed'));
         });
 
         test('should not run callback', () {
@@ -493,14 +515,15 @@ void main() {
         test('when callback completes normally', () {
           var callbackCompleted = false;
 
-          cache.didRemove.listen(expectAsync1((CacheContext context) {
+          cache.didRemove
+              .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
             expect(context.id, cachedId);
             expect(callbackCompleted, isTrue);
           }));
 
           cache
             ..applyToItem(cachedId, (_) async {
-              await new Future.delayed(const Duration(seconds: 1));
+              await new Future<dynamic>.delayed(const Duration(seconds: 1));
               callbackCompleted = true;
             })
             ..release(cachedId);
@@ -509,14 +532,15 @@ void main() {
         test('when callback completes with an error', () {
           var callbackCompleted = false;
 
-          cache.didRemove.listen(expectAsync1((CacheContext context) {
+          cache.didRemove
+              .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
             expect(context.id, cachedId);
             expect(callbackCompleted, isTrue);
           }));
 
           runZoned(() {
             cache.applyToItem(cachedId, (_) async {
-              await new Future.delayed(const Duration(seconds: 1));
+              await new Future<dynamic>.delayed(const Duration(seconds: 1));
               callbackCompleted = true;
               throw new Error();
             });
@@ -529,11 +553,11 @@ void main() {
       });
 
       test(
-          'should return future that completes with same error as the ' +
-              'future returned from callback', () async {
+          'should return future that completes with same error as the '
+          'future returned from callback', () async {
         final error = new Error();
         await cache.applyToItem(cachedId, (_) async {
-          await new Future.delayed(new Duration(seconds: 1));
+          await new Future<dynamic>.delayed(new Duration(seconds: 1));
           throw error;
         }).catchError((e) {
           expect(e, error);
@@ -541,15 +565,15 @@ void main() {
       });
 
       test(
-          'should not add futures to applyToItemCallbacks for synchronous ' +
-              'callbacks', () {
+          'should not add futures to applyToItemCallbacks for synchronous '
+          'callbacks', () {
         cache.applyToItem(cachedId, (_) {});
         expect(cache.applyToItemCallBacks, isEmpty);
       });
 
       test(
-          'should remove futures added to applyToItemCallbacks after async ' +
-              'callback completes with error', () async {
+          'should remove futures added to applyToItemCallbacks after async '
+          'callback completes with error', () async {
         try {
           final applyToItemFuture = cache.applyToItem(cachedId, (_) async {
             throw new Error();
@@ -562,8 +586,8 @@ void main() {
       });
 
       test(
-          'should remove futures added to applyToItemCallbacks after async ' +
-              'callback completes', () async {
+          'should remove futures added to applyToItemCallbacks after async '
+          'callback completes', () async {
         final applyToItemFuture = cache.applyToItem(cachedId, (_) {
           return new Future(() {});
         });

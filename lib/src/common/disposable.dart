@@ -69,7 +69,7 @@ class ManagedDisposer implements _Disposable {
 
     var disposeFuture = _disposer != null
         ? (_disposer() ?? new Future.value())
-        : new Future.value();
+        : new Future<dynamic>.value();
     _disposer = null;
 
     return disposeFuture.then((_) {
@@ -275,7 +275,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     }
   }
 
-  final _awaitableFutures = new HashSet<Future>();
+  final _awaitableFutures = new HashSet<Future<dynamic>>();
   final _didDispose = new Completer<Null>();
   LeakFlag _leakFlag;
   final _internalDisposables = new HashSet<_Disposable>();
@@ -622,7 +622,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   @mustCallSuper
   @override
-  void manageStreamController(StreamController controller) {
+  void manageStreamController(StreamController<dynamic> controller) {
     _throwOnInvalidCall('manageStreamController', 'controller', controller);
     // If a single-subscription stream has a subscription and that
     // subscription is subsequently canceled, the `done` future will
@@ -659,7 +659,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @deprecated
   @mustCallSuper
   @override
-  void manageStreamSubscription(StreamSubscription subscription) {
+  void manageStreamSubscription(StreamSubscription<dynamic> subscription) {
     _throwOnInvalidCall(
         'manageStreamSubscription', 'subscription', subscription);
     _logManageMessage(subscription);

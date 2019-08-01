@@ -51,7 +51,7 @@ abstract class DisposableManager {
   /// Automatically cancel a stream controller when this object is disposed.
   ///
   /// The parameter may not be `null`.
-  void manageStreamController(StreamController controller);
+  void manageStreamController(StreamController<dynamic> controller);
 
   /// Automatically cancel a stream subscription when this object is disposed.
   ///
@@ -68,7 +68,7 @@ abstract class DisposableManager {
   /// Use `listenToStream` instead. One will need to update to
   /// [DisposableManagerV4] or above for this.
   @deprecated
-  void manageStreamSubscription(StreamSubscription subscription);
+  void manageStreamSubscription(StreamSubscription<dynamic> subscription);
 }
 
 /// Managers for disposable members.

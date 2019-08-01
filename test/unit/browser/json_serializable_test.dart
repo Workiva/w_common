@@ -18,7 +18,7 @@ import 'package:test/test.dart';
 import 'package:w_common/json_serializable.dart';
 
 class ExampleSerializable extends JsonSerializable {
-  Map context = new Map();
+  Map<dynamic, dynamic> context = <dynamic, dynamic>{};
 
   @override
   Map<String, dynamic> toJson() {

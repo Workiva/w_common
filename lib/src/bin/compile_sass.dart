@@ -235,11 +235,15 @@ Future<Null> main(List<String> args) async {
     return new Future(() {});
   }
 
-  if (exitCode != 0) return new Future(() {});
+  if (exitCode != 0) {
+    return new Future(() {});
+  }
 
   compileSass(options);
 
-  if (exitCode != 0 || !options.watch) return new Future(() {});
+  if (exitCode != 0 || !options.watch) {
+    return new Future(() {});
+  }
 
   await watch(options);
 }
@@ -427,7 +431,9 @@ bool isSassPartial(String filePath) => path.basename(filePath).startsWith('_');
 
 SyncPackageResolver _packageResolver;
 SyncPackageResolver _getPackageResolver() {
-  if (_packageResolver != null) return _packageResolver;
+  if (_packageResolver != null) {
+    return _packageResolver;
+  }
 
   const root = './';
   final packagesFile = new File('$root.packages');
