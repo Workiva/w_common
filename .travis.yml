@@ -8,7 +8,8 @@ dart:
   - stable
 
 script:
-  - tool/format.sh
-  - dartanalyzer lib bin test/unit
   - pub publish --dry-run
-  - xvfb-run --server-args="-screen 0 1024x768x24" tool/test.sh
+  - pub run dart_dev format --check
+  - pub run dart_dev analyze
+  - pub run dart_dev test
+

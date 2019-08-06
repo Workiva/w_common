@@ -1,4 +1,4 @@
-// Copyright 2016 Workiva Inc.
+// Copyright 2016-2019 Workiva Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -248,6 +248,9 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   static bool _debugModeLogging = false;
   static bool _debugModeTelemetry = false;
   static Logger _logger;
+  static int _totalDisposableCount = 0;
+
+  static int get totalDisposableCount => _totalDisposableCount;
 
   /// Disables all debug features enabled by [enableDebugMode].
   static void disableDebugMode() {
@@ -275,11 +278,20 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     }
   }
 
+  static int setUp() {
+    return _totalDisposableCount++;
+  }
+
   final _awaitableFutures = new HashSet<Future<dynamic>>();
   final _didDispose = new Completer<Null>();
   LeakFlag _leakFlag;
   final _internalDisposables = new HashSet<_Disposable>();
   DisposableState _state = DisposableState.initialized;
+
+  // This number is meaningless to the instance, we store it only
+  // for the side effect of generating it. Do not try to use it for
+  // anything.
+  final int _serialNumber = setUp();
 
   /// A [Future] that will complete when this object has been disposed.
   Future<Null> get didDispose => _didDispose.future;
@@ -440,6 +452,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
       _logger.info('$runtimeType $hashCode took $t seconds to dispose');
     }
 
+    _totalDisposableCount--;
     flagLeak();
   }
 

@@ -32,3 +32,16 @@ We expect this list to grow as we identify small pieces of code that are useful
 across a wide variety of Dart projects, especially in cases where there is
 value in projects sharing a single implementation.
 
+## Development
+
+To run the unit tests:
+
+```
+pub run dart_dev test
+```
+
+To format the code:
+
+```
+pub run dart_dev format
+```

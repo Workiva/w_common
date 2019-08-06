@@ -11,8 +11,11 @@ ARG GIT_COMMIT_RANGE
 ARG GIT_HEAD_URL
 ARG GIT_MERGE_HEAD
 ARG GIT_MERGE_BRANCH
+
 WORKDIR /build/
 ADD . /build/
-RUN pub get && pub run dependency_validator -i build_runner,build_test,build_web_compilers
+
+RUN pub get && pub run dependency_validator -i build_runner,build_test,dart_style,build_web_compilers
 ARG BUILD_ARTIFACTS_BUILD=/build/pubspec.lock
+
 FROM scratch
