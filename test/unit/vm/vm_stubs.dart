@@ -16,4 +16,7 @@ import 'package:w_common/disposable.dart';
 
 import '../stubs.dart';
 
-class VMDisposable extends Object with Disposable, StubDisposable {}
+class VMDisposable extends Object with Disposable, StubDisposable {
+  @override
+  String get disposableTypeName => 'VMDisposable';
+}

@@ -5,6 +5,9 @@ import 'package:logging/logging.dart';
 import 'package:w_common/disposable.dart';
 
 class TreeNode extends Disposable {
+  @override
+  String get disposableTypeName => 'TreeNode';
+
   TreeNode(int depth, int childCount) {
     manageStreamController(new StreamController.broadcast());
     listenToStream(document.onDoubleClick, _onDoubleClick);

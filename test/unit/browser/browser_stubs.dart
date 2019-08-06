@@ -19,6 +19,9 @@ import 'package:w_common/disposable_browser.dart';
 
 import '../stubs.dart';
 
-class BrowserDisposable extends Object with Disposable, StubDisposable {}
+class BrowserDisposable extends Object with Disposable, StubDisposable {
+  @override
+  String get disposableTypeName => 'BrowserDisposable';
+}
 
 class MockEventTarget extends Mock implements EventTarget {}

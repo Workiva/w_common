@@ -94,6 +94,9 @@ class CachingStrategy<TIdentifier, TValue> {
 /// References are retained for the lifecycle of the instance of the [Cache],
 /// unless explicitly removed.
 class Cache<TIdentifier, TValue> extends Object with Disposable {
+  @override
+  String get disposableTypeName => 'Cache';
+
   final Logger _log = new Logger('w_common.Cache');
 
   /// Any apply to item callbacks currently in flight.

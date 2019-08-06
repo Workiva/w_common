@@ -65,6 +65,9 @@ abstract class StubDisposable implements Disposable {
 }
 
 class DisposeCounter extends Disposable {
+  @override
+  String get disposableTypeName => 'DisposeCounter';
+
   int disposeCount = 0;
   @override
   Future<Null> dispose() {
