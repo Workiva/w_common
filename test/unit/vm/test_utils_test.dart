@@ -42,7 +42,4 @@ class MatchClass<T> extends Disposable {
   String get disposableTypeName => 'MatchClass';
 }
 
-class MismatchClass<T> extends Disposable {
-  @override
-  String get disposableTypeName => 'MismatchClass';
-}
+class MismatchClass<T> extends Disposable {}
