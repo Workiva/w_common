@@ -22,6 +22,9 @@ import 'package:w_common/func.dart';
 import 'package:w_common/src/common/disposable.dart' as disposable_common;
 
 class _InnerDisposable extends disposable_common.Disposable {
+  @override
+  String get disposableTypeName => '_InnerDisposable';
+
   Func<Future<Null>> onDisposeHandler;
   Func<Future<Null>> onWillDisposeHandler;
 
