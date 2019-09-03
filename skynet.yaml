@@ -1,0 +1,13 @@
+contact: Client Platform
+description: React 16 core check
+name: react16-core-check
+image: drydock.workiva.net/workiva/core-check-dartlang:1885462
+
+run:
+  on-pull-request: true
+
+scripts:
+- pub global run over_react_codemod:react16_ci_precheck || pub global run over_react_codemod:react16_upgrade
+- git diff --exit-code
+
+---
