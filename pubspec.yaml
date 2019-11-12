@@ -11,7 +11,6 @@ dependencies:
   args: ^1.5.1
   async: ">=1.13.3 <3.0.0"
   colorize: ">=0.1.2 <3.0.0"
-  dart2_constant: ^1.0.0
   glob: ^1.1.7
   intl: ">=0.14.0 <0.16.0"
   js: ^0.6.1+1

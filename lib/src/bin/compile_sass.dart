@@ -1,10 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:async/async.dart';
 import 'package:colorize/colorize.dart';
-import 'package:dart2_constant/convert.dart' as convert;
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
 import 'package:package_resolver/package_resolver.dart';
@@ -394,7 +394,7 @@ void compileSass(SassCompilationOptions options,
             sourceMapTarget.createSync(recursive: true);
           }
           sourceMapTarget
-              .writeAsStringSync(convert.json.encode(sourceMap.toJson()));
+              .writeAsStringSync(json.encode(sourceMap.toJson()));
 
           singleCompileTimer.stop();
           print(
