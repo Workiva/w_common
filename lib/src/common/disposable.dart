@@ -137,7 +137,7 @@ class LeakFlag {
 }
 
 /// A function that, when called, disposes of one or more objects.
-typedef Future<dynamic> Disposer();
+typedef Disposer = Future<dynamic> Function();
 
 /// Allows the creation of managed objects, including helpers for common
 /// patterns.

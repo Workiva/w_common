@@ -21,7 +21,7 @@ import 'package:w_common/src/common/cache/cache.dart';
 import 'package:w_common/src/common/cache/least_recently_used_strategy.dart';
 import 'package:w_common/src/common/cache/reference_counting_strategy.dart';
 
-typedef CachingStrategy<String, Object> CachingStrategyFactory();
+typedef CachingStrategyFactory = CachingStrategy<String, Object> Function();
 
 // A set of unit tests that should pass for all caching strategies
 void main() {

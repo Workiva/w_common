@@ -78,9 +78,9 @@ class DisposeCounter extends Disposable {
 
 class MockStreamSubscription<T> extends Mock implements StreamSubscription<T> {}
 
-typedef void OnDataCallback<T>(T event);
+typedef OnDataCallback<T> = void Function(T event);
 
-typedef void OnDoneCallback();
+typedef OnDoneCallback = void Function();
 
 class StubStream<T> extends Stream<T> {
   @override
