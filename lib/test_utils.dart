@@ -21,7 +21,7 @@ Symbol verifyDisposableTypeName(Disposable object,
     {bool makeAssertion = true}) {
   final type = reflect(object).type.simpleName;
   if (makeAssertion == true) {
-    assert(type == new Symbol(object.disposableTypeName));
+    assert(type == Symbol(object.disposableTypeName));
   }
   return type;
 }

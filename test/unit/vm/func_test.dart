@@ -18,9 +18,9 @@ import 'package:w_common/func.dart';
 void main() {
   group('Func<T>', () {
     test('works as a type', () {
-      final f = () => new TestModel();
+      final f = () => TestModel();
       final testFunction = (Func<TestModel> modelGetter) {
-        expect(modelGetter(), new isInstanceOf<TestModel>());
+        expect(modelGetter(), isInstanceOf<TestModel>());
       };
 
       testFunction(f);

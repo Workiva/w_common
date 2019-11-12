@@ -34,7 +34,7 @@ abstract class _Disposable {
 /// of the parent object.
 class ManagedDisposer implements _Disposable {
   Disposer _disposer;
-  final Completer<Null> _didDispose = new Completer<Null>();
+  final Completer<Null> _didDispose = Completer<Null>();
   bool _isDisposing = false;
 
   ManagedDisposer(this._disposer);
@@ -68,8 +68,8 @@ class ManagedDisposer implements _Disposable {
     _isDisposing = true;
 
     var disposeFuture = _disposer != null
-        ? (_disposer() ?? new Future.value())
-        : new Future<dynamic>.value();
+        ? (_disposer() ?? Future.value())
+        : Future<dynamic>.value();
     _disposer = null;
 
     return disposeFuture.then((_) {
@@ -84,18 +84,18 @@ class ManagedDisposer implements _Disposable {
 /// non-periodic timer finishes it's callback or when any type of [Timer] is
 /// cancelled.
 class _ObservableTimer implements Timer {
-  Completer<Null> _didConclude = new Completer<Null>();
+  Completer<Null> _didConclude = Completer<Null>();
   Timer _timer;
 
   _ObservableTimer(Duration duration, void callback()) {
-    _timer = new Timer(duration, () {
+    _timer = Timer(duration, () {
       callback();
       _complete();
     });
   }
 
   _ObservableTimer.periodic(Duration duration, void callback(Timer t)) {
-    _timer = new Timer.periodic(duration, callback);
+    _timer = Timer.periodic(duration, callback);
   }
 
   void _complete() {
@@ -121,7 +121,7 @@ class _ObservableTimer implements Timer {
     // TODO: Once fully transitioned to Dart 2 just return
     // the tick value from our internal timer
     // return _timer.tick;
-    throw new UnsupportedError('Timer.tick is unsupported');
+    throw UnsupportedError('Timer.tick is unsupported');
   }
 }
 
@@ -270,15 +270,15 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
       _debugModeLogging = !(disableLogging ?? false);
       _debugModeTelemetry = !(disableTelemetry ?? false);
       if (_debugModeLogging) {
-        _logger = new Logger('w_common.Disposable');
+        _logger = Logger('w_common.Disposable');
       }
     }
   }
 
-  final _awaitableFutures = new HashSet<Future<dynamic>>();
-  final _didDispose = new Completer<Null>();
+  final _awaitableFutures = HashSet<Future<dynamic>>();
+  final _didDispose = Completer<Null>();
   LeakFlag _leakFlag;
-  final _internalDisposables = new HashSet<_Disposable>();
+  final _internalDisposables = HashSet<_Disposable>();
   DisposableState _state = DisposableState.initialized;
 
   /// A [Future] that will complete when this object has been disposed.
@@ -397,7 +397,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   Future<Null> dispose() async {
     Stopwatch stopwatch;
     if (_debugModeTelemetry) {
-      stopwatch = new Stopwatch()..start();
+      stopwatch = Stopwatch()..start();
     }
 
     _logDispose();
@@ -447,7 +447,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @override
   void flagLeak([String description]) {
     if (_debugMode && _leakFlag == null) {
-      _leakFlag = new LeakFlag(
+      _leakFlag = LeakFlag(
           description ?? '$disposableTypeName (runtimeType: $runtimeType)');
     }
   }
@@ -457,12 +457,12 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   Future<T> getManagedDelayedFuture<T>(Duration duration, T callback()) {
     _throwOnInvalidCall2(
         'getManagedDelayedFuture', 'duration', 'callback', duration, callback);
-    var completer = new Completer<T>();
+    var completer = Completer<T>();
     var timer =
-        new _ObservableTimer(duration, () => completer.complete(callback()));
-    var disposable = new ManagedDisposer(() async {
+        _ObservableTimer(duration, () => completer.complete(callback()));
+    var disposable = ManagedDisposer(() async {
       timer.cancel();
-      completer.completeError(new ObjectDisposedException());
+      completer.completeError(ObjectDisposedException());
     });
     _logManageMessage(completer.future);
     _internalDisposables.add(disposable);
@@ -482,7 +482,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _throwOnInvalidCall('getManagedDisposer', 'disposer', disposer);
     _logManageMessage(disposer);
 
-    var disposable = new ManagedDisposer(disposer);
+    var disposable = ManagedDisposer(disposer);
 
     _internalDisposables.add(disposable);
 
@@ -502,7 +502,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   Timer getManagedTimer(Duration duration, void callback()) {
     _throwOnInvalidCall2(
         'getManagedTimer', 'duration', 'callback', duration, callback);
-    var timer = new _ObservableTimer(duration, callback);
+    var timer = _ObservableTimer(duration, callback);
     _addObservableTimerDisposable(timer);
     return timer;
   }
@@ -512,7 +512,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer)) {
     _throwOnInvalidCall2(
         'getManagedPeriodicTimer', 'duration', 'callback', duration, callback);
-    var timer = new _ObservableTimer.periodic(duration, callback);
+    var timer = _ObservableTimer.periodic(duration, callback);
     _addObservableTimerDisposable(timer);
     return timer;
   }
@@ -523,12 +523,11 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
       Stream<T> stream, void onData(T event),
       {Function onError, void onDone(), bool cancelOnError}) {
     _throwOnInvalidCall2('listenToStream', 'stream', 'onData', stream, onData);
-    var managedStreamSubscription = new ManagedStreamSubscription(
-        stream, onData,
+    var managedStreamSubscription = ManagedStreamSubscription(stream, onData,
         onError: onError, onDone: onDone, cancelOnError: cancelOnError);
     _logManageMessage(managedStreamSubscription);
 
-    var disposable = new ManagedDisposer(() {
+    var disposable = ManagedDisposer(() {
       _logUnmanageMessage(managedStreamSubscription);
       return managedStreamSubscription.cancel();
     });
@@ -570,9 +569,9 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _throwOnInvalidCall('manageCompleter', 'completer', completer);
     _logManageMessage(completer);
 
-    var disposable = new ManagedDisposer(() async {
+    var disposable = ManagedDisposer(() async {
       if (!completer.isCompleted) {
-        completer.completeError(new ObjectDisposedException());
+        completer.completeError(ObjectDisposedException());
       }
     });
     _internalDisposables.add(disposable);
@@ -617,7 +616,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _throwOnInvalidCall('manageDisposer', 'disposer', disposer);
     _logManageMessage(disposer);
 
-    _internalDisposables.add(new ManagedDisposer(disposer));
+    _internalDisposables.add(ManagedDisposer(disposer));
   }
 
   @mustCallSuper
@@ -636,7 +635,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
     bool isDone = false;
 
-    var disposable = new ManagedDisposer(() {
+    var disposable = ManagedDisposer(() {
       if (!controller.hasListener && !controller.isClosed && !isDone) {
         controller.stream.listen((_) {});
       }
@@ -664,7 +663,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
         'manageStreamSubscription', 'subscription', subscription);
     _logManageMessage(subscription);
 
-    _internalDisposables.add(new ManagedDisposer(() => subscription.cancel()));
+    _internalDisposables.add(ManagedDisposer(() => subscription.cancel()));
   }
 
   /// Callback to allow arbitrary cleanup on dispose.
@@ -684,8 +683,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   }
 
   void _addObservableTimerDisposable(_ObservableTimer timer) {
-    ManagedDisposer disposable =
-        new ManagedDisposer(() async => timer.cancel());
+    ManagedDisposer disposable = ManagedDisposer(() async => timer.cancel());
     _internalDisposables.add(disposable);
     timer.didConclude.then((Null _) {
       // ignore: deprecated_member_use
@@ -718,15 +716,15 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   void _throwOnInvalidCall(
       String methodName, String parameterName, dynamic parameterValue) {
     if (parameterValue == null) {
-      throw new ArgumentError.notNull(parameterName);
+      throw ArgumentError.notNull(parameterName);
     }
     // ignore: deprecated_member_use
     if (isDisposing) {
-      throw new StateError(
+      throw StateError(
           '$disposableTypeName.$methodName not allowed, object is disposing');
     }
     if (isDisposed) {
-      throw new StateError(
+      throw StateError(
           '$disposableTypeName.$methodName not allowed, object is already disposed');
     }
   }
@@ -738,7 +736,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
       dynamic parameterValue,
       dynamic secondParameterValue) {
     if (secondParameterValue == null) {
-      throw new ArgumentError.notNull(secondParameterName);
+      throw ArgumentError.notNull(secondParameterName);
     }
     _throwOnInvalidCall(methodName, parameterName, parameterValue);
   }

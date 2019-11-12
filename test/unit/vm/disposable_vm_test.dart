@@ -19,6 +19,6 @@ import './vm_stubs.dart';
 
 void main() {
   group('Disposable', () {
-    testCommonDisposable(() => new VMDisposable());
+    testCommonDisposable(() => VMDisposable());
   });
 }

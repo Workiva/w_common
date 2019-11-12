@@ -24,17 +24,17 @@ void main() {
     var expectedId = 'expectedId';
     var expectedValue = 'expectedValue';
 
-    for (var i in new Iterable<int>.generate(3)) {
+    for (var i in Iterable<int>.generate(3)) {
       Cache<String, Object> cache;
 
       setUp(() async {
-        cache = new Cache<String, Object>(new LeastRecentlyUsedStrategy(i));
+        cache = Cache<String, Object>(LeastRecentlyUsedStrategy(i));
 
         // install expected item
         await cache.get(expectedId, () => expectedValue);
 
         // install i items into cache
-        for (var j in new Iterable<int>.generate(i)) {
+        for (var j in Iterable<int>.generate(i)) {
           await cache.get('$j', () => j);
         }
       });
@@ -52,7 +52,7 @@ void main() {
 
         // create i releases, after which expected item (and only expected
         // item) should be released
-        for (var j in new Iterable<int>.generate(i)) {
+        for (var j in Iterable<int>.generate(i)) {
           await cache.release('$j');
         }
       });
@@ -77,7 +77,7 @@ void main() {
 
         // create i releases, after which expected item (and only expected
         // item) should be released
-        for (var j in new Iterable<int>.generate(i)) {
+        for (var j in Iterable<int>.generate(i)) {
           await cache.release('$j');
         }
       });

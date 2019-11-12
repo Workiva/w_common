@@ -11,7 +11,7 @@ class LeastRecentlyUsedStrategy<TIdentifier, TValue>
     extends CachingStrategy<TIdentifier, TValue> {
   /// [TIdentifier]s that have been released but not yet removed in order of most
   /// to least recently used.
-  final Queue<TIdentifier> _removalQueue = new Queue<TIdentifier>();
+  final Queue<TIdentifier> _removalQueue = Queue<TIdentifier>();
 
   /// The number of recently used [TIdentifier] [TValue] pairs to keep in the
   /// cache before removing the least recently used pair from the cache.
@@ -19,7 +19,7 @@ class LeastRecentlyUsedStrategy<TIdentifier, TValue>
 
   LeastRecentlyUsedStrategy(this._keep) {
     if (_keep < 0) {
-      throw new ArgumentError(
+      throw ArgumentError(
           'Cannot keep a negative number of most recently used items in the cache');
     }
   }

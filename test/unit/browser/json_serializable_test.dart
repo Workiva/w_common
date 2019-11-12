@@ -31,7 +31,7 @@ class ExampleSerializable extends JsonSerializable {
 void main() {
   group('JsonSerializable : verify that', () {
     test('example object can be properly serialized', () async {
-      ExampleSerializable testSerializable = new ExampleSerializable();
+      ExampleSerializable testSerializable = ExampleSerializable();
       testSerializable.context['child'] = 'childName';
       expect(
           json.encode(testSerializable), '{"context":{"child":"childName"}}');

@@ -3,20 +3,20 @@ library w_common.timestamp;
 import 'package:intl/intl.dart';
 
 /// The format of a timestamp with no date.
-DateFormat timeFormat = new DateFormat('h:mma');
+DateFormat timeFormat = DateFormat('h:mma');
 
 /// The format of a weekday with no time of day.
-DateFormat weekdayFormat = new DateFormat.EEEE();
+DateFormat weekdayFormat = DateFormat.EEEE();
 
 /// The format of a month and day with no time of day.
-DateFormat monthDayFormat = new DateFormat.MMMMd();
+DateFormat monthDayFormat = DateFormat.MMMMd();
 
 /// The format of the full date with no time of day.
-DateFormat yearMonthDayFormat = new DateFormat.yMMMd();
+DateFormat yearMonthDayFormat = DateFormat.yMMMd();
 
 /// Formats a DateTime into the 'X ago' string format.
 String formatTimeDifference(DateTime time, {DateTime now}) {
-  now ??= new DateTime.now();
+  now ??= DateTime.now();
   final timeOfDay = timeFormat.format(time).toLowerCase();
   final deltaDays = now.difference(time).inDays.abs();
 

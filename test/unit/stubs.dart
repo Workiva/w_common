@@ -37,9 +37,9 @@ abstract class StubDisposable implements Disposable {
     expect(isOrWillBeDisposed, isTrue);
     numTimesOnDisposeCalled++;
     wasOnDisposeCalled = true;
-    var future = new Future<Null>(() => null);
+    var future = Future<Null>(() => null);
     future.then((_) async {
-      await new Future(() {}); // Give it a chance to update state.
+      await Future(() {}); // Give it a chance to update state.
       expect(isDisposed, isTrue);
       // ignore: deprecated_member_use
       expect(isDisposing, isFalse);
@@ -60,7 +60,7 @@ abstract class StubDisposable implements Disposable {
     expect(isOrWillBeDisposed, isTrue);
     numTimesOnWillDisposeCalled++;
     wasOnWillDisposeCalled = true;
-    return new Future(() {});
+    return Future(() {});
   }
 }
 
@@ -86,7 +86,7 @@ class StubStream<T> extends Stream<T> {
   @override
   StreamSubscription<T> listen(OnDataCallback<T> onData,
       {Function onError, OnDoneCallback onDone, bool cancelOnError}) {
-    final sub = new MockStreamSubscription<T>();
+    final sub = MockStreamSubscription<T>();
     when(sub.cancel()).thenReturn(null);
     return sub;
   }
@@ -97,19 +97,19 @@ class TimerHarness {
   Completer<bool> _didCancelTimerCompleter;
   bool _didCompleteTimer = false;
   Completer<bool> _didCompleteTimerCompleter;
-  final Completer<Null> _didConcludeCompleter = new Completer<Null>();
-  final Duration _timerDuration = new Duration(milliseconds: 10);
+  final Completer<Null> _didConcludeCompleter = Completer<Null>();
+  final Duration _timerDuration = Duration(milliseconds: 10);
 
   Duration get duration => _timerDuration;
 
   Future<bool> get didCancelTimer =>
       _didCancelTimerCompleter?.future ??
-      new Future.error(new StateError(
+      Future.error(StateError(
           'getCallback() must be called before didCancelTimer is valid'));
 
   Future<bool> get didCompleteTimer =>
       _didCompleteTimerCompleter?.future ??
-      new Future.error(
+      Future.error(
           'getCallback() must be called before didCompleteTimer is valid');
 
   Future<Null> get didConclude => _didConcludeCompleter.future;
@@ -136,11 +136,11 @@ class TimerHarness {
   }
 
   void _setupInternalTimer({int count = 1}) {
-    _didCompleteTimerCompleter = new Completer<bool>();
-    _didCancelTimerCompleter = new Completer<bool>();
+    _didCompleteTimerCompleter = Completer<bool>();
+    _didCancelTimerCompleter = Completer<bool>();
 
-    var internalDuration = new Duration(milliseconds: (count * 10) + 5);
-    new Timer(internalDuration, () {
+    var internalDuration = Duration(milliseconds: (count * 10) + 5);
+    Timer(internalDuration, () {
       _didCompleteTimerCompleter.complete(_didCompleteTimer);
       _didCancelTimerCompleter.complete(_didCancelTimer);
       _didConcludeCompleter.complete();

@@ -23,12 +23,12 @@ void main() {
   group('Cache', () {
     Cache<String, Object> cache;
     const String cachedId = '1';
-    final Object cachedValue = new Object();
+    final Object cachedValue = Object();
     const String notCachedId = '2';
-    final Object notCachedValue = new Object();
+    final Object notCachedValue = Object();
 
     setUp(() async {
-      cache = new Cache(new MockCachingStrategy());
+      cache = Cache(MockCachingStrategy());
       await cache.get(cachedId, () => cachedValue);
     });
 
@@ -43,7 +43,7 @@ void main() {
           'synchronously', () async {
         var cachedValues = <Future<Object>>[
           cache.get(notCachedId, () => notCachedValue),
-          cache.get(notCachedId, () => new Object())
+          cache.get(notCachedId, () => Object())
         ];
         var completedValues = await Future.wait(cachedValues);
         expect(completedValues[0], same(notCachedValue));
@@ -57,13 +57,13 @@ void main() {
       });
 
       test('should return error thrown by factory function', () {
-        var error = new StateError('Factory Error');
+        var error = StateError('Factory Error');
         var value = cache.get(notCachedId, () => throw error);
         expect(value, throwsA(same(error)));
       });
 
       test('should return error thrown by async factory function', () {
-        var error = new StateError('Async Factory Error');
+        var error = StateError('Async Factory Error');
         var value = cache.getAsync(notCachedId, () async => throw error);
         expect(value, throwsA(same(error)));
       });
@@ -90,7 +90,7 @@ void main() {
         cache.didUpdate.listen(expectAsync1(
             (CacheContext<dynamic, dynamic> context) {},
             count: 0));
-        await cache.get(cachedId, () => new Object());
+        await cache.get(cachedId, () => Object());
       });
 
       test('should dispatch didUpdate event on uncached get', () async {
@@ -103,15 +103,15 @@ void main() {
       });
 
       test('should call onDidGet when value is not cached', () async {
-        var mockCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(mockCachingStrategy);
+        var mockCachingStrategy = MockCachingStrategy();
+        var childCache = Cache(mockCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         verify(mockCachingStrategy.onDidGet(cachedId, cachedValue));
       });
 
       test('should call onDidGet when value is cached', () async {
-        var mockCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(mockCachingStrategy);
+        var mockCachingStrategy = MockCachingStrategy();
+        var childCache = Cache(mockCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.get(cachedId, () => cachedValue);
 
@@ -126,15 +126,15 @@ void main() {
       test(
           'should call valueFactory if identifer has been removed but removal '
           'is not complete', () async {
-        final value1 = new Object();
-        final value2 = new Object();
+        final value1 = Object();
+        final value2 = Object();
         cache.didRemove
             .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
           expect(context.id, notCachedId);
           expect(context.value, value2);
         }));
         // Get a unached value that completes in the future
-        final completer = new Completer<Object>();
+        final completer = Completer<Object>();
         final futureGet1 = cache.getAsync(notCachedId, () => completer.future);
 
         // Remove the identifer from the cache before the original get completes
@@ -164,7 +164,7 @@ void main() {
       test(
           'should return false when identifer has been removed before get '
           'completes', () async {
-        final completer = new Completer<Object>();
+        final completer = Completer<Object>();
         cache.getAsync(notCachedId, () => completer.future);
         expect(cache.containsKey(notCachedId), isTrue);
         cache.remove(notCachedId);
@@ -220,8 +220,8 @@ void main() {
       });
 
       test('should call onDidRemove when value was cached', () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        var stubCachingStrategy = MockCachingStrategy();
+        var childCache = Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.remove(cachedId);
 
@@ -229,8 +229,8 @@ void main() {
       });
 
       test('should call onWillRemove when value was cached', () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        var stubCachingStrategy = MockCachingStrategy();
+        var childCache = Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.remove(cachedId);
         verify(stubCachingStrategy.onWillRemove(cachedId));
@@ -238,8 +238,8 @@ void main() {
 
       test('should not call onDidRemove when identifer is not cached',
           () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        var stubCachingStrategy = MockCachingStrategy();
+        var childCache = Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
 
         verifyNever(stubCachingStrategy.onDidRemove(typed(any), typed(any)));
@@ -247,8 +247,8 @@ void main() {
 
       test('should not call onWillRemove when identifer is not cached',
           () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        var stubCachingStrategy = MockCachingStrategy();
+        var childCache = Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
 
         verifyNever(stubCachingStrategy.onWillRemove(typed(any)));
@@ -271,7 +271,7 @@ void main() {
             emitsInOrder([notCachedValue, null]));
 
         cache.getAsync(notCachedId, () async {
-          await new Future<dynamic>.delayed(new Duration(milliseconds: 100));
+          await Future<dynamic>.delayed(Duration(milliseconds: 100));
           return notCachedValue;
         });
         cache.remove(notCachedId);
@@ -279,7 +279,7 @@ void main() {
 
       test('should complete if pending get factory completes with an error',
           () {
-        var error = new StateError('Async factory error');
+        var error = StateError('Async factory error');
         var value = cache.get(notCachedId, () => throw error);
         expect(cache.remove(notCachedId), completes);
         expect(value, throwsA(same(error)));
@@ -288,7 +288,7 @@ void main() {
       test(
           'should complete if pending getAsync factory completes with an error',
           () {
-        var error = new StateError('Async factory error');
+        var error = StateError('Async factory error');
         var value = cache.getAsync(notCachedId, () async => throw error);
         expect(cache.remove(notCachedId), completes);
         expect(value, throwsA(same(error)));
@@ -312,8 +312,8 @@ void main() {
       });
 
       test('should call onDidRelease when value was cached', () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        var stubCachingStrategy = MockCachingStrategy();
+        var childCache = Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.release(cachedId);
 
@@ -322,8 +322,8 @@ void main() {
       });
 
       test('should call onWillRelease when value was cached', () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        var stubCachingStrategy = MockCachingStrategy();
+        var childCache = Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.release(cachedId);
 
@@ -332,8 +332,8 @@ void main() {
 
       test('should not call onDidRelease when identifer is not cached',
           () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        var stubCachingStrategy = MockCachingStrategy();
+        var childCache = Cache(stubCachingStrategy);
         await childCache.release(cachedId);
         verifyNever(stubCachingStrategy.onDidRelease(
             typed(any), typed(any), typed(any)));
@@ -341,15 +341,15 @@ void main() {
 
       test('should not call onWillRemove when identifer is not cached',
           () async {
-        var stubCachingStrategy = new MockCachingStrategy();
-        var childCache = new Cache(stubCachingStrategy);
+        var stubCachingStrategy = MockCachingStrategy();
+        var childCache = Cache(stubCachingStrategy);
         await childCache.release(cachedId);
         verifyNever(stubCachingStrategy.onWillRelease(typed(any)));
       });
 
       test('should complete if pending get factory completes with an error',
           () {
-        var error = new StateError('Async factory error');
+        var error = StateError('Async factory error');
         var value = cache.get(notCachedId, () => throw error);
         expect(cache.release(notCachedId), completes);
         expect(value, throwsA(same(error)));
@@ -358,7 +358,7 @@ void main() {
       test(
           'should complete if pending getAsync factory completes with an error',
           () {
-        var error = new StateError('Async factory error');
+        var error = StateError('Async factory error');
         var value = cache.getAsync(notCachedId, () async => throw error);
         expect(cache.release(notCachedId), completes);
         expect(value, throwsA(same(error)));
@@ -507,8 +507,8 @@ void main() {
           'should not add event to didRemove stream until callback has completed',
           () {
         setUp(() async {
-          cache = new Cache<String, Object>(
-              new LeastRecentlyUsedStrategy<String, Object>(0));
+          cache = Cache<String, Object>(
+              LeastRecentlyUsedStrategy<String, Object>(0));
           await cache.get(cachedId, () => cachedValue);
         });
 
@@ -523,7 +523,7 @@ void main() {
 
           cache
             ..applyToItem(cachedId, (_) async {
-              await new Future<dynamic>.delayed(const Duration(seconds: 1));
+              await Future<dynamic>.delayed(const Duration(seconds: 1));
               callbackCompleted = true;
             })
             ..release(cachedId);
@@ -540,9 +540,9 @@ void main() {
 
           runZoned(() {
             cache.applyToItem(cachedId, (_) async {
-              await new Future<dynamic>.delayed(const Duration(seconds: 1));
+              await Future<dynamic>.delayed(const Duration(seconds: 1));
               callbackCompleted = true;
-              throw new Error();
+              throw Error();
             });
           },
               onError: expectAsync1((_) {},
@@ -555,9 +555,9 @@ void main() {
       test(
           'should return future that completes with same error as the '
           'future returned from callback', () async {
-        final error = new Error();
+        final error = Error();
         await cache.applyToItem(cachedId, (_) async {
-          await new Future<dynamic>.delayed(new Duration(seconds: 1));
+          await Future<dynamic>.delayed(Duration(seconds: 1));
           throw error;
         }).catchError((e) {
           expect(e, error);
@@ -576,7 +576,7 @@ void main() {
           'callback completes with error', () async {
         try {
           final applyToItemFuture = cache.applyToItem(cachedId, (_) async {
-            throw new Error();
+            throw Error();
           });
           expect(cache.applyToItemCallBacks, isNotEmpty);
           await applyToItemFuture;
@@ -589,7 +589,7 @@ void main() {
           'should remove futures added to applyToItemCallbacks after async '
           'callback completes', () async {
         final applyToItemFuture = cache.applyToItem(cachedId, (_) {
-          return new Future(() {});
+          return Future(() {});
         });
 
         expect(cache.applyToItemCallBacks, isNotEmpty);
@@ -609,10 +609,10 @@ class MockCachingStrategy extends Mock
     implements CachingStrategy<String, Object> {
   MockCachingStrategy() {
     when(onDidGet(typed(any), typed(any)))
-        .thenAnswer((i) => new Future.value(null));
+        .thenAnswer((i) => Future.value(null));
     when(onDidRelease(typed(any), typed(any), typed(any)))
-        .thenAnswer((i) => new Future.value(null));
+        .thenAnswer((i) => Future.value(null));
     when(onDidRemove(typed(any), typed(any)))
-        .thenAnswer((i) => new Future.value(null));
+        .thenAnswer((i) => Future.value(null));
   }
 }

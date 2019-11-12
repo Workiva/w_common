@@ -35,25 +35,25 @@ void main() {
 
     tearDown(() {
       final compiledCssFiles =
-          new Glob('$defaultSourceDir**.css', recursive: true).listSync();
+          Glob('$defaultSourceDir**.css', recursive: true).listSync();
       if (compiledCssFiles.isNotEmpty) {
         for (var file in compiledCssFiles) {
-          new File(file.path).deleteSync();
-          new File('${file.path}.map').deleteSync();
+          File(file.path).deleteSync();
+          File('${file.path}.map').deleteSync();
         }
       }
 
-      final specificOutputDirectory = new Directory(specificOutputDir);
+      final specificOutputDirectory = Directory(specificOutputDir);
       if (!specificOutputDirectory.existsSync()) {
         specificOutputDirectory.createSync(recursive: true);
       }
 
       final compiledCssFilesInSpecificOutputDir =
-          new Glob('$specificOutputDir**.css', recursive: true).listSync();
+          Glob('$specificOutputDir**.css', recursive: true).listSync();
       if (compiledCssFilesInSpecificOutputDir.isNotEmpty) {
         for (var file in compiledCssFilesInSpecificOutputDir) {
-          new File(file.path).deleteSync();
-          new File('${file.path}.map').deleteSync();
+          File(file.path).deleteSync();
+          File('${file.path}.map').deleteSync();
         }
       }
     });
@@ -73,12 +73,12 @@ void main() {
 
           test('when the source is in the root of the sourceDir', () {
             final expectedCssFile =
-                new File(path.join(defaultSourceDir, 'test.css'));
+                File(path.join(defaultSourceDir, 'test.css'));
             expect(expectedCssFile.existsSync(), isTrue,
                 reason: '$expectedCssFile does not exist.');
 
             final expectedCssMapFile =
-                new File(path.join(defaultSourceDir, 'test.css.map'));
+                File(path.join(defaultSourceDir, 'test.css.map'));
             expect(expectedCssMapFile.existsSync(), isTrue,
                 reason: '$expectedCssMapFile does not exist.');
           });
@@ -87,12 +87,12 @@ void main() {
               'when the source is in a subdirectory of the root of the sourceDir',
               () {
             final expectedCssFile =
-                new File(path.join(defaultNestedSourceDir, 'nested_test.css'));
+                File(path.join(defaultNestedSourceDir, 'nested_test.css'));
             expect(expectedCssFile.existsSync(), isTrue,
                 reason: '$expectedCssFile does not exist.');
 
-            final expectedCssMapFile = new File(
-                path.join(defaultNestedSourceDir, 'nested_test.css.map'));
+            final expectedCssMapFile =
+                File(path.join(defaultNestedSourceDir, 'nested_test.css.map'));
             expect(expectedCssMapFile.existsSync(), isTrue,
                 reason: '$expectedCssMapFile does not exist.');
           });
@@ -105,12 +105,12 @@ void main() {
           });
 
           test('when the source is in the root of the sourceDir', () {
-            final expectedCssFile = new File(
+            final expectedCssFile = File(
                 path.join(defaultSourceDirWithoutTrailingSlash, 'test.css'));
             expect(expectedCssFile.existsSync(), isTrue,
                 reason: '$expectedCssFile does not exist.');
 
-            final expectedCssMapFile = new File(path.join(
+            final expectedCssMapFile = File(path.join(
                 defaultSourceDirWithoutTrailingSlash, 'test.css.map'));
             expect(expectedCssMapFile.existsSync(), isTrue,
                 reason: '$expectedCssMapFile does not exist.');
@@ -120,12 +120,12 @@ void main() {
               'when the source is in a subdirectory of the root of the sourceDir',
               () {
             final expectedCssFile =
-                new File(path.join(defaultNestedSourceDir, 'nested_test.css'));
+                File(path.join(defaultNestedSourceDir, 'nested_test.css'));
             expect(expectedCssFile.existsSync(), isTrue,
                 reason: '$expectedCssFile does not exist.');
 
-            final expectedCssMapFile = new File(
-                path.join(defaultNestedSourceDir, 'nested_test.css.map'));
+            final expectedCssMapFile =
+                File(path.join(defaultNestedSourceDir, 'nested_test.css.map'));
             expect(expectedCssMapFile.existsSync(), isTrue,
                 reason: '$expectedCssMapFile does not exist.');
           });
@@ -142,19 +142,15 @@ void main() {
           });
 
           test('when the source is in the root of the sourceDir', () {
-            expect(
-                new File(path.join(defaultSourceDir, 'test.css')).existsSync(),
+            expect(File(path.join(defaultSourceDir, 'test.css')).existsSync(),
                 isFalse);
             expect(
-                new File(path.join(defaultSourceDir, 'test.css.map'))
-                    .existsSync(),
+                File(path.join(defaultSourceDir, 'test.css.map')).existsSync(),
                 isFalse);
-            expect(
-                new File(path.join(specificOutputDir, 'test.css')).existsSync(),
+            expect(File(path.join(specificOutputDir, 'test.css')).existsSync(),
                 isTrue);
             expect(
-                new File(path.join(specificOutputDir, 'test.css.map'))
-                    .existsSync(),
+                File(path.join(specificOutputDir, 'test.css.map')).existsSync(),
                 isTrue);
           });
 
@@ -162,21 +158,20 @@ void main() {
               'when the source is in a subdirectory of the root of the sourceDir',
               () {
             expect(
-                new File(path.join(defaultNestedSourceDir, 'nested_test.css'))
+                File(path.join(defaultNestedSourceDir, 'nested_test.css'))
                     .existsSync(),
                 isFalse);
             expect(
-                new File(path.join(
-                        defaultNestedSourceDir, 'nested_test.css.map'))
+                File(path.join(defaultNestedSourceDir, 'nested_test.css.map'))
                     .existsSync(),
                 isFalse);
             expect(
-                new File(path.join(specificOutputDir,
+                File(path.join(specificOutputDir,
                         '$nestedSourceDirName/nested_test.css'))
                     .existsSync(),
                 isTrue);
             expect(
-                new File(path.join(specificOutputDir,
+                File(path.join(specificOutputDir,
                         '$nestedSourceDirName/nested_test.css.map'))
                     .existsSync(),
                 isTrue);
@@ -197,21 +192,19 @@ void main() {
 
           test('when the source is in the root of the sourceDir', () {
             expect(
-                new File(path.join(
+                File(path.join(
                         defaultSourceDirWithoutTrailingSlash, 'test.css'))
                     .existsSync(),
                 isFalse);
             expect(
-                new File(path.join(
+                File(path.join(
                         defaultSourceDirWithoutTrailingSlash, 'test.css.map'))
                     .existsSync(),
                 isFalse);
-            expect(
-                new File(path.join(specificOutputDir, 'test.css')).existsSync(),
+            expect(File(path.join(specificOutputDir, 'test.css')).existsSync(),
                 isTrue);
             expect(
-                new File(path.join(specificOutputDir, 'test.css.map'))
-                    .existsSync(),
+                File(path.join(specificOutputDir, 'test.css.map')).existsSync(),
                 isTrue);
           });
 
@@ -219,21 +212,20 @@ void main() {
               'when the source is in a subdirectory of the root of the sourceDir',
               () {
             expect(
-                new File(path.join(defaultNestedSourceDir, 'nested_test.css'))
+                File(path.join(defaultNestedSourceDir, 'nested_test.css'))
                     .existsSync(),
                 isFalse);
             expect(
-                new File(path.join(
-                        defaultNestedSourceDir, 'nested_test.css.map'))
+                File(path.join(defaultNestedSourceDir, 'nested_test.css.map'))
                     .existsSync(),
                 isFalse);
             expect(
-                new File(path.join(specificOutputDir,
+                File(path.join(specificOutputDir,
                         '$nestedSourceDirName/nested_test.css'))
                     .existsSync(),
                 isTrue);
             expect(
-                new File(path.join(specificOutputDir,
+                File(path.join(specificOutputDir,
                         '$nestedSourceDirName/nested_test.css.map'))
                     .existsSync(),
                 isTrue);
@@ -254,22 +246,22 @@ void main() {
 
           test('when the source is in the root of the sourceDir', () {
             expect(
-                new File(path.join(
+                File(path.join(
                         defaultSourceDirWithoutTrailingSlash, 'test.css'))
                     .existsSync(),
                 isFalse);
             expect(
-                new File(path.join(
+                File(path.join(
                         defaultSourceDirWithoutTrailingSlash, 'test.css.map'))
                     .existsSync(),
                 isFalse);
             expect(
-                new File(path.join(
+                File(path.join(
                         specificOutputDirWithoutTrailingSlash, 'test.css'))
                     .existsSync(),
                 isTrue);
             expect(
-                new File(path.join(
+                File(path.join(
                         specificOutputDirWithoutTrailingSlash, 'test.css.map'))
                     .existsSync(),
                 isTrue);
@@ -279,21 +271,20 @@ void main() {
               'when the source is in a subdirectory of the root of the sourceDir',
               () {
             expect(
-                new File(path.join(defaultNestedSourceDir, 'nested_test.css'))
+                File(path.join(defaultNestedSourceDir, 'nested_test.css'))
                     .existsSync(),
                 isFalse);
             expect(
-                new File(path.join(
-                        defaultNestedSourceDir, 'nested_test.css.map'))
+                File(path.join(defaultNestedSourceDir, 'nested_test.css.map'))
                     .existsSync(),
                 isFalse);
             expect(
-                new File(path.join(specificOutputDirWithoutTrailingSlash,
+                File(path.join(specificOutputDirWithoutTrailingSlash,
                         '$nestedSourceDirName/nested_test.css'))
                     .existsSync(),
                 isTrue);
             expect(
-                new File(path.join(specificOutputDirWithoutTrailingSlash,
+                File(path.join(specificOutputDirWithoutTrailingSlash,
                         '$nestedSourceDirName/nested_test.css.map'))
                     .existsSync(),
                 isTrue);
@@ -310,18 +301,14 @@ void main() {
             'expanded,compressed',
           ]);
 
-          expect(new File(path.join(defaultSourceDir, 'test.css')).existsSync(),
+          expect(File(path.join(defaultSourceDir, 'test.css')).existsSync(),
+              isTrue);
+          expect(File(path.join(defaultSourceDir, 'test.css.map')).existsSync(),
+              isTrue);
+          expect(File(path.join(defaultSourceDir, 'test.min.css')).existsSync(),
               isTrue);
           expect(
-              new File(path.join(defaultSourceDir, 'test.css.map'))
-                  .existsSync(),
-              isTrue);
-          expect(
-              new File(path.join(defaultSourceDir, 'test.min.css'))
-                  .existsSync(),
-              isTrue);
-          expect(
-              new File(path.join(defaultSourceDir, 'test.min.css.map'))
+              File(path.join(defaultSourceDir, 'test.min.css.map'))
                   .existsSync(),
               isTrue);
         });
@@ -336,18 +323,14 @@ void main() {
             'compressed',
           ]);
 
-          expect(new File(path.join(defaultSourceDir, 'test.css')).existsSync(),
+          expect(File(path.join(defaultSourceDir, 'test.css')).existsSync(),
+              isTrue);
+          expect(File(path.join(defaultSourceDir, 'test.css.map')).existsSync(),
+              isTrue);
+          expect(File(path.join(defaultSourceDir, 'test.min.css')).existsSync(),
               isTrue);
           expect(
-              new File(path.join(defaultSourceDir, 'test.css.map'))
-                  .existsSync(),
-              isTrue);
-          expect(
-              new File(path.join(defaultSourceDir, 'test.min.css'))
-                  .existsSync(),
-              isTrue);
-          expect(
-              new File(path.join(defaultSourceDir, 'test.min.css.map'))
+              File(path.join(defaultSourceDir, 'test.min.css.map'))
                   .existsSync(),
               isTrue);
         });
@@ -370,12 +353,11 @@ void main() {
                 ]);
 
                 expect(
-                    new File(path.join(defaultSourceDir, 'test.min.foo.css'))
+                    File(path.join(defaultSourceDir, 'test.min.foo.css'))
                         .existsSync(),
                     isTrue);
                 expect(
-                    new File(
-                            path.join(defaultSourceDir, 'test.min.foo.css.map'))
+                    File(path.join(defaultSourceDir, 'test.min.foo.css.map'))
                         .existsSync(),
                     isTrue);
               });
@@ -396,13 +378,13 @@ void main() {
 
                 expect(exitCode, 1);
                 expect(
-                    new File(path.join(defaultSourceDir, 'test.foo.css'))
+                    File(path.join(defaultSourceDir, 'test.foo.css'))
                         .existsSync(),
                     isFalse,
                     reason:
                         'The file extension for compressed output cannot match the one for expanded output');
                 expect(
-                    new File(path.join(defaultSourceDir, 'test.foo.css.map'))
+                    File(path.join(defaultSourceDir, 'test.foo.css.map'))
                         .existsSync(),
                     isFalse,
                     reason:
@@ -421,12 +403,10 @@ void main() {
                 'compressed',
               ]);
 
-              expect(
-                  new File(path.join(defaultSourceDir, 'test.css'))
-                      .existsSync(),
+              expect(File(path.join(defaultSourceDir, 'test.css')).existsSync(),
                   isTrue);
               expect(
-                  new File(path.join(defaultSourceDir, 'test.css.map'))
+                  File(path.join(defaultSourceDir, 'test.css.map'))
                       .existsSync(),
                   isTrue);
             });
@@ -443,20 +423,18 @@ void main() {
                 '.min.foo.css',
               ]);
 
+              expect(File(path.join(defaultSourceDir, 'test.css')).existsSync(),
+                  isFalse);
               expect(
-                  new File(path.join(defaultSourceDir, 'test.css'))
+                  File(path.join(defaultSourceDir, 'test.css.map'))
                       .existsSync(),
                   isFalse);
               expect(
-                  new File(path.join(defaultSourceDir, 'test.css.map'))
-                      .existsSync(),
-                  isFalse);
-              expect(
-                  new File(path.join(defaultSourceDir, 'test.min.foo.css'))
+                  File(path.join(defaultSourceDir, 'test.min.foo.css'))
                       .existsSync(),
                   isTrue);
               expect(
-                  new File(path.join(defaultSourceDir, 'test.min.foo.css.map'))
+                  File(path.join(defaultSourceDir, 'test.min.foo.css.map'))
                       .existsSync(),
                   isTrue);
             });
@@ -476,23 +454,21 @@ void main() {
                 '.dev.foo.css',
               ]);
 
+              expect(File(path.join(defaultSourceDir, 'test.css')).existsSync(),
+                  isFalse);
               expect(
-                  new File(path.join(defaultSourceDir, 'test.css'))
+                  File(path.join(defaultSourceDir, 'test.css.map'))
                       .existsSync(),
                   isFalse);
               expect(
-                  new File(path.join(defaultSourceDir, 'test.css.map'))
-                      .existsSync(),
-                  isFalse);
-              expect(
-                  new File(path.join(defaultSourceDir, 'test.dev.foo.css'))
+                  File(path.join(defaultSourceDir, 'test.dev.foo.css'))
                       .existsSync(),
                   isTrue,
                   reason:
                       'The file extension for expanded output should be customizable when both '
                       'outputStyle values are specified');
               expect(
-                  new File(path.join(defaultSourceDir, 'test.dev.foo.css.map'))
+                  File(path.join(defaultSourceDir, 'test.dev.foo.css.map'))
                       .existsSync(),
                   isTrue,
                   reason:
@@ -510,12 +486,10 @@ void main() {
                 'expanded',
               ]);
 
-              expect(
-                  new File(path.join(defaultSourceDir, 'test.css'))
-                      .existsSync(),
+              expect(File(path.join(defaultSourceDir, 'test.css')).existsSync(),
                   isTrue);
               expect(
-                  new File(path.join(defaultSourceDir, 'test.css.map'))
+                  File(path.join(defaultSourceDir, 'test.css.map'))
                       .existsSync(),
                   isTrue);
             });
@@ -532,23 +506,21 @@ void main() {
                 '.dev.foo.css',
               ]);
 
+              expect(File(path.join(defaultSourceDir, 'test.css')).existsSync(),
+                  isFalse);
               expect(
-                  new File(path.join(defaultSourceDir, 'test.css'))
+                  File(path.join(defaultSourceDir, 'test.css.map'))
                       .existsSync(),
                   isFalse);
               expect(
-                  new File(path.join(defaultSourceDir, 'test.css.map'))
-                      .existsSync(),
-                  isFalse);
-              expect(
-                  new File(path.join(defaultSourceDir, 'test.dev.foo.css'))
+                  File(path.join(defaultSourceDir, 'test.dev.foo.css'))
                       .existsSync(),
                   isTrue,
                   reason:
                       'The file extension for expanded output should be customizable when both '
                       'outputStyle values are specified');
               expect(
-                  new File(path.join(defaultSourceDir, 'test.dev.foo.css.map'))
+                  File(path.join(defaultSourceDir, 'test.dev.foo.css.map'))
                       .existsSync(),
                   isTrue,
                   reason:
@@ -562,8 +534,8 @@ void main() {
       test('with the expected CSS output', () async {
         await compiler.main(['--sourceDir', defaultSourceDir]);
 
-        final content = new File(path.join(defaultSourceDir, 'test.css'))
-            .readAsStringSync();
+        final content =
+            File(path.join(defaultSourceDir, 'test.css')).readAsStringSync();
         expect(content, startsWith('.selector1'));
         expect(content, contains('.package-import'));
         expect(content, contains('.relative-import'));
@@ -576,10 +548,10 @@ void main() {
           });
 
           test('and the source is in the root of the sourceDir', () {
-            final cssContent = new File(path.join(defaultSourceDir, 'test.css'))
+            final cssContent = File(path.join(defaultSourceDir, 'test.css'))
                 .readAsStringSync();
             final sourceMapContent =
-                new File(path.join(defaultSourceDir, 'test.css.map'))
+                File(path.join(defaultSourceDir, 'test.css.map'))
                     .readAsStringSync();
 
             expect(
@@ -591,11 +563,11 @@ void main() {
               'and the source is in a subdirectory of the root of the sourceDir',
               () {
             final cssContent =
-                new File(path.join(defaultNestedSourceDir, 'nested_test.css'))
+                File(path.join(defaultNestedSourceDir, 'nested_test.css'))
                     .readAsStringSync();
-            final sourceMapContent = new File(
-                    path.join(defaultNestedSourceDir, 'nested_test.css.map'))
-                .readAsStringSync();
+            final sourceMapContent =
+                File(path.join(defaultNestedSourceDir, 'nested_test.css.map'))
+                    .readAsStringSync();
 
             expect(cssContent,
                 endsWith('/*# sourceMappingURL=nested_test.css.map */'));
@@ -614,11 +586,10 @@ void main() {
           });
 
           test('and the source is in the root of the sourceDir', () {
-            final cssTarget =
-                new File(path.join(specificOutputDir, 'test.css'));
+            final cssTarget = File(path.join(specificOutputDir, 'test.css'));
             final cssContent = cssTarget.readAsStringSync();
             final sourceMapContent =
-                new File(path.join(specificOutputDir, 'test.css.map'))
+                File(path.join(specificOutputDir, 'test.css.map'))
                     .readAsStringSync();
 
             expect(
@@ -636,10 +607,10 @@ void main() {
           test(
               'and the source is in a subdirectory of the root of the sourceDir',
               () {
-            final cssTarget = new File(path.join(
+            final cssTarget = File(path.join(
                 specificOutputDir, '$nestedSourceDirName/nested_test.css'));
             final cssContent = cssTarget.readAsStringSync();
-            final sourceMapContent = new File(path.join(specificOutputDir,
+            final sourceMapContent = File(path.join(specificOutputDir,
                     '$nestedSourceDirName/nested_test.css.map'))
                 .readAsStringSync();
 

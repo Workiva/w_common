@@ -5,7 +5,7 @@ import 'dart:math';
 import 'package:logging/logging.dart';
 import 'package:w_common/disposable.dart';
 
-Logger errorLogger = new Logger('w_common.ErrorExample');
+Logger errorLogger = Logger('w_common.ErrorExample');
 
 class RandomDisposableAdder extends Disposable {
   @override
@@ -13,24 +13,24 @@ class RandomDisposableAdder extends Disposable {
 
   void addRandomManager() {
     print('RandomDisposableAdder.addRandomManager');
-    switch (new Random().nextInt(6)) {
+    switch (Random().nextInt(6)) {
       case 0:
-        listenToStream(new Stream<Null>.empty(), (_) {});
+        listenToStream(Stream<Null>.empty(), (_) {});
         break;
       case 1:
-        manageStreamController(new StreamController());
+        manageStreamController(StreamController());
         break;
       case 2:
-        manageCompleter(new Completer<Null>());
+        manageCompleter(Completer<Null>());
         break;
       case 3:
-        manageAndReturnDisposable(new Disposable());
+        manageAndReturnDisposable(Disposable());
         break;
       case 4:
-        manageAndReturnTypedDisposable(new Disposable());
+        manageAndReturnTypedDisposable(Disposable());
         break;
       default:
-        manageDisposable(new Disposable());
+        manageDisposable(Disposable());
     }
   }
 }
@@ -90,7 +90,7 @@ void main() {
       querySelector('#posthumous-MyManager-button');
 
   createMyManagerButton.onClick.listen((_) {
-    myManager = new MyManager();
+    myManager = MyManager();
   });
 
   disposeMyManagerButton.onClick.listen((_) {
@@ -116,7 +116,7 @@ void main() {
       querySelector('#dispose-ErrorCreator-button');
 
   createErrorCreatorButton.onClick.listen((_) {
-    errorCreator = new ErrorCreator();
+    errorCreator = ErrorCreator();
   });
 
   disposeErrorCreatorButton.onClick.listen((_) async {

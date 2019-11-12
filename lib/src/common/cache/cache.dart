@@ -97,7 +97,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   @override
   String get disposableTypeName => 'Cache';
 
-  final Logger _log = new Logger('w_common.Cache');
+  final Logger _log = Logger('w_common.Cache');
 
   /// Any apply to item callbacks currently in flight.
   final Map<TIdentifier, List<Future<dynamic>>> _applyToItemCallBacks =
@@ -115,15 +115,15 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
 
   // ignore: close_sinks
   StreamController<CacheContext<TIdentifier, TValue>> _didReleaseController =
-      new StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
+      StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
 
   // ignore: close_sinks
   StreamController<CacheContext<TIdentifier, TValue>> _didRemoveController =
-      new StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
+      StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
 
   // ignore: close_sinks
   StreamController<CacheContext<TIdentifier, TValue>> _didUpdateController =
-      new StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
+      StreamController<CacheContext<TIdentifier, TValue>>.broadcast();
 
   Cache(this._cachingStrategy) {
     [_didReleaseController, _didRemoveController, _didUpdateController]
@@ -246,13 +246,13 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     }
 
     // Install Future value
-    final Completer<TValue> completer = new Completer<TValue>();
+    final Completer<TValue> completer = Completer<TValue>();
     _cache[id] = completer.future;
     try {
       final TValue value = valueFactory.call();
 
       _cachingStrategy.onDidGet(id, value).then((Null _) {
-        _didUpdateController.add(new CacheContext(id, value));
+        _didUpdateController.add(CacheContext(id, value));
         completer.complete(value);
       });
     } catch (error, stackTrace) {
@@ -307,7 +307,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     // Install Future value
     _cache[id] = valueFactory.call().then((TValue value) async {
       await _cachingStrategy.onDidGet(id, value);
-      _didUpdateController.add(new CacheContext(id, value));
+      _didUpdateController.add(CacheContext(id, value));
       return value;
     });
 
@@ -338,13 +338,13 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
       _cachingStrategy.onWillRelease(id);
       return _cache[id].then((TValue value) async {
         await _cachingStrategy.onDidRelease(id, value, remove);
-        _didReleaseController.add(new CacheContext(id, value));
+        _didReleaseController.add(CacheContext(id, value));
       }).catchError((Object error, StackTrace stackTrace) {
         return null;
       });
     }
 
-    return new Future.value();
+    return Future.value();
   }
 
   /// Removes the reference to a [TValue] associated with the given
@@ -369,14 +369,14 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
           await Future.wait(_applyToItemCallBacks[id]);
         }
         await _cachingStrategy.onDidRemove(id, value);
-        _didRemoveController.add(new CacheContext(id, value));
-        _didUpdateController.add(new CacheContext(id, null));
+        _didRemoveController.add(CacheContext(id, value));
+        _didUpdateController.add(CacheContext(id, null));
       }).catchError((Object error, StackTrace stackTrace) {
         return null;
       });
     }
 
-    return new Future.value();
+    return Future.value();
   }
 
   /// Returns `true` and calls [callback] if there is a cached, unreleased
@@ -394,7 +394,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     _log.finest('applyToItem id: $id');
     _throwWhenDisposed('applyToItem');
     if (_isReleased[id] != false) {
-      return new Future<bool>.value(false);
+      return Future<bool>.value(false);
     }
 
     final callBackResult = callback(_cache[id]);
@@ -417,12 +417,12 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
       // generated from callback
       return callBackResult.then((_) => true);
     }
-    return new Future<bool>.value(true);
+    return Future<bool>.value(true);
   }
 
   void _throwWhenDisposed(String op) {
     if (isOrWillBeDisposed) {
-      throw new StateError('Cannot $op when Cache is disposed');
+      throw StateError('Cannot $op when Cache is disposed');
     }
   }
 }
