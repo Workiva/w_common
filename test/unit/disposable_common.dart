@@ -11,7 +11,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
   void testManageMethod<T>(
       String methodName, T callback(T argument), T argument,
-      {bool doesCallbackReturnArgument: true}) {
+      {bool doesCallbackReturnArgument = true}) {
     if (doesCallbackReturnArgument) {
       test('should return the argument', () {
         expect(callback(argument), same(argument));

@@ -122,7 +122,7 @@ class TimerHarness {
     };
   }
 
-  TimerHarnessPeriodicCallback getPeriodicCallback({int count: 2}) {
+  TimerHarnessPeriodicCallback getPeriodicCallback({int count = 2}) {
     _setupInternalTimer(count: count);
     var _callCount = 0;
     return (Timer t) {
@@ -135,7 +135,7 @@ class TimerHarness {
     };
   }
 
-  void _setupInternalTimer({int count: 1}) {
+  void _setupInternalTimer({int count = 1}) {
     _didCompleteTimerCompleter = new Completer<bool>();
     _didCancelTimerCompleter = new Completer<bool>();
 
