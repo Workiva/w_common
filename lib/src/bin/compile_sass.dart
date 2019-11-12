@@ -393,8 +393,7 @@ void compileSass(SassCompilationOptions options,
           if (!sourceMapTarget.existsSync()) {
             sourceMapTarget.createSync(recursive: true);
           }
-          sourceMapTarget
-              .writeAsStringSync(json.encode(sourceMap.toJson()));
+          sourceMapTarget.writeAsStringSync(json.encode(sourceMap.toJson()));
 
           singleCompileTimer.stop();
           print(
