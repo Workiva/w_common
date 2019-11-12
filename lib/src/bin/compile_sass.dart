@@ -24,7 +24,7 @@ final Colorize successMessageHeading =
     new Colorize().apply(Styles.GREEN, '[SUCCESS]');
 
 const String outputStyleArg = 'outputStyle';
-const List<String> outputStyleDefaultValue = const ['compressed'];
+const List<String> outputStyleDefaultValue = ['compressed'];
 const String expandedOutputStyleFileExtensionArg =
     'expandedOutputStyleFileExtension';
 const String expandedOutputStyleFileExtensionDefaultValue = '.css';
@@ -40,7 +40,7 @@ const String watchFlag = 'watch';
 const String checkFlag = 'check';
 const String helpFlag = 'help';
 
-const Map<String, sass.OutputStyle> outputStyleArgToOutputStyleValue = const {
+const Map<String, sass.OutputStyle> outputStyleArgToOutputStyleValue = {
   'compressed': sass.OutputStyle.compressed,
   'expanded': sass.OutputStyle.expanded,
 };
