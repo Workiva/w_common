@@ -1,14 +1,24 @@
 language: dart
 sudo: required
+
 addons:
   chrome: stable
 
-dart:
-  - 1.24.3
-  - stable
-
-script:
-  - tool/format.sh
-  - dartanalyzer lib bin test/unit
-  - pub publish --dry-run
-  - xvfb-run --server-args="-screen 0 1024x768x24" tool/test.sh
+jobs:
+  include:
+    - dart: 2.4.0
+      name: "SDK: 2.4.0"
+      script:
+        - dartanalyzer .
+        - pub run test
+    - dart: stable
+      name: "SDK: stable"
+      script:
+        - dartanalyzer .
+        - dartfmt -n --set-exit-if-changed .
+        - pub run test
+    - dart: dev
+      name: "SDK: dev"
+      script:
+        - dartanalyzer .
+        - pub run test
