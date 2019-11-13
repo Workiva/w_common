@@ -242,7 +242,7 @@ void main() {
         var childCache = Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
 
-        verifyNever(stubCachingStrategy.onDidRemove(typed(any), typed(any)));
+        verifyNever(stubCachingStrategy.onDidRemove(any, any));
       });
 
       test('should not call onWillRemove when identifer is not cached',
@@ -251,7 +251,7 @@ void main() {
         var childCache = Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
 
-        verifyNever(stubCachingStrategy.onWillRemove(typed(any)));
+        verifyNever(stubCachingStrategy.onWillRemove(any));
       });
 
       test('should remove after pending get if called synchronously', () {
@@ -336,7 +336,7 @@ void main() {
         var childCache = Cache(stubCachingStrategy);
         await childCache.release(cachedId);
         verifyNever(stubCachingStrategy.onDidRelease(
-            typed(any), typed(any), typed(any)));
+            any, any, any));
       });
 
       test('should not call onWillRemove when identifer is not cached',
@@ -344,7 +344,7 @@ void main() {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
         await childCache.release(cachedId);
-        verifyNever(stubCachingStrategy.onWillRelease(typed(any)));
+        verifyNever(stubCachingStrategy.onWillRelease(any));
       });
 
       test('should complete if pending get factory completes with an error',
@@ -608,11 +608,11 @@ void main() {
 class MockCachingStrategy extends Mock
     implements CachingStrategy<String, Object> {
   MockCachingStrategy() {
-    when(onDidGet(typed(any), typed(any)))
+    when(onDidGet(any, any))
         .thenAnswer((i) => Future.value(null));
-    when(onDidRelease(typed(any), typed(any), typed(any)))
+    when(onDidRelease(any, any, any))
         .thenAnswer((i) => Future.value(null));
-    when(onDidRemove(typed(any), typed(any)))
+    when(onDidRemove(any, any))
         .thenAnswer((i) => Future.value(null));
   }
 }
