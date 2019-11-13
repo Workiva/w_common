@@ -21,7 +21,7 @@ void main() {
     test('works as a type', () {
       final f = () => TestModel();
       final testFunction = (Func<TestModel> modelGetter) {
-        expect(modelGetter(), isInstanceOf<TestModel>());
+        expect(modelGetter(), isA<TestModel>());
       };
 
       testFunction(f);

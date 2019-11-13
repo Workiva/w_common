@@ -154,7 +154,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       var future =
           disposable.getManagedDelayedFuture(Duration(days: 1), () => null);
       future.catchError((e) {
-        expect(e, isInstanceOf<ObjectDisposedException>());
+        expect(e, isA<ObjectDisposedException>());
       });
       disposable.dispose();
     });
@@ -362,7 +362,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       runZoned(() {
         disposable.listenToStream(controller.stream, (_) {});
       }, onError: expectAsync2((error, _) {
-        expect(error, isInstanceOf<Exception>());
+        expect(error, isA<Exception>());
         expect(error.toString(), 'Exception: intentional');
       }));
     });
@@ -375,7 +375,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: cancel_subscriptions
       disposable.listenToStream(controller.stream, (_) {},
           onError: expectAsync2((error, _) {
-        expect(error, isInstanceOf<Exception>());
+        expect(error, isA<Exception>());
         expect(error.toString(), 'Exception: intentional');
       }));
       controller.addError(Exception('intentional'));
@@ -389,7 +389,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: cancel_subscriptions
       var subscription = disposable.listenToStream(controller.stream, (_) {});
       subscription.onError(expectAsync2((error, _) {
-        expect(error, isInstanceOf<Exception>());
+        expect(error, isA<Exception>());
         expect(error.toString(), 'Exception: intentional');
       }));
       controller.addError(Exception('intentional'));
@@ -400,7 +400,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       var controller = StreamController<Null>();
       disposable.listenToStream(controller.stream, (_) {},
           onError: expectAsync1((error) {
-        expect(error, isInstanceOf<Exception>());
+        expect(error, isA<Exception>());
         expect(error.toString(), 'Exception: intentional');
       }));
       controller.addError(Exception('intentional'));
@@ -411,10 +411,10 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       var controller = StreamController<Null>();
       disposable.listenToStream(controller.stream, (_) {},
           onError: expectAsync2((error, stackTrace) {
-        expect(error, isInstanceOf<Exception>());
+        expect(error, isA<Exception>());
         expect(error.toString(), 'Exception: intentional');
         expect(stackTrace, isNotNull);
-        expect(stackTrace, isInstanceOf<StackTrace>());
+        expect(stackTrace, isA<StackTrace>());
       }));
       controller.addError(Exception('intentional'));
     });
@@ -849,7 +849,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test('should complete with an error when parent is disposed', () {
       var completer = Completer<Null>();
       completer.future.catchError(expectAsync1((exception) {
-        expect(exception, isInstanceOf<ObjectDisposedException>());
+        expect(exception, isA<ObjectDisposedException>());
       }));
       disposable.manageCompleter(completer);
       disposable.dispose();
