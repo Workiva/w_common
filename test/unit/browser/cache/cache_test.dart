@@ -335,8 +335,7 @@ void main() {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
         await childCache.release(cachedId);
-        verifyNever(stubCachingStrategy.onDidRelease(
-            any, any, any));
+        verifyNever(stubCachingStrategy.onDidRelease(any, any, any));
       });
 
       test('should not call onWillRemove when identifer is not cached',
@@ -608,11 +607,8 @@ void main() {
 class MockCachingStrategy extends Mock
     implements CachingStrategy<String, Object> {
   MockCachingStrategy() {
-    when(onDidGet(any, any))
-        .thenAnswer((i) => Future.value(null));
-    when(onDidRelease(any, any, any))
-        .thenAnswer((i) => Future.value(null));
-    when(onDidRemove(any, any))
-        .thenAnswer((i) => Future.value(null));
+    when(onDidGet(any, any)).thenAnswer((i) => Future.value(null));
+    when(onDidRelease(any, any, any)).thenAnswer((i) => Future.value(null));
+    when(onDidRemove(any, any)).thenAnswer((i) => Future.value(null));
   }
 }
