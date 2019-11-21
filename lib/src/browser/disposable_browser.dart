@@ -174,7 +174,7 @@ class Disposable implements disposable_common.Disposable {
     }
   }
 
-  final _InnerDisposable _disposable = new _InnerDisposable();
+  final _InnerDisposable _disposable = _InnerDisposable();
 
   @override
   Future<Null> get didDispose => _disposable.didDispose;
@@ -345,11 +345,11 @@ class Disposable implements disposable_common.Disposable {
     eventTarget.addEventListener(event, callback, useCapture);
     _disposable.getManagedDisposer(() {
       eventTarget.removeEventListener(event, callback, useCapture);
-      return new Future.value();
+      return Future.value();
     });
   }
 }
 
 disposable_common.LeakFlag _leakFlagFactory(String description) {
-  return new disposable_common.LeakFlag(description);
+  return disposable_common.LeakFlag(description);
 }

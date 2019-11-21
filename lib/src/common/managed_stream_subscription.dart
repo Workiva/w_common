@@ -16,7 +16,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
 
   final StreamSubscription<T> _subscription;
 
-  Completer<Null> _didComplete = new Completer();
+  Completer<Null> _didComplete = Completer();
 
   ManagedStreamSubscription(Stream<T> stream, void onData(T arg),
       {Function onError, void onDone(), bool cancelOnError})

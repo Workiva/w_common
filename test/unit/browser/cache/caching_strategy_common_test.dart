@@ -21,16 +21,16 @@ import 'package:w_common/src/common/cache/cache.dart';
 import 'package:w_common/src/common/cache/least_recently_used_strategy.dart';
 import 'package:w_common/src/common/cache/reference_counting_strategy.dart';
 
-typedef CachingStrategy<String, Object> CachingStrategyFactory();
+typedef CachingStrategyFactory = CachingStrategy<String, Object> Function();
 
 // A set of unit tests that should pass for all caching strategies
 void main() {
   <String, CachingStrategyFactory>{
     'ReferenceCountingStrategy': () =>
-        new ReferenceCountingStrategy<String, Object>(),
-    'MostRecentlyUsedStrategy keep = 0': () => new LeastRecentlyUsedStrategy(0),
-    'MostRecentlyUsedStrategy keep = 1': () => new LeastRecentlyUsedStrategy(1),
-    'MostRecentlyUsedStrategy keep = 2': () => new LeastRecentlyUsedStrategy(2),
+        ReferenceCountingStrategy<String, Object>(),
+    'MostRecentlyUsedStrategy keep = 0': () => LeastRecentlyUsedStrategy(0),
+    'MostRecentlyUsedStrategy keep = 1': () => LeastRecentlyUsedStrategy(1),
+    'MostRecentlyUsedStrategy keep = 2': () => LeastRecentlyUsedStrategy(2),
   }.forEach((name, strategyFactory) {
     group('$name', () {
       Cache<String, Object> cache;
@@ -41,9 +41,9 @@ void main() {
         valueFactoryCalled = 0;
         valueFactory = () async {
           valueFactoryCalled++;
-          return new Object();
+          return Object();
         };
-        cache = new Cache(strategyFactory());
+        cache = Cache(strategyFactory());
       });
 
       test(

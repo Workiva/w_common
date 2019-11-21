@@ -27,4 +27,4 @@
 ///         Model model = modelGetter();
 ///       }
 ///     }
-typedef T Func<T>();
+typedef Func<T> = T Function();

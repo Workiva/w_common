@@ -1,10 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:async/async.dart';
 import 'package:colorize/colorize.dart';
-import 'package:dart2_constant/convert.dart' as convert;
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
 import 'package:package_resolver/package_resolver.dart';
@@ -16,15 +16,14 @@ import 'package:watcher/watcher.dart';
 
 Stopwatch taskTimer;
 
-final Colorize errorMessageHeading =
-    new Colorize().apply(Styles.RED, '[ERROR]');
+final Colorize errorMessageHeading = Colorize().apply(Styles.RED, '[ERROR]');
 final Colorize failureMessageHeading =
-    new Colorize().apply(Styles.YELLOW, '[FAILURE]');
+    Colorize().apply(Styles.YELLOW, '[FAILURE]');
 final Colorize successMessageHeading =
-    new Colorize().apply(Styles.GREEN, '[SUCCESS]');
+    Colorize().apply(Styles.GREEN, '[SUCCESS]');
 
 const String outputStyleArg = 'outputStyle';
-const List<String> outputStyleDefaultValue = const ['compressed'];
+const List<String> outputStyleDefaultValue = ['compressed'];
 const String expandedOutputStyleFileExtensionArg =
     'expandedOutputStyleFileExtension';
 const String expandedOutputStyleFileExtensionDefaultValue = '.css';
@@ -40,13 +39,13 @@ const String watchFlag = 'watch';
 const String checkFlag = 'check';
 const String helpFlag = 'help';
 
-const Map<String, sass.OutputStyle> outputStyleArgToOutputStyleValue = const {
+const Map<String, sass.OutputStyle> outputStyleArgToOutputStyleValue = {
   'compressed': sass.OutputStyle.compressed,
   'expanded': sass.OutputStyle.expanded,
 };
 
 /// The CLI options for `pub run w_common compile_sass`.
-final ArgParser sassCliArgs = new ArgParser()
+final ArgParser sassCliArgs = ArgParser()
   ..addMultiOption(outputStyleArg,
       abbr: 's',
       help: 'The output style used to format the compiled CSS.',
@@ -132,7 +131,7 @@ class SassCompilationOptions {
     } else {
       _sourceDir = sourceDir ?? sourceDirDefaultValue;
 
-      compileTargets = new Glob('$_sourceDir/**.scss', recursive: true)
+      compileTargets = Glob('$_sourceDir/**.scss', recursive: true)
           .listSync()
           .where((file) => !isSassPartial(file.path))
           .map((file) => path.relative(file.path))
@@ -170,7 +169,7 @@ class SassCompilationOptions {
     var exitCode = 0;
     String srcRootDirName;
     for (var target in compileTargets) {
-      if (!new File(target).existsSync()) {
+      if (!File(target).existsSync()) {
         print('$errorMessageHeading "$target" does not exist');
         exitCode = 1;
         break;
@@ -196,7 +195,7 @@ class SassCompilationOptions {
 }
 
 Future<Null> main(List<String> args) async {
-  taskTimer = new Stopwatch();
+  taskTimer = Stopwatch();
 
   List<String> outputStylesValue;
   bool helpValue;
@@ -208,7 +207,7 @@ Future<Null> main(List<String> args) async {
     outputStylesValue = results[outputStyleArg];
     helpValue = results[helpFlag];
 
-    options = new SassCompilationOptions(
+    options = SassCompilationOptions(
       unparsedArgs: results.rest,
       outputDir: results[outputDirArg] ??
           results[sourceDirArg] ??
@@ -232,17 +231,17 @@ Future<Null> main(List<String> args) async {
   if (helpValue) {
     print(sassCliArgs.usage);
     exitCode = 0;
-    return new Future(() {});
+    return Future(() {});
   }
 
   if (exitCode != 0) {
-    return new Future(() {});
+    return Future(() {});
   }
 
   compileSass(options);
 
   if (exitCode != 0 || !options.watch) {
-    return new Future(() {});
+    return Future(() {});
   }
 
   await watch(options);
@@ -251,23 +250,23 @@ Future<Null> main(List<String> args) async {
 Future<Null> watch(SassCompilationOptions options) async {
   var watchers = <FileWatcher>[];
   for (var target in options.compileTargets) {
-    watchers.add(new FileWatcher(target));
+    watchers.add(FileWatcher(target));
   }
 
   for (var watchDir in options.watchDirs) {
-    final sassFilesToWatch = new Glob('$watchDir/**.scss', recursive: true)
+    final sassFilesToWatch = Glob('$watchDir/**.scss', recursive: true)
         .listSync()
         .where((file) => isSassPartial(file.path))
         .map((file) => path.relative(file.path))
         .toList();
 
     for (var sassFileToWatch in sassFilesToWatch) {
-      watchers.add(new FileWatcher(sassFileToWatch));
+      watchers.add(FileWatcher(sassFileToWatch));
     }
     print('\nWatching for changes in ${watchers.length} .scss files ...');
   }
 
-  final watcherEvents = new StreamGroup<WatchEvent>();
+  final watcherEvents = StreamGroup<WatchEvent>();
   watchers.map((watcher) => watcher.events).forEach(watcherEvents.add);
 
   watcherEvents.stream.listen((e) {
@@ -331,7 +330,7 @@ void compileSass(SassCompilationOptions options,
 
     for (var target in compileTargets) {
       try {
-        final singleCompileTimer = new Stopwatch()..start();
+        final singleCompileTimer = Stopwatch()..start();
         final outputSubDir = target.substring(
             options.sourceDir.length, target.indexOf(path.basename(target)));
         var outputDir = options.outputDir;
@@ -358,13 +357,13 @@ void compileSass(SassCompilationOptions options,
 
         cssSrc =
             '$cssSrc\n\n/*# sourceMappingURL=${'${path.basename(cssPath)}.map'} */';
-        final cssTarget = new File(cssPath);
+        final cssTarget = File(cssPath);
         if (!cssTarget.existsSync()) {
           cssTarget.createSync(recursive: true);
         }
 
         if (options.check) {
-          final cssSrcTempFile = new File('$cssPath.tmp');
+          final cssSrcTempFile = File('$cssPath.tmp');
           // Writing a temporary file since the string value read from the committed file does not seem to be equivalent to one that has not yet been written to a file.
           cssSrcTempFile.writeAsStringSync(cssSrc);
 
@@ -388,13 +387,12 @@ void compileSass(SassCompilationOptions options,
             ..reset();
         } else {
           cssTarget.writeAsStringSync(cssSrc);
-          final sourceMapTarget = new File('${cssTarget.path}.map');
+          final sourceMapTarget = File('${cssTarget.path}.map');
 
           if (!sourceMapTarget.existsSync()) {
             sourceMapTarget.createSync(recursive: true);
           }
-          sourceMapTarget
-              .writeAsStringSync(convert.json.encode(sourceMap.toJson()));
+          sourceMapTarget.writeAsStringSync(json.encode(sourceMap.toJson()));
 
           singleCompileTimer.stop();
           print(
@@ -436,14 +434,14 @@ SyncPackageResolver _getPackageResolver() {
   }
 
   const root = './';
-  final packagesFile = new File('$root.packages');
+  final packagesFile = File('$root.packages');
 
   if (!packagesFile.existsSync()) {
-    throw new StateError(
+    throw StateError(
         'The "$root.packages" does not exist. You must run `pub get` before running `compile_sass`.');
   }
 
-  final config = pkg.parse(
-      packagesFile.readAsStringSync().codeUnits, new Uri.directory(root));
-  return _packageResolver = new SyncPackageResolver.config(config);
+  final config =
+      pkg.parse(packagesFile.readAsStringSync().codeUnits, Uri.directory(root));
+  return _packageResolver = SyncPackageResolver.config(config);
 }

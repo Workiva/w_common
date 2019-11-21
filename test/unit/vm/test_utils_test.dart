@@ -9,29 +9,29 @@ void main() {
       test(
           'should throw AssertionError on name mismatch when makeAssertion == true',
           () {
-        final c = new MismatchClass<dynamic>();
+        final c = MismatchClass<dynamic>();
         expect(() => verifyDisposableTypeName(c, makeAssertion: true),
-            throwsA(const isInstanceOf<AssertionError>()));
+            throwsA(isA<AssertionError>()));
       });
 
       test(
           'should not throw AssertionError on name mismatch when makeAssertion != true',
           () {
-        final c = new MismatchClass<dynamic>();
+        final c = MismatchClass<dynamic>();
         expect(() => verifyDisposableTypeName(c, makeAssertion: false),
             returnsNormally);
       });
 
       test('should always return name when names match', () {
-        final c = new MatchClass<dynamic>();
+        final c = MatchClass<dynamic>();
         final name = verifyDisposableTypeName(c);
-        expect(name, new Symbol('MatchClass'));
+        expect(name, Symbol('MatchClass'));
       });
 
       test('should always return name when makeAssertion = false', () {
-        final c = new MismatchClass<dynamic>();
+        final c = MismatchClass<dynamic>();
         final name = verifyDisposableTypeName(c, makeAssertion: false);
-        expect(name, new Symbol('MismatchClass'));
+        expect(name, Symbol('MismatchClass'));
       });
     });
   });

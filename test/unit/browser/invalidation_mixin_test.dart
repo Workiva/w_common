@@ -24,7 +24,7 @@ void main() {
     InvalidThing thing;
 
     setUp(() {
-      thing = new InvalidThing();
+      thing = InvalidThing();
     });
 
     tearDown(() {
@@ -60,7 +60,7 @@ void main() {
 }
 
 class InvalidThing extends InvalidationMixin {
-  final _onValidate = new StreamController<ValidationStatus>.broadcast();
+  final _onValidate = StreamController<ValidationStatus>.broadcast();
 
   Stream<ValidationStatus> get onValidate => _onValidate.stream;
 

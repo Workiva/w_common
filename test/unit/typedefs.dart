@@ -14,5 +14,5 @@
 
 import 'dart:async';
 
-typedef void TimerHarnessCallback();
-typedef void TimerHarnessPeriodicCallback(Timer timer);
+typedef TimerHarnessCallback = void Function();
+typedef TimerHarnessPeriodicCallback = void Function(Timer timer);

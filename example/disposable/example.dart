@@ -9,12 +9,12 @@ class TreeNode extends Disposable {
   String get disposableTypeName => 'TreeNode';
 
   TreeNode(int depth, int childCount) {
-    manageStreamController(new StreamController.broadcast());
+    manageStreamController(StreamController.broadcast());
     listenToStream(document.onDoubleClick, _onDoubleClick);
 
     if (depth > 0) {
       for (int i = 0; i < childCount; i++) {
-        manageDisposable(new TreeNode(depth - 1, childCount));
+        manageDisposable(TreeNode(depth - 1, childCount));
       }
     }
   }
@@ -47,7 +47,7 @@ void main() {
     int childCount = int.parse(childCountField.value);
     int treeDepth = int.parse(treeDepthField.value);
 
-    treeRoot = new TreeNode(treeDepth, childCount);
+    treeRoot = TreeNode(treeDepth, childCount);
     print('Disposable tree size: ${treeRoot.disposalTreeSize}');
   });
 

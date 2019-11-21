@@ -26,7 +26,7 @@ import './browser_stubs.dart';
 
 void main() {
   group('Browser Disposable', () {
-    testCommonDisposable(() => new BrowserDisposable());
+    testCommonDisposable(() => BrowserDisposable());
 
     group('events on global singleton', () {
       BrowserDisposable disposable;
@@ -35,7 +35,7 @@ void main() {
       EventListener callback;
 
       setUp(() {
-        disposable = new BrowserDisposable();
+        disposable = BrowserDisposable();
         callback = (_) {};
         eventName = 'event';
         useCapture = true;
@@ -44,7 +44,7 @@ void main() {
       test(
           'subscribeToDocumentEvent should remove same listener when thing is disposed',
           () async {
-        var document = new MockEventTarget();
+        var document = MockEventTarget();
 
         disposable.subscribeToDocumentEvent(eventName, callback,
             documentObject: document, useCapture: useCapture);
@@ -56,7 +56,7 @@ void main() {
       test(
           'subscribeToWindowEvent should remove same listener when thing is disposed',
           () async {
-        var window = new MockEventTarget();
+        var window = MockEventTarget();
 
         disposable.subscribeToWindowEvent(eventName, callback,
             windowObject: window, useCapture: useCapture);
@@ -70,20 +70,20 @@ void main() {
       BrowserDisposable disposable;
 
       setUp(() {
-        disposable = new BrowserDisposable();
+        disposable = BrowserDisposable();
       });
 
       test(
           'subscribeToDomElementEvent should remove listener when thing is disposed',
           () async {
-        var element = new Element.div();
-        var event = new Event('event');
+        var element = Element.div();
+        var event = Event('event');
         var eventName = 'event';
         int numberOfEventCallbacks = 0;
         EventListener eventCallback = (_) {
           numberOfEventCallbacks++;
         };
-        var shouldNotListenEvent = new Event('shouldNotListenEvent');
+        var shouldNotListenEvent = Event('shouldNotListenEvent');
 
         disposable.subscribeToDomElementEvent(
             element, eventName, eventCallback);

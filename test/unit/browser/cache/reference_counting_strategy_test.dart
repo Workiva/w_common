@@ -22,12 +22,12 @@ void main() {
     Cache<String, Object> cache;
     ReferenceCountingStrategy<String, Object> referenceCountingStrategy;
     const String cachedId = '1';
-    final Object cachedValue = new Object();
+    final Object cachedValue = Object();
     const String notCachedId = '2';
 
     setUp(() async {
-      referenceCountingStrategy = new ReferenceCountingStrategy();
-      cache = new Cache(referenceCountingStrategy);
+      referenceCountingStrategy = ReferenceCountingStrategy();
+      cache = Cache(referenceCountingStrategy);
       await cache.get(cachedId, () => cachedValue);
     });
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 @TestOn('browser')
 
-import 'package:dart2_constant/convert.dart' as convert;
+import 'dart:convert';
 import 'package:test/test.dart';
 import 'package:w_common/json_serializable.dart';
 
@@ -31,10 +31,10 @@ class ExampleSerializable extends JsonSerializable {
 void main() {
   group('JsonSerializable : verify that', () {
     test('example object can be properly serialized', () async {
-      ExampleSerializable testSerializable = new ExampleSerializable();
+      ExampleSerializable testSerializable = ExampleSerializable();
       testSerializable.context['child'] = 'childName';
-      expect(convert.json.encode(testSerializable),
-          '{"context":{"child":"childName"}}');
+      expect(
+          json.encode(testSerializable), '{"context":{"child":"childName"}}');
     });
   });
 }

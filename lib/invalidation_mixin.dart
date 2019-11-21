@@ -38,7 +38,7 @@ abstract class InvalidationMixin {
       return _onValidate.future;
     }
 
-    _onValidate = new Completer<ValidationStatus>();
+    _onValidate = Completer<ValidationStatus>();
 
     window.animationFrame.then((_) {
       if (invalid) {

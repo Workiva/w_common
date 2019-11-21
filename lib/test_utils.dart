@@ -17,10 +17,11 @@ import 'package:w_common/disposable.dart';
 /// By default, it will assert that the `disposableTypeName` matches the
 /// simple class name. It will also return the [Symbol] that represents
 /// the class name.
-Symbol verifyDisposableTypeName(Disposable object, {bool makeAssertion: true}) {
+Symbol verifyDisposableTypeName(Disposable object,
+    {bool makeAssertion = true}) {
   final type = reflect(object).type.simpleName;
   if (makeAssertion == true) {
-    assert(type == new Symbol(object.disposableTypeName));
+    assert(type == Symbol(object.disposableTypeName));
   }
   return type;
 }
