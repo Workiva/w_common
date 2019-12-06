@@ -15,6 +15,7 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:async/async.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
@@ -739,5 +740,26 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
       throw ArgumentError.notNull(secondParameterName);
     }
     _throwOnInvalidCall(methodName, parameterName, parameterValue);
+  }
+}
+
+extension DisposeCanceller<T> on Future<T> {
+  Future<T> cancelWithDispose(Disposable disposable) {
+    // Wrap this Future in CancelableOperation to make it "cancelable"
+    final op = CancelableOperation.fromFuture(this);
+
+    // Create a managed disposer that cancels this Future in response to
+    // the disposal of `disposable`.
+    final onDisposeHandler = disposable.getManagedDisposer(op.cancel);
+
+    // When this Future actually resolves, dispose of the onDisposeHandler to
+    // remove if from the `disposable`
+    then((_) {
+      if (!disposable.isOrWillBeDisposed) {
+        onDisposeHandler.dispose();
+      }
+    });
+
+    return op.value;
   }
 }
