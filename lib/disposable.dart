@@ -29,4 +29,4 @@ export 'package:w_common/src/common/disposable_manager.dart'
         DisposableManagerV7,
         ObjectDisposedException;
 export 'package:w_common/src/common/disposable.dart'
-    show Disposable, Disposer, ManagedDisposer;
+    show Disposable, Disposer, ManagedDisposer, DisposeCanceller;
