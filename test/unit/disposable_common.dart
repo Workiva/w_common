@@ -1031,4 +1031,32 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       expect(disposable.isLeakFlagSet, isFalse);
     });
   });
+
+  group('DisposeCanceller extension', () {
+    test('does not execute code after an await if disposable disposes',
+        () async {
+      Future<void> _asyncTask() async {
+        await Future<void>.delayed(Duration(milliseconds: 10));
+      }
+
+      // Start an asynchronous task, dispose the disposable before it finishes.
+      final future = _asyncTask().cancelWithDispose(disposable);
+
+      future.then((_) => fail('This future should not have resolved.'));
+
+      await disposable.dispose();
+      await Future<void>.delayed(Duration(milliseconds: 12));
+    });
+
+    test('does execute code after an await if disposable does not dispose',
+        () async {
+      Future<void> _asyncTask() async {
+        await Future<void>.delayed(Duration(milliseconds: 5));
+      }
+
+      final completer = Completer<dynamic>();
+      await _asyncTask().cancelWithDispose(disposable).then(completer.complete);
+      await completer.future;
+    });
+  });
 }
