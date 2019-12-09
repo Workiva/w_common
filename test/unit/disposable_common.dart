@@ -1048,6 +1048,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
       await disposable.dispose();
       await asyncTaskCompleter.future;
+      await Future<Null>.value(); // Allow for the event loop to clear.
     });
 
     test('does execute code after an await if disposable does not dispose',
