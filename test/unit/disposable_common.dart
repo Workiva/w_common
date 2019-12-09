@@ -1037,7 +1037,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         () async {
       final asyncTaskCompleter = Completer<void>();
       Future<void> _asyncTask() async {
-        await Future<void>.delayed(Duration(milliseconds: 5));
+        await Future<void>.delayed(Duration(milliseconds: 30));
         asyncTaskCompleter.complete();
       }
 
@@ -1054,7 +1054,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         () async {
       final asyncTaskCompleter = Completer<void>();
       Future<void> _asyncTask() async {
-        await Future<void>.delayed(Duration(milliseconds: 5));
+        await Future<void>.delayed(Duration(milliseconds: 30));
         asyncTaskCompleter.complete();
       }
 
