@@ -1040,9 +1040,9 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       }
 
       // Start an asynchronous task, dispose the disposable before it finishes.
-      final future = _asyncTask().cancelWithDispose(disposable);
-
-      future.then((_) => fail('This future should not have resolved.'));
+      _asyncTask()
+          .cancelOnDisposeOf(disposable)
+          .then((_) => fail('This future should not have resolved.'));
 
       await disposable.dispose();
       await Future<void>.delayed(Duration(milliseconds: 12));
@@ -1055,7 +1055,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       }
 
       final completer = Completer<dynamic>();
-      await _asyncTask().cancelWithDispose(disposable).then(completer.complete);
+      await _asyncTask().cancelWithDisposeOf(disposable).then(completer.complete);
       await completer.future;
     });
   });

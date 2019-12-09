@@ -744,7 +744,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 }
 
 extension DisposeCanceller<T> on Future<T> {
-  Future<T> cancelWithDispose(Disposable disposable) {
+  Future<T> cancelOnDisposeOf(Disposable disposable) {
     // Wrap this Future in CancelableOperation to make it "cancelable"
     final op = CancelableOperation.fromFuture(this);
 
