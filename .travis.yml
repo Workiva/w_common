@@ -6,11 +6,6 @@ addons:
 
 jobs:
   include:
-    - dart: 2.4.0
-      name: "SDK: 2.4.0"
-      script:
-        - dartanalyzer .
-        - pub run test
     - dart: stable
       name: "SDK: stable"
       script:
