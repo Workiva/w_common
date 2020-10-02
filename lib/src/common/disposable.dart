@@ -139,6 +139,18 @@ class LeakFlag {
 /// A function that, when called, disposes of one or more objects.
 typedef Disposer = Future<dynamic> Function();
 
+/// Defines the behavior of validation code, e.g. null checking.
+enum ValidationSpec {
+  /// Throw exceptions like Argument.notNull and StateError.
+  shouldThrow,
+
+  /// Only call assert.
+  shouldAssert,
+
+  /// Only log.
+  shouldLog,
+}
+
 /// Allows the creation of managed objects, including helpers for common
 /// patterns.
 ///
@@ -248,6 +260,8 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   static bool _debugModeLogging = false;
   static bool _debugModeTelemetry = false;
   static Logger _logger;
+
+  static ValidationSpec validationSpec = ValidationSpec.shouldThrow;
 
   /// Disables all debug features enabled by [enableDebugMode].
   static void disableDebugMode() {
