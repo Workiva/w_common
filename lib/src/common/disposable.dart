@@ -741,8 +741,8 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   void _throwOnInvalidCall(
       String methodName, String parameterName, dynamic parameterValue) {
-    // _logOnInvalidCall(methodName, parameterName, parameterValue);
-    // return;
+    _logOnInvalidCall(methodName, parameterName, parameterValue);
+    return;
     if (parameterValue == null) {
       throw ArgumentError.notNull(parameterName);
     }
@@ -763,8 +763,8 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
       String secondParameterName,
       dynamic parameterValue,
       dynamic secondParameterValue) {
-    // _logOnInvalidCall2(methodName, parameterName, secondParameterName, secondParameterValue);
-    // return;
+    _logOnInvalidCall2(methodName, parameterName, secondParameterName, secondParameterValue);
+    return;
     if (secondParameterValue == null) {
       throw ArgumentError.notNull(secondParameterName);
     }
