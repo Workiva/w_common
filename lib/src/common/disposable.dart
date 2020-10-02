@@ -713,8 +713,36 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     }
   }
 
+  void _logOnInvalidCall(
+      String methodName, String parameterName, dynamic parameterValue) {
+    if (parameterValue == null) {
+      _logger.warning('$parameterName was null');
+    }
+    // ignore: deprecated_member_use
+    if (isDisposing) {
+      _logger.warning('$disposableTypeName.$methodName not allowed, object is disposing');
+    }
+    if (isDisposed) {
+      _logger.warning('$disposableTypeName.$methodName not allowed, object is already disposed');
+    }
+  }
+
+  void _logOnInvalidCall2(
+      String methodName,
+      String parameterName,
+      String secondParameterName,
+      dynamic parameterValue,
+      dynamic secondParameterValue) {
+    if (secondParameterValue == null) {
+      _logger.warning('$secondParameterName was null');
+    }
+    _logOnInvalidCall(methodName, parameterName, parameterValue);
+  }
+
   void _throwOnInvalidCall(
       String methodName, String parameterName, dynamic parameterValue) {
+    // _logOnInvalidCall(methodName, parameterName, parameterValue);
+    // return;
     if (parameterValue == null) {
       throw ArgumentError.notNull(parameterName);
     }
@@ -735,6 +763,8 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
       String secondParameterName,
       dynamic parameterValue,
       dynamic secondParameterValue) {
+    // _logOnInvalidCall2(methodName, parameterName, secondParameterName, secondParameterValue);
+    // return;
     if (secondParameterValue == null) {
       throw ArgumentError.notNull(secondParameterName);
     }
