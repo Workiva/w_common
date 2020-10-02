@@ -713,35 +713,43 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     }
   }
 
-  void _logOnInvalidCall(
+  void _assertAndLogOnInvalidCall(
       String methodName, String parameterName, dynamic parameterValue) {
     if (parameterValue == null) {
-      _logger.warning('$parameterName was null');
+      final msg = '$parameterName was null';
+      _logger.warning(msg);
+      assert(false, msg);
     }
     // ignore: deprecated_member_use
     if (isDisposing) {
-      _logger.warning('$disposableTypeName.$methodName not allowed, object is disposing');
+      final msg = '$disposableTypeName.$methodName not allowed, object is disposing';
+      _logger.warning(msg);
+      assert(false, msg);
     }
     if (isDisposed) {
-      _logger.warning('$disposableTypeName.$methodName not allowed, object is already disposed');
+      var msg = '$disposableTypeName.$methodName not allowed, object is already disposed';
+      _logger.warning(msg);
+      assert(false, msg);
     }
   }
 
-  void _logOnInvalidCall2(
+  void _assertAndLogInvalidCall2(
       String methodName,
       String parameterName,
       String secondParameterName,
       dynamic parameterValue,
       dynamic secondParameterValue) {
     if (secondParameterValue == null) {
-      _logger.warning('$secondParameterName was null');
+      final msg = '$secondParameterName was null';
+      _logger.warning(msg);
+      assert(false, msg);
     }
-    _logOnInvalidCall(methodName, parameterName, parameterValue);
+    _assertAndLogOnInvalidCall(methodName, parameterName, parameterValue);
   }
 
   void _throwOnInvalidCall(
       String methodName, String parameterName, dynamic parameterValue) {
-    _logOnInvalidCall(methodName, parameterName, parameterValue);
+    _assertAndLogOnInvalidCall(methodName, parameterName, parameterValue);
     return;
     if (parameterValue == null) {
       throw ArgumentError.notNull(parameterName);
@@ -763,7 +771,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
       String secondParameterName,
       dynamic parameterValue,
       dynamic secondParameterValue) {
-    _logOnInvalidCall2(methodName, parameterName, secondParameterName, secondParameterValue);
+    _assertAndLogInvalidCall2(methodName, parameterName, secondParameterName, parameterValue, secondParameterValue);
     return;
     if (secondParameterValue == null) {
       throw ArgumentError.notNull(secondParameterName);
