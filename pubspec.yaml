@@ -12,7 +12,7 @@ dependencies:
   async: ^2.4.0
   colorize: ^2.0.0
   glob: ^1.2.0
-  intl: ">=0.15.0 <0.17.0"
+  intl: ">=0.15.0 <0.18.0"
   js: ^0.6.1+1
   logging: ^0.11.3+2
   meta: ^1.1.8
