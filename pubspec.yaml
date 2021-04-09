@@ -14,7 +14,7 @@ dependencies:
   glob: ^1.2.0
   intl: ">=0.15.0 <0.18.0"
   js: ^0.6.1+1
-  logging: ^0.11.3+2
+  logging: ^1.0.0-nullsaftey.0
   meta: ^1.1.8
   package_config: ^1.1.0
   package_resolver: ^1.0.10
