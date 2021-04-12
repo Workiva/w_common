@@ -25,7 +25,7 @@ dependencies:
   sass:
     git:
       url: git@github.com:kyleferguson-wk/dart-sass.git
-      ref: master
+      ref: flutter-fix
   source_maps: ^0.10.8
   watcher: ^1.0.0
 
