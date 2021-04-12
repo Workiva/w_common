@@ -8,25 +8,34 @@ environment:
   sdk: '>=2.4.0 <3.0.0'
 
 dependencies:
-  args: ^1.5.2
+  args: ^2.0.0
   async: ^2.4.0
   colorize: ^2.0.0
-  glob: ^1.2.0
+  glob: ^2.0.0
   intl: ">=0.15.0 <0.18.0"
   js: ^0.6.1+1
   logging: ^1.0.0-nullsaftey.0
   meta: ^1.1.8
-  package_config: ^1.1.0
-  package_resolver: ^1.0.10
+  package_config: ^2.0.0
+  package_resolver:
+    git:
+      url: git@github.com:kyleferguson-wk/package_resolver.git
+      ref: master
   path: ^1.6.4
-  sass: ^1.23.3
+  sass:
+    git:
+      url: git@github.com:kyleferguson-wk/dart-sass.git
+      ref: master
   source_maps: ^0.10.8
-  watcher: ^0.9.7+12
+  watcher: ^1.0.0
 
 dev_dependencies:
   build_runner: ^1.7.1
-  build_test: ^0.10.9
+  build_test: ^2.0.0
   build_web_compilers: ^2.5.1
-  dependency_validator: ^1.4.0
+  dependency_validator:
+    git:
+      url: git@github.com:kyleferguson-wk/dependency_validator.git
+      ref: master
   mockito: ^4.1.1
   test: ^1.9.1
