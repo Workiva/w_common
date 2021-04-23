@@ -7,8 +7,8 @@ import 'package:async/async.dart';
 import 'package:colorize/colorize.dart';
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
-import 'package:package_resolver/package_resolver.dart';
 import 'package:package_config/packages_file.dart' as pkg;
+import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as path;
 import 'package:sass/sass.dart' as sass;
 import 'package:source_maps/source_maps.dart';
@@ -307,7 +307,7 @@ Future<Null> watch(SassCompilationOptions options) async {
 }
 
 void compileSass(SassCompilationOptions options,
-    {List<String> compileTargets, bool printReadyMessage = true}) {
+    {List<String> compileTargets, bool printReadyMessage = true}) async {
   taskTimer.start();
 
   compileTargets ??= options.compileTargets;
