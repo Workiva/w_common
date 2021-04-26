@@ -5,10 +5,10 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:async/async.dart';
 import 'package:colorize/colorize.dart';
+import 'package:file/local.dart';
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
-import 'package:package_config/packages_file.dart' as pkg;
-import 'package:package_resolver/package_resolver.dart';
+import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as path;
 import 'package:sass/sass.dart' as sass;
 import 'package:source_maps/source_maps.dart';
@@ -132,7 +132,7 @@ class SassCompilationOptions {
       _sourceDir = sourceDir ?? sourceDirDefaultValue;
 
       compileTargets = Glob('$_sourceDir/**.scss', recursive: true)
-          .listSync()
+          .listFileSystemSync(const LocalFileSystem())
           .where((file) => !isSassPartial(file.path))
           .map((file) => path.relative(file.path))
           .toList();
@@ -238,7 +238,7 @@ Future<Null> main(List<String> args) async {
     return Future(() {});
   }
 
-  compileSass(options);
+  await compileSass(options);
 
   if (exitCode != 0 || !options.watch) {
     return Future(() {});
@@ -255,7 +255,7 @@ Future<Null> watch(SassCompilationOptions options) async {
 
   for (var watchDir in options.watchDirs) {
     final sassFilesToWatch = Glob('$watchDir/**.scss', recursive: true)
-        .listSync()
+        .listFileSystemSync(const LocalFileSystem())
         .where((file) => isSassPartial(file.path))
         .map((file) => path.relative(file.path))
         .toList();
@@ -306,7 +306,7 @@ Future<Null> watch(SassCompilationOptions options) async {
   await watcherEvents.close();
 }
 
-void compileSass(SassCompilationOptions options,
+Future<void> compileSass(SassCompilationOptions options,
     {List<String> compileTargets, bool printReadyMessage = true}) async {
   taskTimer.start();
 
@@ -345,7 +345,7 @@ void compileSass(SassCompilationOptions options,
         var cssSrc = sass.compile(target,
             style: outputStyle,
             color: true,
-            packageResolver: _getPackageResolver(), sourceMap: (map) {
+            packageConfig: await _packageConfig, sourceMap: (map) {
           if (options.sourceDir != options.outputDir) {
             final relativePathOutToSassDir =
                 path.dirname(path.relative(target, from: cssPath));
@@ -427,21 +427,13 @@ void compileSass(SassCompilationOptions options,
 
 bool isSassPartial(String filePath) => path.basename(filePath).startsWith('_');
 
-SyncPackageResolver _packageResolver;
-SyncPackageResolver _getPackageResolver() {
-  if (_packageResolver != null) {
-    return _packageResolver;
+PackageConfig _cachedPackageConfig;
+Future<PackageConfig> get _packageConfig async {
+  var dir = Directory.current;
+  _cachedPackageConfig ??= await findPackageConfig(dir);
+  if (_cachedPackageConfig == null) {
+    throw StateError('Package configuration for ${dir.absolute} not found. '
+        'You must run `pub get` before running `compile_sass`.');
   }
-
-  const root = './';
-  final packagesFile = File('$root.packages');
-
-  if (!packagesFile.existsSync()) {
-    throw StateError(
-        'The "$root.packages" does not exist. You must run `pub get` before running `compile_sass`.');
-  }
-
-  final config =
-      pkg.parse(packagesFile.readAsStringSync().codeUnits, Uri.directory(root));
-  return _packageResolver = SyncPackageResolver.config(config);
+  return _cachedPackageConfig;
 }
