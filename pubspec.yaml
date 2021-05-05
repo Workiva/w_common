@@ -4,7 +4,7 @@ description: General utilities for Dart projects.
 homepage: https://www.github.com/Workiva/w_common
 
 environment:
-  sdk: '>=2.7.2 <3.0.0'
+  sdk: '>=2.7.0 <3.0.0'
 
 dependencies:
   args: ^1.5.2
