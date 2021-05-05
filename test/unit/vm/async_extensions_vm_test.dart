@@ -22,7 +22,7 @@ void main() {
     test('completeIfNotCompleted should not throw if already completed', () {
       final completer = Completer<int>();
       completer.complete(1);
-      completer.completeIfNotCompleted(2);
+      expect(() => completer.completeIfNotCompleted(2), returnsNormally);
     });
 
     test('completeIfNotCompleted should complete if not already completed', () {
@@ -35,8 +35,9 @@ void main() {
 
     test('completeErrorIfNotCompleted should not throw if already completed', () {
       final completer = Completer<int>();
+      completer.future.catchError((dynamic _) {}); // if we don't catch, the test will error
       completer.completeError(Object());
-      completer.completeErrorIfNotCompleted(Object());
+      expect(() => completer.completeErrorIfNotCompleted(Object()), returnsNormally);
     });
 
     test('completeErrorIfNotCompleted should complete if not already completed', () {
