@@ -14,6 +14,7 @@
 @TestOn('vm')
 import 'dart:io';
 
+import 'package:file/local.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
@@ -33,8 +34,8 @@ void main() {
     });
 
     tearDown(() {
-      final compiledCssFiles =
-          Glob('$defaultSourceDir**.css', recursive: true).listSync();
+      final compiledCssFiles = Glob('$defaultSourceDir**.css', recursive: true)
+          .listFileSystemSync(const LocalFileSystem());
       if (compiledCssFiles.isNotEmpty) {
         for (var file in compiledCssFiles) {
           File(file.path).deleteSync();
@@ -48,7 +49,8 @@ void main() {
       }
 
       final compiledCssFilesInSpecificOutputDir =
-          Glob('$specificOutputDir**.css', recursive: true).listSync();
+          Glob('$specificOutputDir**.css', recursive: true)
+              .listFileSystemSync(const LocalFileSystem());
       if (compiledCssFilesInSpecificOutputDir.isNotEmpty) {
         for (var file in compiledCssFilesInSpecificOutputDir) {
           File(file.path).deleteSync();
