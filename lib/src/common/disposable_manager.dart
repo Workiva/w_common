@@ -26,7 +26,7 @@ import 'package:w_common/src/common/disposable.dart';
 abstract class DisposableManager {
   /// Automatically dispose another object when this object is disposed.
   ///
-  /// The parameter may not be `null`.
+  /// A null parameter will result in a no-op.
   ///
   /// Deprecated: 1.8.0
   /// To be removed: 2.0.0
@@ -277,7 +277,7 @@ abstract class DisposableManagerV6 implements DisposableManagerV5 {
   ///        // ...
   ///      }
   ///
-  /// The parameter may not be `null`.
+  /// A null parameter will result in a null return value.
   ///
   /// Use `manageAndReturnTypedDisposable` instead. One will need to update
   /// to [DisposableManagerV7] or above for this.
@@ -316,7 +316,7 @@ abstract class DisposableManagerV7 implements DisposableManagerV6 {
   ///        // ...
   ///      }
   ///
-  /// The parameter may not be `null`.
+  /// A null parameter will result in a null return value.
   T manageAndReturnTypedDisposable<T extends Disposable>(T disposable);
 }
 
