@@ -151,6 +151,30 @@ enum ValidationSpec {
   shouldLog,
 }
 
+abstract class CallValidator {
+  void validate(
+      String methodName, String parameterName, dynamic parameterValue,);
+  void validate2(
+      String methodName,
+      String parameterName,
+      dynamic parameterValue,
+      String secondParameterName,
+      dynamic secondParameterValue,
+      );
+}
+
+class ThrowOnNullArgumentCallValidator extends CallValidator {
+  @override
+  void validate(String methodName, String parameterName, parameterValue) {
+    // TODO: implement handleInvalidCall
+  }
+
+  @override
+  void validate2(String methodName, String parameterName, parameterValue, String secondParameterName, secondParameterValue) {
+    // TODO: implement handleInvalidCall2
+  }
+}
+
 /// Allows the creation of managed objects, including helpers for common
 /// patterns.
 ///
@@ -392,7 +416,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   Future<T> awaitBeforeDispose<T>(Future<T> future) {
-    _throwOnInvalidCall('awaitBeforeDispose', 'future', future);
+    _validate('awaitBeforeDispose', 'future', future);
     _awaitableFutures.add(future);
     future.then((_) {
       if (!isOrWillBeDisposed) {
@@ -469,7 +493,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   Future<T> getManagedDelayedFuture<T>(Duration duration, T callback()) {
-    _throwOnInvalidCall2(
+    _validate2(
         'getManagedDelayedFuture', 'duration', 'callback', duration, callback);
     var completer = Completer<T>();
     var timer =
@@ -493,7 +517,11 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   ManagedDisposer getManagedDisposer(Disposer disposer) {
-    _throwOnInvalidCall('getManagedDisposer', 'disposer', disposer);
+    if (isOrWillBeDisposed) {
+      disposer();
+      return null;
+    }
+    _validate('getManagedDisposer', 'disposer', disposer);
     _logManageMessage(disposer);
 
     var disposable = ManagedDisposer(disposer);
@@ -514,7 +542,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   Timer getManagedTimer(Duration duration, void callback()) {
-    _throwOnInvalidCall2(
+    _validate2(
         'getManagedTimer', 'duration', 'callback', duration, callback);
     var timer = _ObservableTimer(duration, callback);
     _addObservableTimerDisposable(timer);
@@ -524,7 +552,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer)) {
-    _throwOnInvalidCall2(
+    _validate2(
         'getManagedPeriodicTimer', 'duration', 'callback', duration, callback);
     var timer = _ObservableTimer.periodic(duration, callback);
     _addObservableTimerDisposable(timer);
@@ -536,7 +564,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   StreamSubscription<T> listenToStream<T>(
       Stream<T> stream, void onData(T event),
       {Function onError, void onDone(), bool cancelOnError}) {
-    _throwOnInvalidCall2('listenToStream', 'stream', 'onData', stream, onData);
+    _validate2('listenToStream', 'stream', 'onData', stream, onData);
     var managedStreamSubscription = ManagedStreamSubscription(stream, onData,
         onError: onError, onDone: onDone, cancelOnError: cancelOnError);
     _logManageMessage(managedStreamSubscription);
@@ -562,7 +590,10 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   Disposable manageAndReturnDisposable(Disposable disposable) {
-    _throwOnInvalidCall('manageAndReturnDisposable', 'disposable', disposable);
+    if (disposable == null) {
+        return null;
+      }
+    _validate('manageAndReturnDisposable', 'disposable', disposable);
     manageDisposable(disposable);
 
     return disposable;
@@ -571,7 +602,10 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   T manageAndReturnTypedDisposable<T extends Disposable>(T disposable) {
-    _throwOnInvalidCall('manageAndReturnDisposable', 'disposable', disposable);
+    if (disposable == null) {
+            return null;
+          }
+    _validate('manageAndReturnDisposable', 'disposable', disposable);
     manageDisposable(disposable);
 
     return disposable;
@@ -580,7 +614,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   Completer<T> manageCompleter<T>(Completer<T> completer) {
-    _throwOnInvalidCall('manageCompleter', 'completer', completer);
+    _validate('manageCompleter', 'completer', completer);
     _logManageMessage(completer);
 
     var disposable = ManagedDisposer(() async {
@@ -610,7 +644,14 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   void manageDisposable(Disposable disposable) {
-    _throwOnInvalidCall('manageDisposable', 'disposable', disposable);
+    if (disposable == null) {
+      return;
+    }
+    if (isOrWillBeDisposed) {
+      disposable.dispose();
+      return;
+    }
+    _validate('manageDisposable', 'disposable', disposable);
     _logManageMessage(disposable);
 
     _internalDisposables.add(disposable);
@@ -627,7 +668,12 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   void manageDisposer(Disposer disposer) {
-    _throwOnInvalidCall('manageDisposer', 'disposer', disposer);
+    if (isOrWillBeDisposed) {
+      disposer();
+      return;
+    }
+    _validate('manageDisposer', 'disposer', disposer);
+    _validateX('$disposableTypeName.manageDisposer', ArgumentError.value(disposer, 'disposer'));
     _logManageMessage(disposer);
 
     _internalDisposables.add(ManagedDisposer(disposer));
@@ -636,7 +682,13 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   void manageStreamController(StreamController<dynamic> controller) {
-    _throwOnInvalidCall('manageStreamController', 'controller', controller);
+    if (isOrWillBeDisposed) {
+      if (!controller.isClosed) {
+        controller.close();
+      }
+      return;
+    }
+    _validate('manageStreamController', 'controller', controller);
     // If a single-subscription stream has a subscription and that
     // subscription is subsequently canceled, the `done` future will
     // complete, but there is no other way for us to tell that this
@@ -673,8 +725,11 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   void manageStreamSubscription(StreamSubscription<dynamic> subscription) {
-    _throwOnInvalidCall(
-        'manageStreamSubscription', 'subscription', subscription);
+    if (isOrWillBeDisposed) {
+      subscription.cancel();
+      return;
+    }
+    _validate('manageStreamSubscription', 'subscription', subscription);
     _logManageMessage(subscription);
 
     _internalDisposables.add(ManagedDisposer(() => subscription.cancel()));
@@ -761,10 +816,44 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _assertAndLogOnInvalidCall(methodName, parameterName, parameterValue);
   }
 
-  void _throwOnInvalidCall(
+  void _validateX(String fullyQualifiedMethodName, ArgumentError argumentError) {
+
+  }
+
+  void _validate(
       String methodName, String parameterName, dynamic parameterValue) {
     _assertAndLogOnInvalidCall(methodName, parameterName, parameterValue);
     return;
+    if (parameterValue == null) {
+      throw ArgumentError.notNull(parameterName);
+    }
+    // ignore: deprecated_member_use
+    if (isDisposing) {
+      throw StateError(
+          '$disposableTypeName.$methodName not allowed, object is disposing');
+    }
+    if (isDisposed) {
+      throw StateError(
+          '$disposableTypeName.$methodName not allowed, object is already disposed');
+    }
+  }
+
+  void _validate2(
+      String methodName,
+      String parameterName,
+      String secondParameterName,
+      dynamic parameterValue,
+      dynamic secondParameterValue) {
+    _assertAndLogInvalidCall2(methodName, parameterName, secondParameterName, parameterValue, secondParameterValue);
+    return;
+    if (secondParameterValue == null) {
+      throw ArgumentError.notNull(secondParameterName);
+    }
+    _validate(methodName, parameterName, parameterValue);
+  }
+
+  void _throwOnInvalidCall(
+      String methodName, String parameterName, dynamic parameterValue) {
     if (parameterValue == null) {
       throw ArgumentError.notNull(parameterName);
     }
@@ -785,11 +874,10 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
       String secondParameterName,
       dynamic parameterValue,
       dynamic secondParameterValue) {
-    _assertAndLogInvalidCall2(methodName, parameterName, secondParameterName, parameterValue, secondParameterValue);
-    return;
     if (secondParameterValue == null) {
       throw ArgumentError.notNull(secondParameterName);
     }
-    _throwOnInvalidCall(methodName, parameterName, parameterValue);
+    _validate(methodName, parameterName, parameterValue);
   }
+
 }
