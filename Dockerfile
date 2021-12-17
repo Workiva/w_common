@@ -1,8 +1,5 @@
-FROM google/dart
+FROM dart:2.13.4
 WORKDIR /build/
 ADD pubspec.yaml /build/
 RUN pub get
-ADD . /build/
-RUN pub run dependency_validator
-RUN pub run test
 FROM scratch
