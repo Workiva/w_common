@@ -18,12 +18,22 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       });
     }
 
-    test('should throw if called with a null argument', () {
-      expect(() => callback(null), throwsArgumentError);
-    });
+    if ({
+      'manageAndReturnDisposable',
+      'manageAndReturnTypedDisposable',
+      'manageDisposable'
+    }.contains(methodName)) {
+      test('should return null if called with a null argument', () {
+        expect(callback(null), isNull);
+      });
+    } else {
+      test('should throw if called with a null argument', () {
+        expect(() => callback(null), throwsArgumentError);
+      });
+    }
 
     test(
-        'should not throw if called after diposal is requested but before it starts',
+        'should not throw if called after disposal is requested but before it starts',
         () async {
       var completer = Completer<dynamic>();
       // ignore: unawaited_futures
