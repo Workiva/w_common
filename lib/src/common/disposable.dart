@@ -548,6 +548,9 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   Disposable manageAndReturnDisposable(Disposable disposable) {
+    if (disposable == null) {
+      return null;
+    }
     _throwOnInvalidCall('manageAndReturnDisposable', 'disposable', disposable);
     manageDisposable(disposable);
 
@@ -557,6 +560,9 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   T manageAndReturnTypedDisposable<T extends Disposable>(T disposable) {
+    if (disposable == null) {
+      return null;
+    }
     _throwOnInvalidCall('manageAndReturnDisposable', 'disposable', disposable);
     manageDisposable(disposable);
 
@@ -596,6 +602,9 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   void manageDisposable(Disposable disposable) {
+    if (disposable == null) {
+      return;
+    }
     _throwOnInvalidCall('manageDisposable', 'disposable', disposable);
     _logManageMessage(disposable);
 
