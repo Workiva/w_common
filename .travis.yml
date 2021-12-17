@@ -10,7 +10,7 @@ jobs:
       name: "SDK: stable"
       script:
         - dartanalyzer .
-        - dartfmt -n --set-exit-if-changed .
+        - dartfmt --dry-run --set-exit-if-changed .
         - pub run test
     - dart: dev
       name: "SDK: dev"

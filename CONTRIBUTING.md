@@ -53,7 +53,7 @@ descriptive, well commented, and approachable by others.
 
 - Dart
     - Adhere to the official [Dart Style Guide][dart-style-guide]. _Please take the time to read it if you have never done so._
-    - Format your code using `pub run dart_dev format` (this is enforced by a CI check)
+    - Format your code using `dartfmt` (this is enforced by a CI check)
 
 
 ### Git Commit Message Standards
