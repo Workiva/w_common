@@ -1,13 +1,14 @@
 # Contributing to w_common
 
-- [__Support, Opening Issues__](#support-opening-issues)
-- [__Contributing Changes__](#contributing-changes)
+- [Contributing to w_common](#contributing-to-w_common)
+  - [Support, Opening Issues](#support-opening-issues)
+          - [Workiva Employees](#workiva-employees)
+  - [Contributing Changes](#contributing-changes)
     - [Coding Standards](#coding-standards)
     - [Git Commit Message Standards](#git-commit-message-standards)
-- [__Code Review Process and Merging Requirements__](#code-review-process-and-merging-requirements)
-    - [Minimum Required Review](#minimum-required-review)
+  - [Code Review Process and Merging Requirements](#code-review-process-and-merging-requirements)
     - [Review Types](#review-types)
-    - [Manual Testing Criteria](#manual-testing-criteria)
+  - [Manual Testing Criteria](#manual-testing-criteria)
 
 ---
 
@@ -53,7 +54,7 @@ descriptive, well commented, and approachable by others.
 
 - Dart
     - Adhere to the official [Dart Style Guide][dart-style-guide]. _Please take the time to read it if you have never done so._
-    - Format your code using `pub run dart_dev format` (this is enforced by a CI check)
+    - Format your code using `dart format` (this is enforced by a CI check)
 
 
 ### Git Commit Message Standards
