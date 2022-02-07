@@ -30,4 +30,4 @@ export 'package:w_common/src/common/disposable_manager.dart'
         ObjectDisposedException;
 export 'package:w_common/src/browser/disposable_browser.dart' show Disposable;
 export 'package:w_common/src/common/disposable.dart'
-    show Disposer, ManagedDisposer;
+    show Disposer, LeakFlag, ManagedDisposer;
