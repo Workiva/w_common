@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /// Entry-point for consumers wanting to extend / utilize the CLI for the `compile_sass` pub executable.
-library w_common.sass;
+library w_common_tools.sass;
 
 export 'src/bin/compile_sass.dart'
     show

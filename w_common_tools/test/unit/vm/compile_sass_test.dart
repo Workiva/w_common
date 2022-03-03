@@ -18,10 +18,10 @@ import 'package:file/local.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
-import 'package:w_common/src/bin/compile_sass.dart' as compiler;
+import 'package:w_common_tools/src/bin/compile_sass.dart' as compiler;
 
 void main() {
-  group('pub run w_common:compile_sass', () {
+  group('pub run w_common_tools:compile_sass', () {
     const defaultSourceDirWithoutTrailingSlash = 'test/unit/vm/fixtures/sass';
     const defaultSourceDir = '$defaultSourceDirWithoutTrailingSlash/';
     const nestedSourceDirName = 'nested_directory';
