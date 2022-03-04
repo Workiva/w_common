@@ -13,7 +13,7 @@ includes the following:
   to JSON.
 
 # w_common_tools
-A collection of dev utilities that are not intended to be used in a deployable artifacts.
+A collection of dev utilities that are not intended to be used in deployable artifacts.
   * A CSS compilation executable that can be run via 
     ```
     pub run w_common_tools:compile_sass
