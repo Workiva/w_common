@@ -193,8 +193,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: unawaited_futures
       completer.future.then((_) async {
         await Future(() {});
-        // ignore: deprecated_member_use
-        expect(disposable.isDisposing, isTrue);
+        expect(disposable.isOrWillBeDisposed, isTrue);
         expect(
             () => disposable.getManagedDelayedFuture(
                 Duration(seconds: 10), () => null),
@@ -675,8 +674,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: unawaited_futures
       completer.future.then((_) async {
         await Future(() {});
-        // ignore: deprecated_member_use
-        expect(disposable.isDisposing, isTrue);
+        expect(disposable.isOrWillBeDisposed, isTrue);
         expect(
             () => disposable.getManagedTimer(Duration(seconds: 10), () => null),
             throwsStateError);
@@ -814,8 +812,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       var completer = Completer<dynamic>();
       var awaitedFuture = disposable.awaitBeforeDispose(completer.future);
       var disposeFuture = disposable.dispose().then((_) {
-        // ignore: deprecated_member_Use
-        expect(disposable.isDisposing, isFalse,
+        expect(disposable.isOrWillBeDisposed, isFalse,
             reason: 'isDisposing post-complete');
         expect(disposable.isDisposed, isTrue,
             reason: 'isDisposed post-complete');
@@ -875,57 +872,6 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     var completer = Completer<Null>()..complete();
     testManageMethod('manageCompleter',
         (argument) => disposable.manageCompleter(argument), completer);
-  });
-
-  group('manageDisposable', () {
-    test('should dispose child when parent is disposed', () async {
-      var childThing = disposableFactory();
-      disposable.manageDisposable(childThing);
-      expect(childThing.isDisposed, isFalse);
-      await disposable.dispose();
-      expect(childThing.isDisposed, isTrue);
-    });
-
-    test('should remove disposable from internal collection if disposed',
-        () async {
-      var disposeCounter = DisposeCounter();
-
-      // Manage the disposable child and dispose of it independently
-      disposable.manageDisposable(disposeCounter);
-      await disposeCounter.dispose();
-      await disposable.dispose();
-
-      expect(disposeCounter.disposeCount, 1);
-    });
-
-    testManageMethod('manageDisposable', (argument) {
-      disposable.manageDisposable(argument);
-      return argument;
-    }, disposableFactory(), doesCallbackReturnArgument: false);
-  });
-
-  group('manageDisposer', () {
-    test(
-        'should call callback and accept null return value'
-        'when parent is disposed', () async {
-      // ignore: deprecated_member_use
-      disposable.manageDisposer(expectAsync0(() => null));
-      await disposable.dispose();
-    });
-
-    test(
-        'should call callback and accept Future return value'
-        'when parent is disposed', () async {
-      // ignore: deprecated_member_use
-      disposable.manageDisposer(expectAsync0(() => Future(() {})));
-      await disposable.dispose();
-    });
-
-    testManageMethod('manageDisposer', (argument) {
-      // ignore: deprecated_member_use
-      disposable.manageDisposer(argument);
-      return argument;
-    }, () async => null, doesCallbackReturnArgument: false);
   });
 
   group('manageStreamController', () {

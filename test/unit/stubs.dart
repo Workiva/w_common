@@ -30,10 +30,6 @@ abstract class StubDisposable implements Disposable {
   @override
   Future<Null> onDispose() {
     expect(isDisposed, isFalse);
-    // ignore: deprecated_member_use
-    expect(isDisposing, isTrue);
-    // ignore: deprecated_member_use
-    expect(isDisposedOrDisposing, isTrue);
     expect(isOrWillBeDisposed, isTrue);
     numTimesOnDisposeCalled++;
     wasOnDisposeCalled = true;
@@ -41,10 +37,6 @@ abstract class StubDisposable implements Disposable {
     future.then((_) async {
       await Future(() {}); // Give it a chance to update state.
       expect(isDisposed, isTrue);
-      // ignore: deprecated_member_use
-      expect(isDisposing, isFalse);
-      // ignore: deprecated_member_use
-      expect(isDisposedOrDisposing, isTrue);
       expect(isOrWillBeDisposed, isTrue);
     });
     return future;

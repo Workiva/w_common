@@ -188,14 +188,6 @@ class Disposable implements disposable_common.Disposable {
   @override
   bool get isDisposed => _disposable.isDisposed;
 
-  @deprecated
-  @override
-  bool get isDisposedOrDisposing => _disposable.isDisposedOrDisposing;
-
-  @deprecated
-  @override
-  bool get isDisposing => _disposable.isDisposing;
-
   @override
   bool get isLeakFlagSet => _disposable.isLeakFlagSet;
 
@@ -263,11 +255,6 @@ class Disposable implements disposable_common.Disposable {
   void manageDisposable(disposable_common.Disposable disposable) =>
       _disposable.manageDisposable(disposable);
 
-  @deprecated
-  @override
-  void manageDisposer(disposable_common.Disposer disposer) =>
-      _disposable.manageDisposer(disposer);
-
   @override
   disposable_common.ManagedDisposer getManagedDisposer(
           disposable_common.Disposer disposer) =>
@@ -276,11 +263,6 @@ class Disposable implements disposable_common.Disposable {
   @override
   void manageStreamController(StreamController<dynamic> controller) =>
       _disposable.manageStreamController(controller);
-
-  @deprecated
-  @override
-  void manageStreamSubscription(StreamSubscription<dynamic> subscription) =>
-      _disposable.manageStreamSubscription(subscription);
 
   /// Callback to allow arbitrary cleanup on dispose.
   @override
