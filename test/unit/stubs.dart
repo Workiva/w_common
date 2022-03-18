@@ -45,10 +45,6 @@ abstract class StubDisposable implements Disposable {
   @override
   Future<Null> onWillDispose() {
     expect(isDisposed, isFalse);
-    // ignore: deprecated_member_use
-    expect(isDisposing, isFalse);
-    // ignore: deprecated_member_use
-    expect(isDisposedOrDisposing, isFalse);
     expect(isOrWillBeDisposed, isTrue);
     numTimesOnWillDisposeCalled++;
     wasOnWillDisposeCalled = true;

@@ -85,7 +85,7 @@ abstract class DisposableManagerV7 {
   /// leaks. For this reason it is recommended to avoid references in [disposer]
   /// to objects not created by the parent object. These objects should be
   /// managed by their parent. At most one would need to manage the parent using
-  /// [manageDisposable].
+  /// [manageAndReturnTypedDisposable].
   ///
   /// Example BAD use case: `request` should not be referenced in a [Disposer]
   /// because `MyDisposable` did not create it.
@@ -129,7 +129,7 @@ abstract class DisposableManagerV7 {
   ///        MyHelper helper;
   ///
   ///        MyApi() {
-  ///          helper = manageDisposable(new MyHelper());
+  ///          helper = manageAndReturnTypedDisposable(new MyHelper());
   ///        }
   ///
   ///        Future makeRequest(String message) {

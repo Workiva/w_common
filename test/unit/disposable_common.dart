@@ -19,9 +19,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     }
 
     if ({
-      'manageAndReturnDisposable',
       'manageAndReturnTypedDisposable',
-      'manageDisposable'
     }.contains(methodName)) {
       test('should return null if called with a null argument', () {
         expect(callback(null), isNull);
@@ -127,7 +125,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       var controller = StreamController<dynamic>();
       disposable.manageStreamController(controller);
       disposable.listenToStream(controller.stream, (_) {});
-      disposable.manageDisposable(disposableFactory());
+      disposable.manageAndReturnTypedDisposable(disposableFactory());
       disposable.manageCompleter(Completer<dynamic>());
       disposable.getManagedTimer(Duration(days: 1), () {});
       disposable
@@ -142,8 +140,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     test('should count nested objects', () {
       var nestedThing = disposableFactory();
-      nestedThing.manageDisposable(disposableFactory());
-      disposable.manageDisposable(nestedThing);
+      nestedThing.manageAndReturnTypedDisposable(disposableFactory());
+      disposable.manageAndReturnTypedDisposable(nestedThing);
       expect(disposable.disposalTreeSize, 3);
       return disposable.dispose().then((_) {
         expect(disposable.disposalTreeSize, 1);
@@ -215,7 +213,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
   group('manageAndReturnDisposable', () {
     void injectDisposable({Disposable injected}) {
       disposable.injected =
-          injected ?? disposable.manageAndReturnDisposable(disposableFactory());
+          injected ?? disposable.manageAndReturnTypedDisposable(disposableFactory());
     }
 
     test('should dispose managed disposable', () async {
@@ -236,7 +234,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     testManageMethod(
         'manageAndReturnDisposable',
-        (Disposable argument) => disposable.manageAndReturnDisposable(argument),
+        (Disposable argument) => disposable.manageAndReturnTypedDisposable(argument),
         disposableFactory());
   });
 
@@ -932,29 +930,6 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       disposable.manageStreamController(argument);
       return argument;
     }, StreamController<dynamic>(), doesCallbackReturnArgument: false);
-  });
-
-  group('manageStreamSubscription', () {
-    test('should cancel subscription when parent is disposed', () async {
-      var controller = StreamController<dynamic>();
-      controller.onCancel = expectAsync1(([_]) {});
-      var subscription =
-          controller.stream.listen(expectAsync1((_) {}, count: 0));
-      // ignore: deprecated_member_use
-      disposable.manageStreamSubscription(subscription);
-      await disposable.dispose();
-      controller.add(null);
-      await subscription.cancel();
-      await controller.close();
-    });
-
-    var controller = StreamController<dynamic>();
-    testManageMethod('manageStreamSubscription', (argument) {
-      // ignore: deprecated_member_use
-      disposable.manageStreamSubscription(argument);
-      return argument;
-    }, controller.stream.listen((_) {}), doesCallbackReturnArgument: false);
-    controller.close();
   });
 
   group('flagLeak', () {

@@ -14,7 +14,7 @@ class TreeNode extends Disposable {
 
     if (depth > 0) {
       for (int i = 0; i < childCount; i++) {
-        manageDisposable(TreeNode(depth - 1, childCount));
+        manageAndReturnTypedDisposable(TreeNode(depth - 1, childCount));
       }
     }
   }

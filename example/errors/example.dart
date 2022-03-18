@@ -24,13 +24,13 @@ class RandomDisposableAdder extends Disposable {
         manageCompleter(Completer<Null>());
         break;
       case 3:
-        manageAndReturnDisposable(Disposable());
+        manageAndReturnTypedDisposable(Disposable());
         break;
       case 4:
         manageAndReturnTypedDisposable(Disposable());
         break;
       default:
-        manageDisposable(Disposable());
+        manageAndReturnTypedDisposable(Disposable());
     }
   }
 }

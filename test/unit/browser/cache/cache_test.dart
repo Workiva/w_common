@@ -147,37 +147,6 @@ void main() {
       });
     });
 
-    group('containsKey', () {
-      test('should return false when identifier has not been cached', () {
-        expect(cache.containsKey(notCachedId), isFalse);
-      });
-
-      test('should return true when identifier has been cached', () {
-        expect(cache.containsKey(cachedId), isTrue);
-      });
-
-      test('should return false when identifier has been removed', () async {
-        await cache.remove(cachedId);
-        expect(cache.containsKey(cachedId), isFalse);
-      });
-
-      test(
-          'should return false when identifer has been removed before get '
-          'completes', () async {
-        final completer = Completer<Object>();
-        cache.getAsync(notCachedId, () => completer.future);
-        expect(cache.containsKey(notCachedId), isTrue);
-        cache.remove(notCachedId);
-        expect(cache.containsKey(notCachedId), isFalse);
-      });
-
-      test('should throw when disposed', () async {
-        await cache.dispose();
-        expect(
-            () => cache.get(cachedId, () => notCachedValue), throwsStateError);
-      });
-    });
-
     group('remove', () {
       test('should dispatch one didUpdate event when identifier is removed',
           () async {
