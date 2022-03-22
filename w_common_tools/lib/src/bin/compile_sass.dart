@@ -44,7 +44,7 @@ const Map<String, sass.OutputStyle> outputStyleArgToOutputStyleValue = {
   'expanded': sass.OutputStyle.expanded,
 };
 
-/// The CLI options for `pub run w_common compile_sass`.
+/// The CLI options for `pub run w_common_tools compile_sass`.
 final ArgParser sassCliArgs = ArgParser()
   ..addMultiOption(outputStyleArg,
       abbr: 's',

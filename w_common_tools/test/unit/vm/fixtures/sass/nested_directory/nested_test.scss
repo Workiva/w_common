@@ -1,0 +1,6 @@
+.selector1 {
+  color: black;
+}
+
+@import 'package:w_common_tools/src/test_fixtures/sass/test_package_import';
+@import '../relative_import';
