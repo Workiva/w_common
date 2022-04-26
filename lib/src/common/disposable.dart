@@ -510,7 +510,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
       return null;
     }
     _throwOnInvalidCall('manageAndReturnDisposable', 'disposable', disposable);
-    _manageDisposable(disposable);
+    manageDisposable(disposable);
 
     return disposable;
   }
@@ -543,11 +543,11 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     return completer;
   }
 
-  void _manageDisposable(Disposable disposable) {
+  void manageDisposable(Disposable disposable) {
     if (disposable == null) {
       return;
     }
-    _throwOnInvalidCall('_manageDisposable', 'disposable', disposable);
+    _throwOnInvalidCall('manageDisposable', 'disposable', disposable);
     _logManageMessage(disposable);
 
     _internalDisposables.add(disposable);

@@ -20,6 +20,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     if ({
       'manageAndReturnTypedDisposable',
+      'manageDisposable'
     }.contains(methodName)) {
       test('should return null if called with a null argument', () {
         expect(callback(null), isNull);
@@ -870,6 +871,33 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     var completer = Completer<Null>()..complete();
     testManageMethod('manageCompleter',
         (argument) => disposable.manageCompleter(argument), completer);
+  });
+
+ group('manageDisposable', () {
+    test('should dispose child when parent is disposed', () async {
+      var childThing = disposableFactory();
+      disposable.manageDisposable(childThing);
+      expect(childThing.isDisposed, isFalse);
+      await disposable.dispose();
+      expect(childThing.isDisposed, isTrue);
+    });
+
+    test('should remove disposable from internal collection if disposed',
+        () async {
+      var disposeCounter = DisposeCounter();
+
+      // Manage the disposable child and dispose of it independently
+      disposable.manageDisposable(disposeCounter);
+      await disposeCounter.dispose();
+      await disposable.dispose();
+
+      expect(disposeCounter.disposeCount, 1);
+    });
+
+    testManageMethod('manageDisposable', (argument) {
+      disposable.manageDisposable(argument);
+      return argument;
+    }, disposableFactory(), doesCallbackReturnArgument: false);
   });
 
   group('manageStreamController', () {

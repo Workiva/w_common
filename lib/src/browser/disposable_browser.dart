@@ -252,6 +252,10 @@ class Disposable implements disposable_common.Disposable {
       _disposable.manageCompleter(completer);
 
   @override
+  void manageDisposable(disposable_common.Disposable disposable) =>
+      _disposable.manageDisposable(disposable);
+
+  @override
   disposable_common.ManagedDisposer getManagedDisposer(
           disposable_common.Disposer disposer) =>
       _disposable.getManagedDisposer(disposer);
