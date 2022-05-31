@@ -56,7 +56,7 @@ jobs:
       - name: Run w_common_tools tests
         working-directory: ./w_common_tools
         run: dart test
-        if: always() && steps.install-tools.outcome == 'success'
+        if: matrix.sdk != 'dev' && always() && steps.install-tools.outcome == 'success'
 
   format:
     runs-on: ubuntu-latest
