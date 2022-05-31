@@ -56,6 +56,10 @@ jobs:
       - name: Run w_common_tools tests
         working-directory: ./w_common_tools
         run: dart test
+        # NOTE: We skip running these tests on the dev channel because the current iteration of w_common_tools
+        # relies on the presence of a `.packages` file which is not present with a pub resolution in the dev
+        # version of the Dart sdk. Once we upgrade dependencies in w_common_tools to use PackageConfig instead
+        # of PackageResolver, we can run these tests in the dev channel again.
         if: matrix.sdk != 'dev' && always() && steps.install-tools.outcome == 'success'
 
   format:
