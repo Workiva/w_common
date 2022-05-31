@@ -34,8 +34,8 @@ void main() {
     });
 
     tearDown(() {
-      final compiledCssFiles = Glob('$defaultSourceDir**.css', recursive: true)
-          .listSync();
+      final compiledCssFiles =
+          Glob('$defaultSourceDir**.css', recursive: true).listSync();
       if (compiledCssFiles.isNotEmpty) {
         for (var file in compiledCssFiles) {
           File(file.path).deleteSync();

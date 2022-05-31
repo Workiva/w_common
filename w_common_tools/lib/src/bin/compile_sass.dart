@@ -442,6 +442,6 @@ SyncPackageResolver _getPackageResolver() {
   }
 
   final config =
-  pkg.parse(packagesFile.readAsStringSync().codeUnits, Uri.directory(root));
+      pkg.parse(packagesFile.readAsStringSync().codeUnits, Uri.directory(root));
   return _packageResolver = SyncPackageResolver.config(config);
 }
