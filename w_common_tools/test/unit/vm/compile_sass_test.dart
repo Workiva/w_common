@@ -35,7 +35,7 @@ void main() {
 
     tearDown(() {
       final compiledCssFiles = Glob('$defaultSourceDir**.css', recursive: true)
-          .listFileSystemSync(const LocalFileSystem());
+          .listSync();
       if (compiledCssFiles.isNotEmpty) {
         for (var file in compiledCssFiles) {
           File(file.path).deleteSync();
@@ -49,8 +49,7 @@ void main() {
       }
 
       final compiledCssFilesInSpecificOutputDir =
-          Glob('$specificOutputDir**.css', recursive: true)
-              .listFileSystemSync(const LocalFileSystem());
+          Glob('$specificOutputDir**.css', recursive: true).listSync();
       if (compiledCssFilesInSpecificOutputDir.isNotEmpty) {
         for (var file in compiledCssFilesInSpecificOutputDir) {
           File(file.path).deleteSync();
