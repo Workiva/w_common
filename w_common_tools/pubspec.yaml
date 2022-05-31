@@ -27,3 +27,7 @@ dev_dependencies:
   file: ^6.0.0
   mockito: ^4.1.1
   test: ^1.16.2
+
+dependency_validator:
+  ignore:
+    - meta
