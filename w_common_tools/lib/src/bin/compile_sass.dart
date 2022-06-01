@@ -194,7 +194,7 @@ class SassCompilationOptions {
   }
 }
 
-Future<Null> main(List<String> args) async {
+Future<void> main(List<String> args) async {
   taskTimer = Stopwatch();
 
   List<String> outputStylesValue;
@@ -247,7 +247,7 @@ Future<Null> main(List<String> args) async {
   await watch(options);
 }
 
-Future<Null> watch(SassCompilationOptions options) async {
+Future<void> watch(SassCompilationOptions options) async {
   var watchers = <FileWatcher>[];
   for (var target in options.compileTargets) {
     watchers.add(FileWatcher(target));
