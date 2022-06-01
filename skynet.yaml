@@ -9,4 +9,4 @@ artifacts: /testing/test-reports
 test-reports: /testing/test-reports
 
 scripts:
-  - /testing/run_tests.sh
+  - /testing/w_common/run_tests.sh

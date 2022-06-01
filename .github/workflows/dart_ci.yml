@@ -24,17 +24,21 @@ jobs:
 
       - id: install
         name: Install dependencies
+        working-directory: ./w_common
         run: dart pub get
 
       - name: Validate dependencies
+        working-directory: ./w_common
         run: dart run dependency_validator
         if: always() && steps.install.outcome == 'success'
 
       - name: Analyze project source
+        working-directory: ./w_common
         run: dart analyze
         if: always() && steps.install.outcome == 'success'
 
       - name: Run tests
+        working-directory: ./w_common
         run: dart test
         if: always() && steps.install.outcome == 'success'
 
@@ -72,9 +76,11 @@ jobs:
 
       - id: install
         name: Install dependencies
+        working-directory: ./w_common
         run: dart pub get
 
       - name: Verify formatting
+        working-directory: ./w_common
         run: dart format --output=none --set-exit-if-changed .
         if: always() && steps.install.outcome == 'success'
 
