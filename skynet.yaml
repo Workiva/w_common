@@ -1,12 +1,13 @@
-name: unit-tests
+name: w_common-unit-tests
 description: Unit tests
 contact: 'Frontend Frameworks Architecture / #support-frontend-architecture'
 image: drydock.workiva.net/workiva/dart_unit_test_image:1
 size: large
 timeout: 600
 
-artifacts: /testing/test-reports
-test-reports: /testing/test-reports
+artifacts: /testing/w_common/test-reports
+test-reports: /testing/w_common/test-reports
 
 scripts:
-  - /testing/run_tests.sh
+  - cd /testing/w_common/
+  - ./run_tests.sh
