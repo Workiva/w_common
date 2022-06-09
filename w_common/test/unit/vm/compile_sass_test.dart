@@ -18,10 +18,10 @@ import 'package:file/local.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
-import 'package:w_common_tools/src/bin/compile_sass.dart' as compiler;
+import 'package:w_common/src/bin/compile_sass.dart' as compiler;
 
 void main() {
-  group('pub run w_common_tools:compile_sass', () {
+  group('pub run w_common:compile_sass', () {
     const defaultSourceDirWithoutTrailingSlash = 'test/unit/vm/fixtures/sass';
     const defaultSourceDir = '$defaultSourceDirWithoutTrailingSlash/';
     const nestedSourceDirName = 'nested_directory';
@@ -34,8 +34,8 @@ void main() {
     });
 
     tearDown(() {
-      final compiledCssFiles =
-          Glob('$defaultSourceDir**.css', recursive: true).listSync();
+      final compiledCssFiles = Glob('$defaultSourceDir**.css', recursive: true)
+          .listFileSystemSync(const LocalFileSystem());
       if (compiledCssFiles.isNotEmpty) {
         for (var file in compiledCssFiles) {
           File(file.path).deleteSync();
@@ -49,7 +49,8 @@ void main() {
       }
 
       final compiledCssFilesInSpecificOutputDir =
-          Glob('$specificOutputDir**.css', recursive: true).listSync();
+          Glob('$specificOutputDir**.css', recursive: true)
+              .listFileSystemSync(const LocalFileSystem());
       if (compiledCssFilesInSpecificOutputDir.isNotEmpty) {
         for (var file in compiledCssFilesInSpecificOutputDir) {
           File(file.path).deleteSync();
