@@ -13,7 +13,7 @@ class RandomDisposableAdder extends Disposable {
 
   void addRandomManager() {
     print('RandomDisposableAdder.addRandomManager');
-    switch (Random().nextInt(4)) {
+    switch (Random().nextInt(5)) {
       case 0:
         listenToStream(Stream<Null>.empty(), (_) {});
         break;
@@ -26,6 +26,8 @@ class RandomDisposableAdder extends Disposable {
       case 3:
         manageAndReturnTypedDisposable(Disposable());
         break;
+      default:
+        manageDisposable(Disposable());
     }
   }
 }
