@@ -18,10 +18,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       });
     }
 
-    if ({
-      'manageAndReturnTypedDisposable',
-      'manageDisposable'
-    }.contains(methodName)) {
+    if ({'manageAndReturnTypedDisposable', 'manageDisposable'}
+        .contains(methodName)) {
       test('should return null if called with a null argument', () {
         expect(callback(null), isNull);
       });
@@ -126,7 +124,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       var controller = StreamController<dynamic>();
       disposable.manageStreamController(controller);
       disposable.listenToStream(controller.stream, (_) {});
-      disposable.manageAndReturnTypedDisposable(disposableFactory());
+      disposable.manageDisposable(disposableFactory());
       disposable.manageCompleter(Completer<dynamic>());
       disposable.getManagedTimer(Duration(days: 1), () {});
       disposable
@@ -141,8 +139,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     test('should count nested objects', () {
       var nestedThing = disposableFactory();
-      nestedThing.manageAndReturnTypedDisposable(disposableFactory());
-      disposable.manageAndReturnTypedDisposable(nestedThing);
+      nestedThing.manageDisposable(disposableFactory());
+      disposable.manageDisposable(nestedThing);
       expect(disposable.disposalTreeSize, 3);
       return disposable.dispose().then((_) {
         expect(disposable.disposalTreeSize, 1);
@@ -169,7 +167,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     });
 
     test(
-        'should not throw if called after diposal is requested but before it starts',
+        'should not throw if called after disposal is requested but before it starts',
         () async {
       var completer = Completer<dynamic>();
       // ignore: unawaited_futures
@@ -209,34 +207,6 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
               Duration(seconds: 10), () => null),
           throwsStateError);
     });
-  });
-
-  group('manageAndReturnDisposable', () {
-    void injectDisposable({Disposable injected}) {
-      disposable.injected =
-          injected ?? disposable.manageAndReturnTypedDisposable(disposableFactory());
-    }
-
-    test('should dispose managed disposable', () async {
-      injectDisposable();
-      await disposable.dispose();
-      expect(disposable.injected, isNotNull);
-      expect(disposable.isDisposed, isTrue);
-      expect(disposable.injected.isDisposed, isTrue);
-    });
-
-    test('should not dispose injected variable', () async {
-      injectDisposable(injected: disposableFactory());
-      await disposable.dispose();
-      expect(disposable.injected, isNotNull);
-      expect(disposable.isDisposed, isTrue);
-      expect(disposable.injected.isDisposed, isFalse);
-    });
-
-    testManageMethod(
-        'manageAndReturnDisposable',
-        (Disposable argument) => disposable.manageAndReturnTypedDisposable(argument),
-        disposableFactory());
   });
 
   group('manageAndReturnTypedDisposable', () {
@@ -811,8 +781,6 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       var completer = Completer<dynamic>();
       var awaitedFuture = disposable.awaitBeforeDispose(completer.future);
       var disposeFuture = disposable.dispose().then((_) {
-        expect(disposable.isOrWillBeDisposed, isFalse,
-            reason: 'isDisposing post-complete');
         expect(disposable.isDisposed, isTrue,
             reason: 'isDisposed post-complete');
       });
@@ -873,7 +841,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         (argument) => disposable.manageCompleter(argument), completer);
   });
 
- group('manageDisposable', () {
+  group('manageDisposable', () {
     test('should dispose child when parent is disposed', () async {
       var childThing = disposableFactory();
       disposable.manageDisposable(childThing);

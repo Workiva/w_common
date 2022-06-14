@@ -238,11 +238,6 @@ class Disposable implements disposable_common.Disposable {
           onError: onError, onDone: onDone, cancelOnError: cancelOnError);
 
   @override
-  disposable_common.Disposable manageAndReturnDisposable(
-          disposable_common.Disposable disposable) =>
-      _disposable.manageAndReturnTypedDisposable(disposable);
-
-  @override
   T manageAndReturnTypedDisposable<T extends disposable_common.Disposable>(
           T disposable) =>
       _disposable.manageAndReturnTypedDisposable(disposable);

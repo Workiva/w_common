@@ -13,8 +13,6 @@
 // limitations under the License.
 
 export 'package:w_common/src/common/disposable_manager.dart'
-    show
-        DisposableManagerV7,
-        ObjectDisposedException;
+    show DisposableManagerV7, ObjectDisposedException;
 export 'package:w_common/src/common/disposable.dart'
     show Disposable, Disposer, LeakFlag, ManagedDisposer;

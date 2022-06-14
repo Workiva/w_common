@@ -312,6 +312,20 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   /// Whether this object has been disposed.
   bool get isDisposed => _didDispose.isCompleted;
 
+  /// Whether this object has been disposed or is currently disposing.
+  ///
+  /// This will become `true` after [dispose] is called, but not until all
+  /// [Future]s registered via [awaitBeforeDispose] have resolved, and will
+  /// remain `true` forever.
+  bool get _isDisposedOrDisposing => isDisposed || _isDisposing;
+
+  /// Whether this object is in the process of being disposed.
+  ///
+  /// This will become `true` after [dispose] is called, but not until all
+  /// [Future]s registered via [awaitBeforeDispose] have resolved, and will
+  /// become `false` once the [didDispose] future completes.
+  bool get _isDisposing => _state == DisposableState.disposing;
+
   @override
   bool get isLeakFlagSet => _leakFlag != null;
 
@@ -428,7 +442,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _logManageMessage(completer.future);
     _internalDisposables.add(disposable);
     timer.didConclude.then((Null _) {
-      if (!isOrWillBeDisposed) {
+      if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(completer.future);
         _internalDisposables.remove(disposable);
       }
@@ -447,7 +461,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _internalDisposables.add(disposable);
 
     disposable.didDispose.then((_) {
-      if (!isOrWillBeDisposed) {
+      if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(disposer);
         _internalDisposables.remove(disposable);
       }
@@ -494,7 +508,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _internalDisposables.add(disposable);
 
     managedStreamSubscription.didComplete.then((_) {
-      if (!isOrWillBeDisposed) {
+      if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(disposable);
         _internalDisposables.remove(disposable);
       }
@@ -529,12 +543,12 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _internalDisposables.add(disposable);
 
     completer.future.catchError((e) {
-      if (!isOrWillBeDisposed) {
+      if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(completer);
         _internalDisposables.remove(disposable);
       }
     }).then((_) {
-      if (!isOrWillBeDisposed) {
+      if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(completer);
         _internalDisposables.remove(disposable);
       }
@@ -552,7 +566,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
     _internalDisposables.add(disposable);
     disposable.didDispose.then((_) {
-      if (!isOrWillBeDisposed) {
+      if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(disposable);
         _internalDisposables.remove(disposable);
       }
@@ -584,7 +598,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
     controller.done.then((_) {
       isDone = true;
-      if (!isOrWillBeDisposed) {
+      if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(controller);
         _internalDisposables.remove(disposable);
       }
@@ -614,7 +628,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     ManagedDisposer disposable = ManagedDisposer(() async => timer.cancel());
     _internalDisposables.add(disposable);
     timer.didConclude.then((Null _) {
-      if (!isOrWillBeDisposed) {
+      if (!_isDisposedOrDisposing) {
         _internalDisposables.remove(disposable);
       }
     });
@@ -645,9 +659,13 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     if (parameterValue == null) {
       throw ArgumentError.notNull(parameterName);
     }
-    if (isOrWillBeDisposed) {
+    if (_isDisposing) {
       throw StateError(
-          '$disposableTypeName.$methodName not allowed, object is or will be disposed');
+          '$disposableTypeName.$methodName not allowed, object is disposing');
+    }
+    if (isDisposed) {
+      throw StateError(
+          '$disposableTypeName.$methodName not allowed, object is already disposed');
     }
   }
 
