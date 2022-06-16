@@ -1,7 +1,5 @@
 # analysis_options.yaml docs: https://www.dartlang.org/guides/language/analysis-options 
 analyzer:
-  exclude:
-    - "w_common_tools/**"
   language:
     strict-inference: true
     strict-raw-types: true

@@ -21,176 +21,39 @@ import 'package:w_common/src/common/disposable.dart';
 /// This interface allows consumers to exercise more control over how
 /// disposal is implemented for their classes.
 ///
-/// Deprecated: Use [DisposableManagerV7] instead.
-@deprecated
-abstract class DisposableManager {
+/// When new management methods are to be added, they should be added
+/// here first, then implemented in [Disposable].
+abstract class DisposableManagerV7 {
   /// Automatically dispose another object when this object is disposed.
   ///
-  /// A null parameter will result in a no-op.
+  /// This method is an extension to `manageAndReturnDisposable` and returns the
+  /// passed in [Disposable] as its original type in addition to handling its
+  /// disposal. The method should be used when a variable is set and should
+  /// conditionally be managed for disposal. The most common case will be dealing
+  /// with optional parameters:
   ///
-  /// Deprecated: 1.8.0
-  /// To be removed: 2.0.0
+  ///      class MyDisposable extends Disposable {
+  ///        // This object also extends disposable
+  ///        MyObject _internal;
   ///
-  /// Use `manageAndReturnTypedDisposable` instead. One will need to update
-  /// to [DisposableManagerV7] or above for this.
-  @deprecated
-  void manageDisposable(Disposable disposable);
-
-  /// Automatically handle arbitrary disposals using a callback.
+  ///        MyDisposable({MyObject optional}) {
+  ///          // If optional is injected, we should not manage it.
+  ///          // If we create our own internal reference we should manage it.
+  ///          _internal = optional ??
+  ///              manageAndReturnTypedDisposable(new MyObject());
+  ///        }
   ///
-  /// The parameter may not be `null`.
+  ///        // ...
+  ///      }
   ///
-  /// Deprecated: 1.7.0
-  /// To be removed: 2.0.0
-  ///
-  /// Use `getManagedDisposer` instead. One will need to update to
-  /// [DisposableManagerV5] or above for this.
-  @deprecated
-  void manageDisposer(Disposer disposer);
+  /// A null parameter will result in a null return value.
+  T manageAndReturnTypedDisposable<T extends Disposable>(T disposable);
 
   /// Automatically cancel a stream controller when this object is disposed.
   ///
   /// The parameter may not be `null`.
   void manageStreamController(StreamController<dynamic> controller);
 
-  /// Automatically cancel a stream subscription when this object is disposed.
-  ///
-  /// This method should not be used for subscriptions that will be canceled
-  /// manually by the consumer because we have no way of knowing when a
-  /// subscription is canceled, so we will hold on to the reference until the
-  /// parent object is disposed.
-  ///
-  /// The parameter may not be `null`.
-  ///
-  /// Deprecated: 1.7.0
-  /// To be removed: 2.0.0
-  ///
-  /// Use `listenToStream` instead. One will need to update to
-  /// [DisposableManagerV4] or above for this.
-  @deprecated
-  void manageStreamSubscription(StreamSubscription<dynamic> subscription);
-}
-
-/// Managers for disposable members.
-///
-/// This interface allows consumers to exercise more control over how
-/// disposal is implemented for their classes.
-///
-/// When new management methods are to be added, they should be added
-/// here first, then implemented in [Disposable].
-///
-/// Deprecated: Use [DisposableManagerV7] instead.
-@deprecated
-abstract class DisposableManagerV2 implements DisposableManager {
-  /// Creates a [Timer] instance that will be cancelled if active
-  /// upon disposal.
-  Timer getManagedTimer(Duration duration, void callback());
-
-  /// Creates a periodic [Timer] that will be cancelled if active
-  /// upon disposal.
-  Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer));
-}
-
-/// Managers for disposable members.
-///
-/// This interface allows consumers to exercise more control over how
-/// disposal is implemented for their classes.
-///
-/// When new management methods are to be added, they should be added
-/// here first, then implemented in [Disposable].
-///
-/// Deprecated: 1.7.0
-/// To be removed: 2.0.0
-///
-/// Use [DisposableManagerV7] instead.
-@deprecated
-abstract class DisposableManagerV3 implements DisposableManagerV2 {
-  /// Add [future] to a list of futures that will be awaited before the
-  /// object is disposed.
-  ///
-  /// For example, a long-running network request might use
-  /// a [Disposable] instance when it returns. If we started to dispose
-  /// while the request was pending, upon returning the request's callback
-  /// would throw. We can avoid this by waiting on the request's future.
-  ///
-  ///      class MyDisposable extends Disposable {
-  ///        MyHelper helper;
-  ///
-  ///        MyApi() {
-  ///          helper = manageDisposable(new MyHelper());
-  ///        }
-  ///
-  ///        Future makeRequest(String message) {
-  ///          return waitBeforeDispose(
-  ///              helper.sendRequest(onSuccess: (response) {
-  ///            // If the `MyApi` instance was disposed while the request
-  ///            // was pending, this would normally result in an exception
-  ///            // being thrown. But instead, the dispose process will wait
-  ///            // for the request to complete before disposing of `helper'.
-  ///            helper.handleResponse(message, response);
-  ///          }))
-  ///        }
-  ///      }
-  Future<T> awaitBeforeDispose<T>(Future<T> future);
-
-  /// Creates a [Future] that will complete, with the value
-  /// returned by [callback], after the given amount of time has elapsed.
-  ///
-  /// If the object is disposed before the time has elapsed the future
-  /// will complete with an [ObjectDisposedException] error.
-  Future<T> getManagedDelayedFuture<T>(Duration duration, T callback());
-
-  /// Ensure that a completer is completed when the object is disposed.
-  ///
-  /// If the completer has not been completed by the time the object
-  /// is disposed, it will be completed with an [ObjectDisposedException]
-  /// error.
-  Completer<T> manageCompleter<T>(Completer<T> completer);
-}
-
-/// Managers for disposable members.
-///
-/// This interface allows consumers to exercise more control over how
-/// disposal is implemented for their classes.
-///
-/// When new management methods are to be added, they should be added
-/// here first, then implemented in [Disposable].
-///
-/// Deprecated: 1.7.0
-/// To be removed: 2.0.0
-///
-/// Use [DisposableManagerV7] instead.
-@deprecated
-abstract class DisposableManagerV4 implements DisposableManagerV3 {
-  /// Returns a [StreamSubscription] which handles events from the stream using
-  /// the provided [onData], [onError] and [onDone] handlers.
-  ///
-  /// Consult documentation for Stream.listen for more info.
-  ///
-  /// If the returned `StreamSubscription` is cancelled manually (i.e. canceled
-  /// before disposal of the parent object) [Disposable] will clean up the
-  /// internal reference allowing the subscription to be garbage collected.
-  ///
-  /// Neither parameter may be `null`.
-  StreamSubscription<T> listenToStream<T>(
-      Stream<T> stream, void onData(T event),
-      {Function onError, void onDone(), bool cancelOnError});
-}
-
-/// Managers for disposable members.
-///
-/// This interface allows consumers to exercise more control over how
-/// disposal is implemented for their classes.
-///
-/// When new management methods are to be added, they should be added
-/// here first, then implemented in [Disposable].
-///
-/// Deprecated: 1.8.0
-/// To be removed: 2.0.0
-///
-/// Use [DisposableManagerV7] instead.
-@deprecated
-abstract class DisposableManagerV5 implements DisposableManagerV4 {
   /// Automatically handle arbitrary disposals using a callback.
   ///
   /// The passed [Disposer] will be called on disposal of the parent object (the
@@ -222,7 +85,7 @@ abstract class DisposableManagerV5 implements DisposableManagerV4 {
   /// leaks. For this reason it is recommended to avoid references in [disposer]
   /// to objects not created by the parent object. These objects should be
   /// managed by their parent. At most one would need to manage the parent using
-  /// [manageDisposable].
+  /// [manageAndReturnTypedDisposable].
   ///
   /// Example BAD use case: `request` should not be referenced in a [Disposer]
   /// because `MyDisposable` did not create it.
@@ -239,85 +102,70 @@ abstract class DisposableManagerV5 implements DisposableManagerV4 {
   ///
   /// The parameter may not be `null`.
   ManagedDisposer getManagedDisposer(Disposer disposer);
-}
 
-/// Managers for disposable members.
-///
-/// This interface allows consumers to exercise more control over how
-/// disposal is implemented for their classes.
-///
-/// When new management methods are to be added, they should be added
-/// here first, then implemented in [Disposable].
-///
-/// Deprecated: 1.10.0
-/// To be removed: 2.0.0
-///
-/// Use [DisposableManagerV7] instead.
-@deprecated
-abstract class DisposableManagerV6 implements DisposableManagerV5 {
-  /// Automatically dispose another object when this object is disposed.
+  /// Returns a [StreamSubscription] which handles events from the stream using
+  /// the provided [onData], [onError] and [onDone] handlers.
   ///
-  /// This method is an extension to `manageDisposable` and returns the
-  /// passed in [Disposable] in addition to handling its disposal. The
-  /// method should be used when a variable is set and should
-  /// conditionally be managed for disposal. The most common case will
-  /// be dealing with optional parameters:
+  /// Consult documentation for Stream.listen for more info.
+  ///
+  /// If the returned `StreamSubscription` is cancelled manually (i.e. canceled
+  /// before disposal of the parent object) [Disposable] will clean up the
+  /// internal reference allowing the subscription to be garbage collected.
+  ///
+  /// Neither parameter may be `null`.
+  StreamSubscription<T> listenToStream<T>(
+      Stream<T> stream, void onData(T event),
+      {Function onError, void onDone(), bool cancelOnError});
+
+  /// Add [future] to a list of futures that will be awaited before the
+  /// object is disposed.
+  ///
+  /// For example, a long-running network request might use
+  /// a [Disposable] instance when it returns. If we started to dispose
+  /// while the request was pending, upon returning the request's callback
+  /// would throw. We can avoid this by waiting on the request's future.
   ///
   ///      class MyDisposable extends Disposable {
-  ///        // This object also extends disposable
-  ///        MyObject _internal;
+  ///        MyHelper helper;
   ///
-  ///        MyDisposable({MyObject optional}) {
-  ///          // If optional is injected, we should not manage it.
-  ///          // If we create our own internal reference we should manage it.
-  ///          _internal = optional ??
-  ///              manageAndReturnDisposable(new MyObject());
+  ///        MyApi() {
+  ///          helper = manageAndReturnTypedDisposable(new MyHelper());
   ///        }
   ///
-  ///        // ...
+  ///        Future makeRequest(String message) {
+  ///          return waitBeforeDispose(
+  ///              helper.sendRequest(onSuccess: (response) {
+  ///            // If the `MyApi` instance was disposed while the request
+  ///            // was pending, this would normally result in an exception
+  ///            // being thrown. But instead, the dispose process will wait
+  ///            // for the request to complete before disposing of `helper'.
+  ///            helper.handleResponse(message, response);
+  ///          }))
+  ///        }
   ///      }
-  ///
-  /// A null parameter will result in a null return value.
-  ///
-  /// Use `manageAndReturnTypedDisposable` instead. One will need to update
-  /// to [DisposableManagerV7] or above for this.
-  @deprecated
-  Disposable manageAndReturnDisposable(Disposable disposable);
-}
+  Future<T> awaitBeforeDispose<T>(Future<T> future);
 
-/// Managers for disposable members.
-///
-/// This interface allows consumers to exercise more control over how
-/// disposal is implemented for their classes.
-///
-/// When new management methods are to be added, they should be added
-/// here first, then implemented in [Disposable].
-// ignore: deprecated_member_use
-abstract class DisposableManagerV7 implements DisposableManagerV6 {
-  /// Automatically dispose another object when this object is disposed.
+  /// Creates a [Future] that will complete, with the value
+  /// returned by [callback], after the given amount of time has elapsed.
   ///
-  /// This method is an extension to `manageAndReturnDisposable` and returns the
-  /// passed in [Disposable] as its original type in addition to handling its
-  /// disposal. The method should be used when a variable is set and should
-  /// conditionally be managed for disposal. The most common case will be dealing
-  /// with optional parameters:
+  /// If the object is disposed before the time has elapsed the future
+  /// will complete with an [ObjectDisposedException] error.
+  Future<T> getManagedDelayedFuture<T>(Duration duration, T callback());
+
+  /// Ensure that a completer is completed when the object is disposed.
   ///
-  ///      class MyDisposable extends Disposable {
-  ///        // This object also extends disposable
-  ///        MyObject _internal;
-  ///
-  ///        MyDisposable({MyObject optional}) {
-  ///          // If optional is injected, we should not manage it.
-  ///          // If we create our own internal reference we should manage it.
-  ///          _internal = optional ??
-  ///              manageAndReturnTypedDisposable(new MyObject());
-  ///        }
-  ///
-  ///        // ...
-  ///      }
-  ///
-  /// A null parameter will result in a null return value.
-  T manageAndReturnTypedDisposable<T extends Disposable>(T disposable);
+  /// If the completer has not been completed by the time the object
+  /// is disposed, it will be completed with an [ObjectDisposedException]
+  /// error.
+  Completer<T> manageCompleter<T>(Completer<T> completer);
+
+  /// Creates a [Timer] instance that will be cancelled if active
+  /// upon disposal.
+  Timer getManagedTimer(Duration duration, void callback());
+
+  /// Creates a periodic [Timer] that will be cancelled if active
+  /// upon disposal.
+  Timer getManagedPeriodicTimer(Duration duration, void callback(Timer timer));
 }
 
 /// An interface that allows a class to flag potential leaks by marking

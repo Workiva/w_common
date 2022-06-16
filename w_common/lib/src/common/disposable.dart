@@ -317,39 +317,14 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   /// This will become `true` after [dispose] is called, but not until all
   /// [Future]s registered via [awaitBeforeDispose] have resolved, and will
   /// remain `true` forever.
-  ///
-  /// This is equivalent to:
-  ///
-  ///     object.isDisposed || object.isDisposing
-  ///
-  /// Deprecated: 1.9.0
-  /// To be removed: 2.0.0
-  ///
-  /// This was intended as a convenience method to be used to guard against APIs
-  /// being called after disposal has started. Consumers should now use
-  /// [isOrWillBeDisposed] instead because it also returns true when this
-  /// instance is in the "awaiting disposal" state that is entered as soon as
-  /// [dispose] is called, whereas this getter does not return true until
-  /// disposal has actually started.
-  @deprecated
-  bool get isDisposedOrDisposing => isDisposed || isDisposing;
+  bool get _isDisposedOrDisposing => isDisposed || _isDisposing;
 
   /// Whether this object is in the process of being disposed.
   ///
   /// This will become `true` after [dispose] is called, but not until all
   /// [Future]s registered via [awaitBeforeDispose] have resolved, and will
   /// become `false` once the [didDispose] future completes.
-  ///
-  /// Deprecated: 1.9.0
-  /// To be removed: 2.0.0
-  ///
-  /// [isOrWillBeDisposed] should be used instead.
-  ///
-  /// This getter is useful for [Disposable] tests, but for public consumption,
-  /// [isOrWillBeDisposed] is more useful because it remains true throughout the
-  /// "awaiting disposal", "disposing", and "disposed" states.
-  @deprecated
-  bool get isDisposing => _state == DisposableState.disposing;
+  bool get _isDisposing => _state == DisposableState.disposing;
 
   @override
   bool get isLeakFlagSet => _leakFlag != null;
@@ -467,8 +442,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _logManageMessage(completer.future);
     _internalDisposables.add(disposable);
     timer.didConclude.then((Null _) {
-      // ignore: deprecated_member_use
-      if (!isDisposedOrDisposing) {
+      if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(completer.future);
         _internalDisposables.remove(disposable);
       }
@@ -487,8 +461,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _internalDisposables.add(disposable);
 
     disposable.didDispose.then((_) {
-      // ignore: deprecated_member_use
-      if (!isDisposedOrDisposing) {
+      if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(disposer);
         _internalDisposables.remove(disposable);
       }
@@ -535,26 +508,13 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _internalDisposables.add(disposable);
 
     managedStreamSubscription.didComplete.then((_) {
-      // ignore: deprecated_member_use
-      if (!isDisposedOrDisposing) {
+      if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(disposable);
         _internalDisposables.remove(disposable);
       }
     });
 
     return managedStreamSubscription;
-  }
-
-  @mustCallSuper
-  @override
-  Disposable manageAndReturnDisposable(Disposable disposable) {
-    if (disposable == null) {
-      return null;
-    }
-    _throwOnInvalidCall('manageAndReturnDisposable', 'disposable', disposable);
-    manageDisposable(disposable);
-
-    return disposable;
   }
 
   @mustCallSuper
@@ -583,14 +543,12 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _internalDisposables.add(disposable);
 
     completer.future.catchError((e) {
-      // ignore: deprecated_member_use
-      if (!isDisposedOrDisposing) {
+      if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(completer);
         _internalDisposables.remove(disposable);
       }
     }).then((_) {
-      // ignore: deprecated_member_use
-      if (!isDisposedOrDisposing) {
+      if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(completer);
         _internalDisposables.remove(disposable);
       }
@@ -599,8 +557,6 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     return completer;
   }
 
-  @mustCallSuper
-  @override
   void manageDisposable(Disposable disposable) {
     if (disposable == null) {
       return;
@@ -610,22 +566,11 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
     _internalDisposables.add(disposable);
     disposable.didDispose.then((_) {
-      // ignore: deprecated_member_use
-      if (!isDisposedOrDisposing) {
+      if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(disposable);
         _internalDisposables.remove(disposable);
       }
     });
-  }
-
-  @deprecated
-  @mustCallSuper
-  @override
-  void manageDisposer(Disposer disposer) {
-    _throwOnInvalidCall('manageDisposer', 'disposer', disposer);
-    _logManageMessage(disposer);
-
-    _internalDisposables.add(ManagedDisposer(disposer));
   }
 
   @mustCallSuper
@@ -653,8 +598,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
     controller.done.then((_) {
       isDone = true;
-      // ignore: deprecated_member_use
-      if (!isDisposedOrDisposing) {
+      if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(controller);
         _internalDisposables.remove(disposable);
       }
@@ -662,17 +606,6 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     });
 
     _internalDisposables.add(disposable);
-  }
-
-  @deprecated
-  @mustCallSuper
-  @override
-  void manageStreamSubscription(StreamSubscription<dynamic> subscription) {
-    _throwOnInvalidCall(
-        'manageStreamSubscription', 'subscription', subscription);
-    _logManageMessage(subscription);
-
-    _internalDisposables.add(ManagedDisposer(() => subscription.cancel()));
   }
 
   /// Callback to allow arbitrary cleanup on dispose.
@@ -695,8 +628,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     ManagedDisposer disposable = ManagedDisposer(() async => timer.cancel());
     _internalDisposables.add(disposable);
     timer.didConclude.then((Null _) {
-      // ignore: deprecated_member_use
-      if (!isDisposedOrDisposing) {
+      if (!_isDisposedOrDisposing) {
         _internalDisposables.remove(disposable);
       }
     });
@@ -727,8 +659,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     if (parameterValue == null) {
       throw ArgumentError.notNull(parameterName);
     }
-    // ignore: deprecated_member_use
-    if (isDisposing) {
+    if (_isDisposing) {
       throw StateError(
           '$disposableTypeName.$methodName not allowed, object is disposing');
     }

@@ -153,16 +153,6 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   Stream<CacheContext<TIdentifier, TValue>> get didUpdate =>
       _didUpdateController.stream;
 
-  /// Keys that may, or may not, be released.
-  ///
-  /// Deprecated: 1.12.0
-  /// To be removed: 2.0.0
-  ///
-  /// This entry point is deprecated in favor of the more precisely named
-  /// [releasedKeys] and [liveKeys].
-  @deprecated
-  Iterable<TIdentifier> get keys => _cache.keys;
-
   /// Keys that have not been released.
   Iterable<TIdentifier> get liveKeys =>
       _cache.keys.where((TIdentifier key) => !_isReleased[key]);
@@ -176,33 +166,6 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// Keys that have been released but are not yet removed.
   Iterable<TIdentifier> get releasedKeys =>
       _cache.keys.where((TIdentifier key) => _isReleased[key]);
-
-  /// Values that have not been released.
-  ///
-  /// To access a released value a [get] or [getAsync] should be used.
-  ///
-  /// Deprecated: 1.12.0
-  /// To be removed: 2.0.0
-  ///
-  /// This entry point is deprecated in favor of the more precisely named
-  /// [liveValues].
-  @deprecated
-  Future<Iterable<TValue>> get values => liveValues;
-
-  /// Does the [Cache] contain the given [TIdentifier]?
-  ///
-  /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
-  ///
-  /// Deprecated: 1.12.0
-  /// To be removed: 2.0.0
-  ///
-  /// This entry point is deprecated in favor of using [liveKeys].contains
-  /// or [releasedKeys].contains directly.
-  @deprecated
-  bool containsKey(TIdentifier id) {
-    _throwWhenDisposed('containsKey');
-    return liveKeys.contains(id) || releasedKeys.contains(id);
-  }
 
   /// Returns a value from the cache for a given [TIdentifier].
   ///

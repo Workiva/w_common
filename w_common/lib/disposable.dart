@@ -13,20 +13,6 @@
 // limitations under the License.
 
 export 'package:w_common/src/common/disposable_manager.dart'
-    show
-        // ignore: deprecated_member_use
-        DisposableManager,
-        // ignore: deprecated_member_use
-        DisposableManagerV2,
-        // ignore: deprecated_member_use
-        DisposableManagerV3,
-        // ignore: deprecated_member_use
-        DisposableManagerV4,
-        // ignore: deprecated_member_use
-        DisposableManagerV5,
-        // ignore: deprecated_member_use
-        DisposableManagerV6,
-        DisposableManagerV7,
-        ObjectDisposedException;
+    show DisposableManagerV7, ObjectDisposedException;
 export 'package:w_common/src/common/disposable.dart'
     show Disposable, Disposer, LeakFlag, ManagedDisposer;

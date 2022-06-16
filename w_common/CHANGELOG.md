@@ -1,0 +1,30 @@
+## [2.0.0](https://github.com/Workiva/w_common/compare/1.21.8...2.0.0)
+_June 14, 2022_
+
+**Breaking Changes:**
+- Removes sass compilation tool from w_common. Use w_common_tools instead.
+- Removes `DisposableManager`, `DisposableManagerV2`, `DisposableManagerV3`, 
+`DisposableManagerV4`, `DisposableManagerV5`, and `DisposableManagerV6`. Use 
+`DisposableManagerV7` instead.
+- Removes `w_common.dart` entrypoint. Use the specific entrypoint related to 
+the pieces of w_common you want to use instead. For example, 
+`package:w_common/disposable.dart`.
+- Changes to `Cache`:
+  - Removes `keys` getter. Use `liveKeys` and `releasedKeys` instead.
+  - Removes `values` getter. Use `liveValues` instead.
+  - Removes `containsKey` method. Use `.contains` on `liveKeys` and `releasedKeys`
+  instead.
+- Changes to `Disposable`:
+  - Removes `isDisposedOrDisposing`. Use `isOrWillBeDisposed` instead. This also returns
+  true when the `Disposable` instance is in the "awaiting disposal" state that 
+  is entered as soon as [dispose] is called.
+  - Removes `isDisposing`. Use `isOrWillBeDisposed` instead.
+  - Removes `manageAndReturnDisposable`. Use `manageAndReturnTypedDisposable` instead.
+  - Removes `manageDisposer`. Use `getManagedDisposer` instead.
+  - Removes `manageStreamSubscription`. Use `listenToStream` instead.
+
+
+## [1.21.8](https://github.com/Workiva/w_common/compare/1.21.7...1.21.8)
+_June 2, 2022_ 
+
+- Added w_common_tools as a separate package.
