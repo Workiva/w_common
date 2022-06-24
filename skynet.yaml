@@ -1,3 +1,4 @@
+
 name: verify-github-actions
 description: Verify that the github actions run passed, this is needed to make pipelines pass without manual intervention
 contact: 'Frontend Frameworks Architecture / #support-frontend-architecture'

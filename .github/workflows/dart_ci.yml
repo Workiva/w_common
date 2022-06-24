@@ -24,19 +24,43 @@ jobs:
 
       - id: install
         name: Install dependencies
+        working-directory: ./w_common
         run: dart pub get
 
       - name: Validate dependencies
+        working-directory: ./w_common
         run: dart run dependency_validator
         if: always() && steps.install.outcome == 'success'
 
       - name: Analyze project source
+        working-directory: ./w_common
         run: dart analyze
         if: always() && steps.install.outcome == 'success'
 
       - name: Run tests
+        working-directory: ./w_common
         run: dart test
         if: always() && steps.install.outcome == 'success'
+
+      - id: install-tools
+        name: Install w_common_tools dependencies
+        working-directory: ./w_common_tools
+        run: dart pub get
+
+      - name: Validate w_common_tools  dependencies
+        working-directory: ./w_common_tools
+        run: dart run dependency_validator
+        if: always() && steps.install-tools.outcome == 'success'
+
+      - name: Analyze w_common_tools source
+        working-directory: ./w_common_tools
+        run: dart analyze
+        if: always() && steps.install-tools.outcome == 'success'
+
+      - name: Run w_common_tools tests
+        working-directory: ./w_common_tools
+        run: dart test
+        if: always() && steps.install-tools.outcome == 'success'
 
   format:
     runs-on: ubuntu-latest
@@ -48,8 +72,20 @@ jobs:
 
       - id: install
         name: Install dependencies
+        working-directory: ./w_common
+        run: dart pub get
+
+      - name: Verify formatting
+        working-directory: ./w_common
+        run: dart format --output=none --set-exit-if-changed .
+        if: always() && steps.install.outcome == 'success'
+
+      - id: install-tools
+        name: Install dependencies
+        working-directory: ./w_common_tools
         run: dart pub get
 
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed .
-        if: always() && steps.install.outcome == 'success'
+        working-directory: ./w_common_tools
+        if: always() && steps.install-tools.outcome == 'success'
