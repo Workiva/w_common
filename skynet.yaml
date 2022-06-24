@@ -8,7 +8,7 @@ timeout: 600
 
 env:
 # encrypted github token used for requests to api.github.com
- - secure: ziofu7SNe0SIrtW8rv6EwRxdEnrmo3O5kXPrnz6vewOocINQoH7xUiuFHpOwEjidubemsrODoEp8g3DjLP6JmPAmhp4=
+ - secure: vY6hxIgEBwccPborNI+28MlEwj1/kHiuuXaM33PGyTxNxjwr4tkuaJgZQ3KNxA5ApdDRM73aVT7Iaamfz8VatTP6cpw=
 
 scripts:
   - python3 /actions/verify_github_actions.py
