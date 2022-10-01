@@ -118,10 +118,7 @@ class _ObservableTimer implements Timer {
 
   @override
   int get tick {
-    // TODO: Once fully transitioned to Dart 2 just return
-    // the tick value from our internal timer
-    // return _timer.tick;
-    throw UnsupportedError('Timer.tick is unsupported');
+    return _timer.tick;
   }
 }
 

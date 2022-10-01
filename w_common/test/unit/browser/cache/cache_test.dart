@@ -138,6 +138,7 @@ void main() {
         final futureGet1 = cache.getAsync(notCachedId, () => completer.future);
 
         // Remove the identifer from the cache before the original get completes
+        // ignore: unawaited_futures
         cache.remove(notCachedId);
 
         // Get the same identifier from the cache but with a new value;

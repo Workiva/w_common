@@ -21,8 +21,8 @@ import 'package:test/test.dart';
 import 'package:w_common/src/browser/disposable_browser.dart';
 import 'package:w_common/src/common/disposable.dart' show LeakFlag;
 
-import '../disposable_common.dart';
 import './browser_stubs.dart';
+import '../disposable_common.dart';
 
 void main() {
   group('Browser Disposable', () {

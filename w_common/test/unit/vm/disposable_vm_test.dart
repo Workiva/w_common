@@ -14,8 +14,8 @@
 @TestOn('vm')
 import 'package:test/test.dart';
 
-import '../disposable_common.dart';
 import './vm_stubs.dart';
+import '../disposable_common.dart';
 
 void main() {
   group('Disposable', () {
