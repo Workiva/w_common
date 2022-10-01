@@ -7,14 +7,13 @@ import 'package:async/async.dart';
 import 'package:colorize/colorize.dart';
 import 'package:file/local.dart';
 import 'package:glob/glob.dart';
-import 'package:meta/meta.dart';
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as path;
 import 'package:sass/sass.dart' as sass;
 import 'package:source_maps/source_maps.dart';
 import 'package:watcher/watcher.dart';
 
-Stopwatch taskTimer;
+late Stopwatch taskTimer;
 
 final Colorize errorMessageHeading = Colorize().apply(Styles.RED, '[ERROR]');
 final Colorize failureMessageHeading =
@@ -86,31 +85,31 @@ final ArgParser sassCliArgs = ArgParser()
 
 class SassCompilationOptions {
   final List<String> unparsedArgs;
-  final String expandedOutputStyleFileExtension;
-  final List<String> outputStyles;
-  final bool watch;
-  final bool check;
+  final String? expandedOutputStyleFileExtension;
+  final List<String>? outputStyles;
+  final bool? watch;
+  final bool? check;
 
   SassCompilationOptions({
-    @required this.unparsedArgs,
-    @required String outputDir,
-    String sourceDir,
-    String compressedOutputStyleFileExtension,
+    required this.unparsedArgs,
+    required String outputDir,
+    String? sourceDir,
+    String? compressedOutputStyleFileExtension,
     this.expandedOutputStyleFileExtension =
         expandedOutputStyleFileExtensionDefaultValue,
     this.outputStyles = outputStyleDefaultValue,
-    List<String> watchDirs = const <String>[],
+    List<String>? watchDirs = const <String>[],
     this.watch = false,
     this.check = false,
   }) {
     // Have to use something different for the compressed output if both expanded and compressed are being used.
     _compressedOutputStyleFileExtension =
-        outputStyles.length > 1 && compressedOutputStyleFileExtension == null
+        outputStyles!.length > 1 && compressedOutputStyleFileExtension == null
             ? '.min.css'
             : compressedOutputStyleFileExtension ??
                 compressedOutputStyleFileExtensionDefaultValue;
 
-    if (outputStyles.length > 1 &&
+    if (outputStyles!.length > 1 &&
         this.compressedOutputStyleFileExtension ==
             expandedOutputStyleFileExtension) {
       print(
@@ -120,11 +119,11 @@ class SassCompilationOptions {
       return;
     }
 
-    if (unparsedArgs != null && unparsedArgs.isNotEmpty) {
+    if (unparsedArgs.isNotEmpty) {
       compileTargets = unparsedArgs.map(path.relative).toList();
       exitCode = _validateCompileTargets();
       if (exitCode == 0 && sourceDir != null) {
-        _sourceDir = path.split(compileTargets.first).first;
+        _sourceDir = path.split(compileTargets!.first).first;
       } else {
         _sourceDir = sourceDir ?? sourceDirDefaultValue;
       }
@@ -138,37 +137,37 @@ class SassCompilationOptions {
           .toList();
     }
 
-    _watchDirs = [_sourceDir]..addAll(watchDirs);
+    _watchDirs = [_sourceDir]..addAll(watchDirs!);
 
-    if (!_sourceDir.endsWith('/')) {
+    if (!_sourceDir!.endsWith('/')) {
       _sourceDir = '$_sourceDir/';
     }
 
     _outputDir = outputDir;
-    if (!_outputDir.endsWith('/')) {
+    if (!_outputDir!.endsWith('/')) {
       _outputDir = '$_outputDir/';
     }
   }
 
-  List<String> get watchDirs => _watchDirs;
-  List<String> _watchDirs;
+  List<String?>? get watchDirs => _watchDirs;
+  List<String?>? _watchDirs;
 
-  String get sourceDir => _sourceDir;
-  String _sourceDir;
+  String? get sourceDir => _sourceDir;
+  String? _sourceDir;
 
-  String get outputDir => _outputDir;
-  String _outputDir;
+  String? get outputDir => _outputDir;
+  String? _outputDir;
 
-  String get compressedOutputStyleFileExtension =>
+  String? get compressedOutputStyleFileExtension =>
       _compressedOutputStyleFileExtension;
-  String _compressedOutputStyleFileExtension;
+  String? _compressedOutputStyleFileExtension;
 
-  List<String> compileTargets;
+  List<String>? compileTargets;
 
   int _validateCompileTargets() {
     var exitCode = 0;
-    String srcRootDirName;
-    for (var target in compileTargets) {
+    String? srcRootDirName;
+    for (var target in compileTargets!) {
       if (!File(target).existsSync()) {
         print('$errorMessageHeading "$target" does not exist');
         exitCode = 1;
@@ -197,8 +196,8 @@ class SassCompilationOptions {
 Future<void> main(List<String> args) async {
   taskTimer = Stopwatch();
 
-  List<String> outputStylesValue;
-  bool helpValue;
+  List<String>? outputStylesValue;
+  bool? helpValue;
 
   SassCompilationOptions options;
 
@@ -228,7 +227,7 @@ Future<void> main(List<String> args) async {
     rethrow;
   }
 
-  if (helpValue) {
+  if (helpValue!) {
     print(sassCliArgs.usage);
     exitCode = 0;
     return Future(() {});
@@ -240,7 +239,7 @@ Future<void> main(List<String> args) async {
 
   await compileSass(options);
 
-  if (exitCode != 0 || !options.watch) {
+  if (exitCode != 0 || !options.watch!) {
     return Future(() {});
   }
 
@@ -249,11 +248,11 @@ Future<void> main(List<String> args) async {
 
 Future<void> watch(SassCompilationOptions options) async {
   var watchers = <FileWatcher>[];
-  for (var target in options.compileTargets) {
+  for (var target in options.compileTargets!) {
     watchers.add(FileWatcher(target));
   }
 
-  for (var watchDir in options.watchDirs) {
+  for (var watchDir in options.watchDirs!) {
     final sassFilesToWatch = Glob('$watchDir/**.scss', recursive: true)
         .listFileSystemSync(const LocalFileSystem())
         .where((file) => isSassPartial(file.path))
@@ -279,7 +278,7 @@ Future<void> watch(SassCompilationOptions options) async {
 
         if (isSassPartial(e.path)) {
           print(
-              '\n$changeMessage... recompiling ${options.compileTargets.length} targets ...');
+              '\n$changeMessage... recompiling ${options.compileTargets!.length} targets ...');
           compileSass(options, printReadyMessage: false);
         } else {
           print('\n$changeMessage... recompiling 1 target ...');
@@ -292,7 +291,7 @@ Future<void> watch(SassCompilationOptions options) async {
         changeMessage = '$changeMessage removed';
 
         if (!isSassPartial(e.path)) {
-          options.compileTargets.removeWhere((target) => target == e.path);
+          options.compileTargets!.removeWhere((target) => target == e.path);
         }
 
         print('\n$changeMessage... the watcher for it has been removed');
@@ -307,41 +306,41 @@ Future<void> watch(SassCompilationOptions options) async {
 }
 
 Future<void> compileSass(SassCompilationOptions options,
-    {List<String> compileTargets, bool printReadyMessage = true}) async {
+    {List<String>? compileTargets, bool printReadyMessage = true}) async {
   taskTimer.start();
 
   compileTargets ??= options.compileTargets;
   int failureCount = 0;
 
-  for (var style in options.outputStyles) {
+  for (var style in options.outputStyles!) {
     final outputStyle = outputStyleArgToOutputStyleValue[style];
     final outputStyleMsg =
         outputStyle == sass.OutputStyle.compressed ? 'minified .css' : '.css';
 
     if (printReadyMessage) {
       print(
-          '\nReady to compile ${compileTargets.length} .scss files to $outputStyleMsg ...');
+          '\nReady to compile ${compileTargets!.length} .scss files to $outputStyleMsg ...');
     }
 
-    final Map<String, String> outputStyleArgToOutputStyleFileExtension = {
+    final Map<String, String?> outputStyleArgToOutputStyleFileExtension = {
       'compressed': options.compressedOutputStyleFileExtension,
       'expanded': options.expandedOutputStyleFileExtension,
     };
 
-    for (var target in compileTargets) {
+    for (var target in compileTargets!) {
       try {
         final singleCompileTimer = Stopwatch()..start();
         final outputSubDir = target.substring(
-            options.sourceDir.length, target.indexOf(path.basename(target)));
+            options.sourceDir!.length, target.indexOf(path.basename(target)));
         var outputDir = options.outputDir;
         if (outputSubDir.isNotEmpty) {
-          outputDir = path.join(outputDir, outputSubDir);
+          outputDir = path.join(outputDir!, outputSubDir);
         }
 
-        SingleMapping sourceMap;
+        late SingleMapping sourceMap;
         var cssPath = path.setExtension(
-            path.join(outputDir, path.basename(target)),
-            outputStyleArgToOutputStyleFileExtension[style]);
+            path.join(outputDir!, path.basename(target)),
+            outputStyleArgToOutputStyleFileExtension[style]!);
         var cssSrc = sass.compile(target,
             style: outputStyle,
             color: true,
@@ -362,7 +361,7 @@ Future<void> compileSass(SassCompilationOptions options,
           cssTarget.createSync(recursive: true);
         }
 
-        if (options.check) {
+        if (options.check!) {
           final cssSrcTempFile = File('$cssPath.tmp');
           // Writing a temporary file since the string value read from the committed file does not seem to be equivalent to one that has not yet been written to a file.
           cssSrcTempFile.writeAsStringSync(cssSrc);
@@ -408,7 +407,7 @@ Future<void> compileSass(SassCompilationOptions options,
   }
 
   taskTimer.stop();
-  if (!options.check) {
+  if (!options.check!) {
     final elapsedTime = taskTimer.elapsed;
     final durationString = elapsedTime.inSeconds > 0
         ? '${elapsedTime.inSeconds} seconds.'
@@ -416,10 +415,10 @@ Future<void> compileSass(SassCompilationOptions options,
 
     if (exitCode == 0) {
       print(
-          '\n$successMessageHeading Compiled ${compileTargets.length * options.outputStyles.length} CSS file(s) in $durationString');
+          '\n$successMessageHeading Compiled ${compileTargets!.length * options.outputStyles!.length} CSS file(s) in $durationString');
     } else {
       print(
-          '\n$failureMessageHeading $failureCount/${compileTargets.length} targets failed to compile');
+          '\n$failureMessageHeading $failureCount/${compileTargets!.length} targets failed to compile');
     }
   }
   taskTimer.reset();
@@ -427,8 +426,8 @@ Future<void> compileSass(SassCompilationOptions options,
 
 bool isSassPartial(String filePath) => path.basename(filePath).startsWith('_');
 
-PackageConfig _cachedPackageConfig;
-Future<PackageConfig> get _packageConfig async {
+PackageConfig? _cachedPackageConfig;
+Future<PackageConfig?> get _packageConfig async {
   var dir = Directory.current;
   _cachedPackageConfig ??= await findPackageConfig(dir);
   if (_cachedPackageConfig == null) {

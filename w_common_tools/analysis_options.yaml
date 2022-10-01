@@ -67,12 +67,6 @@ linter:
     # FIXME: 7 lint(s)
     # - avoid_annotating_with_dynamic
 
-    # Avoid using `as`.
-    # http://dart-lang.github.io/linter/lints/avoid_as.html
-    # recommendation: optional
-    # 0 issues
-    - avoid_as
-
     # Avoid bool literals in conditional expressions.
     # http://dart-lang.github.io/linter/lints/avoid_bool_literals_in_conditional_expressions.html
     # recommendation: optional
