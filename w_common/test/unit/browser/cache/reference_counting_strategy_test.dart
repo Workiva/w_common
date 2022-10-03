@@ -19,8 +19,8 @@ import 'package:w_common/src/common/cache/reference_counting_strategy.dart';
 
 void main() {
   group('ReferenceCountingStrategy', () {
-    Cache<String, Object> cache;
-    ReferenceCountingStrategy<String, Object> referenceCountingStrategy;
+    late Cache<String, Object?> cache;
+    late ReferenceCountingStrategy<String, Object> referenceCountingStrategy;
     const String cachedId = '1';
     final Object cachedValue = Object();
     const String notCachedId = '2';
@@ -43,7 +43,7 @@ void main() {
       test('should reset reference count to 0', () async {
         expect(referenceCountingStrategy.referenceCount(cachedId), 1);
         await cache.remove(cachedId);
-        expect(referenceCountingStrategy.referenceCount(cachedId), isNull);
+        expect(referenceCountingStrategy.referenceCount(cachedId), 0);
       });
     });
 
@@ -54,16 +54,16 @@ void main() {
         expect(referenceCountingStrategy.referenceCount(cachedId), 2);
       });
 
-      test('should return null for uncached results', () {
-        expect(referenceCountingStrategy.referenceCount(notCachedId), null);
+      test('should return 0 for uncached results', () {
+        expect(referenceCountingStrategy.referenceCount(notCachedId), 0);
       });
     });
 
     group('release', () {
       test('should not decrement referenceCount below zero', () async {
-        expect(referenceCountingStrategy.referenceCount(notCachedId), isNull);
+        expect(referenceCountingStrategy.referenceCount(notCachedId), 0);
         await cache.release(notCachedId);
-        expect(referenceCountingStrategy.referenceCount(notCachedId), isNull);
+        expect(referenceCountingStrategy.referenceCount(notCachedId), 0);
       });
 
       test(

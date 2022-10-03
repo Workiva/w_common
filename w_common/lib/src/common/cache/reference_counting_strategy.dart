@@ -8,7 +8,7 @@ class ReferenceCountingStrategy<TIdentifier, TValue>
   Map<TIdentifier, int> _count = <TIdentifier, int>{};
 
   int referenceCount(TIdentifier id) {
-    return _count[id];
+    return _count[id] ?? 0;
   }
 
   @override
@@ -35,8 +35,8 @@ class ReferenceCountingStrategy<TIdentifier, TValue>
 
   @override
   void onWillRelease(TIdentifier id) {
-    if (_count[id] != null && _count[id] > 0) {
-      _count[id]--;
+    if (_count[id] != null && _count[id]! > 0) {
+      _count[id] = _count[id]!-1;
     }
   }
 }

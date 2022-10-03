@@ -25,7 +25,7 @@ void main() {
     var expectedValue = 'expectedValue';
 
     for (var i in Iterable<int>.generate(3)) {
-      Cache<String, Object> cache;
+      late Cache<String, Object> cache;
 
       setUp(() async {
         cache = Cache<String, Object>(LeastRecentlyUsedStrategy(i));
@@ -73,7 +73,7 @@ void main() {
         // release expected item
         var release = cache.release(expectedId);
 
-        await Future.wait([firstGet, remove, secondGet, release]);
+        await Future.wait([firstGet!, remove, secondGet!, release]);
 
         // create i releases, after which expected item (and only expected
         // item) should be released

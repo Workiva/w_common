@@ -29,10 +29,10 @@ void main() {
     testCommonDisposable(() => BrowserDisposable());
 
     group('events on global singleton', () {
-      BrowserDisposable disposable;
-      String eventName;
-      bool useCapture;
-      EventListener callback;
+      late BrowserDisposable disposable;
+      late String eventName;
+      late bool useCapture;
+      late EventListener callback;
 
       setUp(() {
         disposable = BrowserDisposable();
@@ -67,7 +67,7 @@ void main() {
     });
 
     group('events on DOM element', () {
-      BrowserDisposable disposable;
+      late BrowserDisposable disposable;
 
       setUp(() {
         disposable = BrowserDisposable();

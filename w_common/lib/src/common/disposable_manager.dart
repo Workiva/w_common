@@ -47,7 +47,7 @@ abstract class DisposableManagerV7 {
   ///      }
   ///
   /// A null parameter will result in a null return value.
-  T manageAndReturnTypedDisposable<T extends Disposable>(T disposable);
+  T? manageAndReturnTypedDisposable<T extends Disposable>(T? disposable);
 
   /// Automatically cancel a stream controller when this object is disposed.
   ///
@@ -115,7 +115,7 @@ abstract class DisposableManagerV7 {
   /// Neither parameter may be `null`.
   StreamSubscription<T> listenToStream<T>(
       Stream<T> stream, void onData(T event),
-      {Function onError, void onDone(), bool cancelOnError});
+      {Function? onError, void onDone()?, bool? cancelOnError});
 
   /// Add [future] to a list of futures that will be awaited before the
   /// object is disposed.
@@ -187,7 +187,7 @@ abstract class LeakFlagger {
   ///
   /// Consumers can search a heap snapshot for the `LeakFlag` class to
   /// see all instances of the flag.
-  void flagLeak([String description]);
+  void flagLeak([String? description]);
 }
 
 /// Exception thrown when an operation cannot be completed because the

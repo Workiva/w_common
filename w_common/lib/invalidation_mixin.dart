@@ -22,10 +22,10 @@ import 'dart:html';
 /// Validation is scheduled using animationFrame on [window].
 abstract class InvalidationMixin {
   /// A boolean reflection of the current validity.
-  bool get invalid => _onValidate != null && !_onValidate.isCompleted;
+  bool get invalid => _onValidate != null && !_onValidate!.isCompleted;
 
   /// Used to complete or error the validation
-  Completer<ValidationStatus> _onValidate;
+  Completer<ValidationStatus>? _onValidate;
 
   /// Mark this as invalid to be validated at a later time.
   ///
@@ -35,7 +35,7 @@ abstract class InvalidationMixin {
   /// and [ValidationStatus.cancelled] if invalidation is cancelled.
   Future<ValidationStatus> invalidate() {
     if (invalid) {
-      return _onValidate.future;
+      return _onValidate!.future;
     }
 
     _onValidate = Completer<ValidationStatus>();
@@ -43,11 +43,11 @@ abstract class InvalidationMixin {
     window.animationFrame.then((_) {
       if (invalid) {
         validate();
-        _onValidate.complete(ValidationStatus.complete);
+        _onValidate!.complete(ValidationStatus.complete);
       }
     });
 
-    return _onValidate.future;
+    return _onValidate!.future;
   }
 
   /// Abstract method to be implemented as means of performing validation.
@@ -59,7 +59,7 @@ abstract class InvalidationMixin {
   /// [ValidationStatus.cancelled] as a result of calling this method.
   void cancelInvalidation() {
     if (invalid) {
-      _onValidate.complete(ValidationStatus.cancelled);
+      _onValidate!.complete(ValidationStatus.cancelled);
     }
   }
 }
