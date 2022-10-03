@@ -16,7 +16,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
 
   final StreamSubscription<T> _subscription;
 
-  Completer<Null> _didComplete = Completer();
+  Completer<void> _didComplete = Completer();
 
   ManagedStreamSubscription(Stream<T> stream, void onData(T arg),
       {Function? onError, void onDone()?, bool? cancelOnError})
@@ -26,7 +26,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
     _wrapOnError(onError);
   }
 
-  Future<Null> get didComplete => _didComplete.future;
+  Future<void> get didComplete => _didComplete.future;
 
   @override
   bool get isPaused => _subscription.isPaused;
@@ -37,7 +37,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
   }
 
   @override
-  Future<Null> cancel() {
+  Future<void> cancel() {
     var result = _subscription.cancel();
 
     // StreamSubscription.cancel() will return null if no cleanup was

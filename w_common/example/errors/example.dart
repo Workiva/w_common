@@ -15,13 +15,13 @@ class RandomDisposableAdder extends Disposable {
     print('RandomDisposableAdder.addRandomManager');
     switch (Random().nextInt(5)) {
       case 0:
-        listenToStream(Stream<Null>.empty(), (dynamic _) {});
+        listenToStream(Stream<void>.empty(), (dynamic _) {});
         break;
       case 1:
         manageStreamController(StreamController());
         break;
       case 2:
-        manageCompleter(Completer<Null>());
+        manageCompleter(Completer<void>());
         break;
       case 3:
         manageAndReturnTypedDisposable(Disposable());
@@ -41,7 +41,7 @@ class MyManager extends RandomDisposableAdder {
   String get disposableTypeName => 'MyManager';
 
   @override
-  Future<Null> onDispose() {
+  Future<void> onDispose() {
     print('MyManager.onDispose');
     return super.onDispose();
   }
@@ -56,14 +56,14 @@ class ErrorCreator extends RandomDisposableAdder {
   String get disposableTypeName => 'ErrorCreator';
 
   @override
-  Future<Null> onWillDispose() {
+  Future<void> onWillDispose() {
     print('ErrorCreator.onWillDispose');
     addRandomManager();
     return super.onDispose();
   }
 
   @override
-  Future<Null> onDispose() {
+  Future<void> onDispose() {
     print('ErrorCreator.onDispose');
     addRandomManager();
     return super.onDispose();

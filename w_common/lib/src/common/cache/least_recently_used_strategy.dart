@@ -25,8 +25,8 @@ class LeastRecentlyUsedStrategy<TIdentifier, TValue>
   }
 
   @override
-  Future<Null> onDidRelease(
-      TIdentifier id, TValue value, Future<Null> remove(TIdentifier id)) async {
+  Future<void> onDidRelease(
+      TIdentifier id, TValue value, Future<void> remove(TIdentifier id)) async {
     // If there are more than _keep items in the queue remove the least recently
     // used.
     while (_removalQueue.length > _keep) {

@@ -23,7 +23,7 @@ class CacheContext<TIdentifier, TValue> {
 /// consumption pattern of [Cache] or any other cache implementation.
 class CachingStrategy<TIdentifier, TValue> {
   /// Custom logic to be executed after a [Cache.get] or [Cache.getAsync].
-  Future<Null> onDidGet(TIdentifier id, TValue value) async {}
+  Future<void> onDidGet(TIdentifier id, TValue value) async {}
 
   /// Custom logic to be executed after a [Cache.release].
   ///
@@ -38,7 +38,7 @@ class CachingStrategy<TIdentifier, TValue> {
   /// set an eviction timer of 30 seconds.
   ///
   ///     @override
-  ///     Future<Null> onDidRelease(TIdentifier id, TValue value, Future<Null>
+  ///     Future<void> onDidRelease(TIdentifier id, TValue value, Future<void>
   ///         remove(TIdentifier id)) async {
   ///       var timer = getManagedTimer(new Duration(seconds:30), () {
   ///         remove(id);
@@ -64,14 +64,14 @@ class CachingStrategy<TIdentifier, TValue> {
   ///     // _superLongAsyncCall and onDidRelease have now completed
   ///
   ///     var c = cache.getAsync('id', _superLongAsyncCall);
-  Future<Null> onDidRelease(TIdentifier id, TValue value,
-      Future<Null> remove(TIdentifier id)) async {}
+  Future<void> onDidRelease(TIdentifier id, TValue value,
+      Future<void> remove(TIdentifier id)) async {}
 
   /// Custom logic to be executed after a [Cache.remove].
   ///
   /// This indicates that the [TIdentifier], [TValue] pair are no longer in the
   /// cache.
-  Future<Null> onDidRemove(TIdentifier id, TValue value) async {}
+  Future<void> onDidRemove(TIdentifier id, TValue value) async {}
 
   /// Custom logic to be executed before a [Cache.get] or [Cache.getAsync].
   void onWillGet(TIdentifier id) {}
@@ -214,7 +214,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     try {
       final TValue value = valueFactory.call();
 
-      _cachingStrategy.onDidGet(id, value).then((Null _) {
+      _cachingStrategy.onDidGet(id, value).then((_) {
         _didUpdateController.add(CacheContext(id, value));
         completer.complete(value);
       });
@@ -292,7 +292,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   ///
   /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
   @mustCallSuper
-  Future<Null> release(TIdentifier id) {
+  Future<void> release(TIdentifier id) {
     _log.finest('release id: $id');
     _throwWhenDisposed('release');
     _isReleased[id] = true;
@@ -320,7 +320,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   ///
   /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
   @mustCallSuper
-  Future<Null> remove(TIdentifier id) {
+  Future<void> remove(TIdentifier id) {
     _log.finest('remove id: $id');
     _throwWhenDisposed('remove');
     _isReleased.remove(id);

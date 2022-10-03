@@ -28,22 +28,22 @@ abstract class StubDisposable implements Disposable {
   bool wasOnWillDisposeCalled = false;
 
   @override
-  Future<Null> onDispose() {
+  Future<void> onDispose() {
     expect(isDisposed, isFalse);
     expect(isOrWillBeDisposed, isTrue);
     numTimesOnDisposeCalled++;
     wasOnDisposeCalled = true;
-    var future = Future<Null>(() => null);
+    var future = Future<void>(() => null);
     future.then((_) async {
       await Future(() {}); // Give it a chance to update state.
       expect(isDisposed, isTrue);
       expect(isOrWillBeDisposed, isTrue);
-    } /*as FutureOr<_> Function(Null)*/);
+    });
     return future;
   }
 
   @override
-  Future<Null> onWillDispose() {
+  Future<void> onWillDispose() {
     expect(isDisposed, isFalse);
     expect(isOrWillBeDisposed, isTrue);
     numTimesOnWillDisposeCalled++;
@@ -58,7 +58,7 @@ class DisposeCounter extends Disposable {
 
   int disposeCount = 0;
   @override
-  Future<Null> dispose() {
+  Future<void> dispose() {
     disposeCount++;
     return super.dispose();
   }
@@ -85,7 +85,7 @@ class TimerHarness {
   Completer<bool>? _didCancelTimerCompleter;
   bool _didCompleteTimer = false;
   Completer<bool>? _didCompleteTimerCompleter;
-  final Completer<Null> _didConcludeCompleter = Completer<Null>();
+  final Completer<void> _didConcludeCompleter = Completer<void>();
   final Duration _timerDuration = Duration(milliseconds: 10);
 
   Duration get duration => _timerDuration;
@@ -100,7 +100,7 @@ class TimerHarness {
       Future.error(
           'getCallback() must be called before didCompleteTimer is valid');
 
-  Future<Null> get didConclude => _didConcludeCompleter.future;
+  Future<void> get didConclude => _didConcludeCompleter.future;
 
   TimerHarnessCallback getCallback() {
     _setupInternalTimer();

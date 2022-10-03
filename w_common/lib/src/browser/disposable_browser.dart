@@ -25,16 +25,16 @@ class _InnerDisposable extends disposable_common.Disposable {
   @override
   String get disposableTypeName => '_InnerDisposable';
 
-  late Func<Future<Null>> onDisposeHandler;
-  late Func<Future<Null>> onWillDisposeHandler;
+  late Func<Future<void>> onDisposeHandler;
+  late Func<Future<void>> onWillDisposeHandler;
 
   @override
-  Future<Null> onDispose() {
+  Future<void> onDispose() {
     return onDisposeHandler();
   }
 
   @override
-  Future<Null> onWillDispose() {
+  Future<void> onWillDispose() {
     return onWillDisposeHandler();
   }
 }
@@ -71,7 +71,7 @@ class _InnerDisposable extends disposable_common.Disposable {
 ///          manageStreamController(_controller);
 ///        }
 ///
-///        Future<Null> onDispose() {
+///        Future<void> onDispose() {
 ///          // Other cleanup
 ///        }
 ///      }
@@ -127,7 +127,7 @@ class _InnerDisposable extends disposable_common.Disposable {
 ///
 ///        // ...more methods
 ///
-///        Future<Null> unload() async {
+///        Future<void> unload() async {
 ///          await _disposable.dispose();
 ///        }
 ///      }
@@ -177,7 +177,7 @@ class Disposable implements disposable_common.Disposable {
   final _InnerDisposable _disposable = _InnerDisposable();
 
   @override
-  Future<Null> get didDispose => _disposable.didDispose;
+  Future<void> get didDispose => _disposable.didDispose;
 
   @override
   String get disposableTypeName => disposable_common.defaultDisposableTypeName;
@@ -199,7 +199,7 @@ class Disposable implements disposable_common.Disposable {
       _disposable.awaitBeforeDispose(future);
 
   @override
-  Future<Null> dispose() {
+  Future<void> dispose() {
     _disposable
       ..onDisposeHandler = onDispose
       ..onWillDisposeHandler = onWillDispose;
@@ -262,7 +262,7 @@ class Disposable implements disposable_common.Disposable {
   /// Callback to allow arbitrary cleanup on dispose.
   @override
   @protected
-  Future<Null> onDispose() async {
+  Future<void> onDispose() async {
     return null;
   }
 
@@ -273,7 +273,7 @@ class Disposable implements disposable_common.Disposable {
   /// completes.
   @override
   @protected
-  Future<Null> onWillDispose() async {
+  Future<void> onWillDispose() async {
     return null;
   }
 
