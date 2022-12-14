@@ -1,13 +1,19 @@
+## [2.1.1](https://github.com/Workiva/w_common/compare/2.1.0...2.1.1)
+
+- Implement `_ObservableTimer.tick`, which allows timers created via
+`Disposable.getManagedTimer` and `Disposable.getManagedPeriodicTimer` to be
+controlled by the [`fake_async` package](https://pub.dev/packages/fake_async).
+
 ## [2.0.0](https://github.com/Workiva/w_common/compare/1.21.8...2.0.0)
 _June 14, 2022_
 
 **Breaking Changes:**
 - Removes sass compilation tool from w_common. Use w_common_tools instead.
-- Removes `DisposableManager`, `DisposableManagerV2`, `DisposableManagerV3`, 
-`DisposableManagerV4`, `DisposableManagerV5`, and `DisposableManagerV6`. Use 
+- Removes `DisposableManager`, `DisposableManagerV2`, `DisposableManagerV3`,
+`DisposableManagerV4`, `DisposableManagerV5`, and `DisposableManagerV6`. Use
 `DisposableManagerV7` instead.
-- Removes `w_common.dart` entrypoint. Use the specific entrypoint related to 
-the pieces of w_common you want to use instead. For example, 
+- Removes `w_common.dart` entrypoint. Use the specific entrypoint related to
+the pieces of w_common you want to use instead. For example,
 `package:w_common/disposable.dart`.
 - Changes to `Cache`:
   - Removes `keys` getter. Use `liveKeys` and `releasedKeys` instead.
@@ -16,7 +22,7 @@ the pieces of w_common you want to use instead. For example,
   instead.
 - Changes to `Disposable`:
   - Removes `isDisposedOrDisposing`. Use `isOrWillBeDisposed` instead. This also returns
-  true when the `Disposable` instance is in the "awaiting disposal" state that 
+  true when the `Disposable` instance is in the "awaiting disposal" state that
   is entered as soon as [dispose] is called.
   - Removes `isDisposing`. Use `isOrWillBeDisposed` instead.
   - Removes `manageAndReturnDisposable`. Use `manageAndReturnTypedDisposable` instead.
@@ -25,6 +31,6 @@ the pieces of w_common you want to use instead. For example,
 
 
 ## [1.21.8](https://github.com/Workiva/w_common/compare/1.21.7...1.21.8)
-_June 2, 2022_ 
+_June 2, 2022_
 
 - Added w_common_tools as a separate package.
