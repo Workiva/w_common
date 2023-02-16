@@ -167,7 +167,9 @@ void main() {
           expect(context.id, cachedId);
           expect(context.value, isNull);
         }, count: 1));
-        cache..remove(cachedId)..remove(cachedId);
+        cache
+          ..remove(cachedId)
+          ..remove(cachedId);
       });
 
       test(
@@ -178,7 +180,9 @@ void main() {
           expect(context.id, cachedId);
           expect(context.value, cachedValue);
         }, count: 1));
-        cache..remove(cachedId)..remove(cachedId);
+        cache
+          ..remove(cachedId)
+          ..remove(cachedId);
       });
 
       test('should not dispatch didUpdate event when identifier is not cached',
