@@ -11,7 +11,6 @@ import 'package:meta/meta.dart';
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as path;
 import 'package:sass/sass.dart' as sass;
-import 'package:source_maps/source_maps.dart';
 import 'package:watcher/watcher.dart';
 
 Stopwatch taskTimer;
@@ -338,22 +337,23 @@ Future<void> compileSass(SassCompilationOptions options,
           outputDir = path.join(outputDir, outputSubDir);
         }
 
-        SingleMapping sourceMap;
         var cssPath = path.setExtension(
             path.join(outputDir, path.basename(target)),
             outputStyleArgToOutputStyleFileExtension[style]);
-        var cssSrc = sass.compile(target,
+        final compileResult = sass.compileToResult(target,
             style: outputStyle,
             color: true,
-            packageConfig: await _packageConfig, sourceMap: (map) {
-          if (options.sourceDir != options.outputDir) {
-            final relativePathOutToSassDir =
-                path.dirname(path.relative(target, from: cssPath));
-            map.sourceRoot = relativePathOutToSassDir;
-          }
+            sourceMap: true,
+            packageConfig: await _packageConfig,
+        );
 
-          sourceMap = map;
-        });
+        var cssSrc = compileResult.css;
+        var sourceMap = compileResult.sourceMap;
+        if (options.sourceDir != options.outputDir) {
+          final relativePathOutToSassDir =
+          path.dirname(path.relative(target, from: cssPath));
+          sourceMap.sourceRoot = relativePathOutToSassDir;
+        }
 
         cssSrc =
             '$cssSrc\n\n/*# sourceMappingURL=${'${path.basename(cssPath)}.map'} */';
