@@ -7,14 +7,12 @@ import 'package:async/async.dart';
 import 'package:colorize/colorize.dart';
 import 'package:file/local.dart';
 import 'package:glob/glob.dart';
-import 'package:meta/meta.dart';
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as path;
 import 'package:sass/sass.dart' as sass;
-import 'package:source_maps/source_maps.dart';
 import 'package:watcher/watcher.dart';
 
-Stopwatch taskTimer;
+Stopwatch taskTimer = Stopwatch();
 
 final Colorize errorMessageHeading = Colorize().apply(Styles.RED, '[ERROR]');
 final Colorize failureMessageHeading =
@@ -92,10 +90,10 @@ class SassCompilationOptions {
   final bool check;
 
   SassCompilationOptions({
-    @required this.unparsedArgs,
-    @required String outputDir,
-    String sourceDir,
-    String compressedOutputStyleFileExtension,
+    required this.unparsedArgs,
+    required String outputDir,
+    String? sourceDir,
+    String? compressedOutputStyleFileExtension,
     this.expandedOutputStyleFileExtension =
         expandedOutputStyleFileExtensionDefaultValue,
     this.outputStyles = outputStyleDefaultValue,
@@ -151,23 +149,23 @@ class SassCompilationOptions {
   }
 
   List<String> get watchDirs => _watchDirs;
-  List<String> _watchDirs;
+  late List<String> _watchDirs;
 
   String get sourceDir => _sourceDir;
-  String _sourceDir;
+  late String _sourceDir;
 
   String get outputDir => _outputDir;
-  String _outputDir;
+  late String _outputDir;
 
   String get compressedOutputStyleFileExtension =>
       _compressedOutputStyleFileExtension;
-  String _compressedOutputStyleFileExtension;
+  late String _compressedOutputStyleFileExtension;
 
-  List<String> compileTargets;
+  late List<String> compileTargets;
 
   int _validateCompileTargets() {
     var exitCode = 0;
-    String srcRootDirName;
+    String? srcRootDirName;
     for (var target in compileTargets) {
       if (!File(target).existsSync()) {
         print('$errorMessageHeading "$target" does not exist');
@@ -307,7 +305,7 @@ Future<void> watch(SassCompilationOptions options) async {
 }
 
 Future<void> compileSass(SassCompilationOptions options,
-    {List<String> compileTargets, bool printReadyMessage = true}) async {
+    {List<String>? compileTargets, bool printReadyMessage = true}) async {
   taskTimer.start();
 
   compileTargets ??= options.compileTargets;
@@ -338,22 +336,24 @@ Future<void> compileSass(SassCompilationOptions options,
           outputDir = path.join(outputDir, outputSubDir);
         }
 
-        SingleMapping sourceMap;
         var cssPath = path.setExtension(
             path.join(outputDir, path.basename(target)),
-            outputStyleArgToOutputStyleFileExtension[style]);
-        var cssSrc = sass.compile(target,
-            style: outputStyle,
-            color: true,
-            packageConfig: await _packageConfig, sourceMap: (map) {
-          if (options.sourceDir != options.outputDir) {
-            final relativePathOutToSassDir =
-                path.dirname(path.relative(target, from: cssPath));
-            map.sourceRoot = relativePathOutToSassDir;
-          }
+            outputStyleArgToOutputStyleFileExtension[style]!);
+        final compileResult = sass.compileToResult(
+          target,
+          style: outputStyle,
+          color: true,
+          sourceMap: true,
+          packageConfig: await _packageConfig,
+        );
 
-          sourceMap = map;
-        });
+        var cssSrc = compileResult.css;
+        var sourceMap = compileResult.sourceMap!;
+        if (options.sourceDir != options.outputDir) {
+          final relativePathOutToSassDir =
+              path.dirname(path.relative(target, from: cssPath));
+          sourceMap.sourceRoot = relativePathOutToSassDir;
+        }
 
         cssSrc =
             '$cssSrc\n\n/*# sourceMappingURL=${'${path.basename(cssPath)}.map'} */';
@@ -427,8 +427,8 @@ Future<void> compileSass(SassCompilationOptions options,
 
 bool isSassPartial(String filePath) => path.basename(filePath).startsWith('_');
 
-PackageConfig _cachedPackageConfig;
-Future<PackageConfig> get _packageConfig async {
+PackageConfig? _cachedPackageConfig;
+Future<PackageConfig?> get _packageConfig async {
   var dir = Directory.current;
   _cachedPackageConfig ??= await findPackageConfig(dir);
   if (_cachedPackageConfig == null) {
