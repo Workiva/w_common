@@ -13,7 +13,7 @@ import 'package:path/path.dart' as path;
 import 'package:sass/sass.dart' as sass;
 import 'package:watcher/watcher.dart';
 
-Stopwatch taskTimer;
+Stopwatch taskTimer = Stopwatch();
 
 final Colorize errorMessageHeading = Colorize().apply(Styles.RED, '[ERROR]');
 final Colorize failureMessageHeading =
@@ -85,10 +85,10 @@ final ArgParser sassCliArgs = ArgParser()
 
 class SassCompilationOptions {
   final List<String> unparsedArgs;
-  final String expandedOutputStyleFileExtension;
+  final String/*!*/ expandedOutputStyleFileExtension;
   final List<String> outputStyles;
-  final bool watch;
-  final bool check;
+  final bool/*!*/ watch;
+  final bool/*!*/ check;
 
   SassCompilationOptions({
     @required this.unparsedArgs,
@@ -98,7 +98,7 @@ class SassCompilationOptions {
     this.expandedOutputStyleFileExtension =
         expandedOutputStyleFileExtensionDefaultValue,
     this.outputStyles = outputStyleDefaultValue,
-    List<String> watchDirs = const <String>[],
+    List<String>/*!*/ watchDirs = const <String>[],
     this.watch = false,
     this.check = false,
   }) {
@@ -150,19 +150,19 @@ class SassCompilationOptions {
   }
 
   List<String> get watchDirs => _watchDirs;
-  List<String> _watchDirs;
+  /*late*/List<String> _watchDirs;
 
   String get sourceDir => _sourceDir;
-  String _sourceDir;
+  /*late*/String _sourceDir;
 
   String get outputDir => _outputDir;
-  String _outputDir;
+  /*late*/String _outputDir;
 
   String get compressedOutputStyleFileExtension =>
       _compressedOutputStyleFileExtension;
-  String _compressedOutputStyleFileExtension;
+  /*late*/String _compressedOutputStyleFileExtension;
 
-  List<String> compileTargets;
+  /*late*/List<String> compileTargets;
 
   int _validateCompileTargets() {
     var exitCode = 0;
@@ -196,8 +196,8 @@ class SassCompilationOptions {
 Future<void> main(List<String> args) async {
   taskTimer = Stopwatch();
 
-  List<String> outputStylesValue;
-  bool helpValue;
+  List<String>/*!*/ outputStylesValue;
+  bool/*!*/ helpValue;
 
   SassCompilationOptions options;
 
