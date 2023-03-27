@@ -339,18 +339,19 @@ Future<void> compileSass(SassCompilationOptions options,
         var cssPath = path.setExtension(
             path.join(outputDir, path.basename(target)),
             outputStyleArgToOutputStyleFileExtension[style]!);
-        final compileResult = sass.compileToResult(target,
-            style: outputStyle,
-            color: true,
-            sourceMap: true,
-            packageConfig: await _packageConfig,
+        final compileResult = sass.compileToResult(
+          target,
+          style: outputStyle,
+          color: true,
+          sourceMap: true,
+          packageConfig: await _packageConfig,
         );
 
         var cssSrc = compileResult.css;
         var sourceMap = compileResult.sourceMap!;
         if (options.sourceDir != options.outputDir) {
           final relativePathOutToSassDir =
-          path.dirname(path.relative(target, from: cssPath));
+              path.dirname(path.relative(target, from: cssPath));
           sourceMap.sourceRoot = relativePathOutToSassDir;
         }
 
