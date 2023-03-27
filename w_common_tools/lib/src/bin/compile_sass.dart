@@ -7,7 +7,6 @@ import 'package:async/async.dart';
 import 'package:colorize/colorize.dart';
 import 'package:file/local.dart';
 import 'package:glob/glob.dart';
-import 'package:meta/meta.dart';
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as path;
 import 'package:sass/sass.dart' as sass;
