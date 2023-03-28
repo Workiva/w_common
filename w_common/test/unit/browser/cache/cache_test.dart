@@ -14,14 +14,10 @@
 @TestOn('browser')
 
 import 'dart:async';
-// import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:w_common/src/common/cache/cache.dart';
 import 'package:w_common/src/common/cache/least_recently_used_strategy.dart';
-
-// @GenerateNiceMocks([MockSpec<CachingStrategy<String, Object>>(as: #MockCachingStrategy)])
-// import 'cache_test.mocks.dart';
 
 void main() {
   group('Cache', () {
@@ -202,7 +198,7 @@ void main() {
         await childCache.get(cachedId, () => cachedValue);
         await childCache.remove(cachedId);
 
-        // verify(stubCachingStrategy.onDidRemove(cachedId, cachedValue));
+        verify(stubCachingStrategy.onDidRemove(cachedId, cachedValue));
       });
 
       test('should call onWillRemove when value was cached', () async {
@@ -294,8 +290,8 @@ void main() {
         await childCache.get(cachedId, () => cachedValue);
         await childCache.release(cachedId);
 
-        // verify(stubCachingStrategy.onDidRelease(
-        //     cachedId, cachedValue, childCache.remove));
+        verify(stubCachingStrategy.onDidRelease(
+            cachedId, cachedValue, childCache.remove));
       });
 
       test('should call onWillRelease when value was cached', () async {
@@ -508,39 +504,39 @@ void main() {
             ..release(cachedId);
         });
 
-        // test('when callback completes with an error', () {
-        //   var callbackCompleted = false;
-        //
-        //   cache.didRemove
-        //       .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
-        //     expect(context.id, cachedId);
-        //     expect(callbackCompleted, isTrue);
-        //   }));
-        //
-        //   runZoned(() {
-        //     cache.applyToItem(cachedId, (_) async {
-        //       await Future<dynamic>.delayed(const Duration(seconds: 1));
-        //       callbackCompleted = true;
-        //       throw Error();
-        //     });
-        //   },
-        //       onError: expectAsync1((dynamic _) {},
-        //           reason: 'error should be thrown in callback'));
-        //
-        //   cache.release(cachedId);
-        // });
+        test('when callback completes with an error', () {
+          var callbackCompleted = false;
+
+          cache.didRemove
+              .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
+            expect(context.id, cachedId);
+            expect(callbackCompleted, isTrue);
+          }));
+
+          runZoned(() {
+            cache.applyToItem(cachedId, (_) async {
+              await Future<dynamic>.delayed(const Duration(seconds: 1));
+              callbackCompleted = true;
+              throw Error();
+            });
+          },
+              onError: expectAsync1((dynamic _) {},
+                  reason: 'error should be thrown in callback'));
+
+          cache.release(cachedId);
+        });
       });
 
       test(
           'should return future that completes with same error as the '
           'future returned from callback', () async {
         final error = Error();
-        futureBool(cache.applyToItem(cachedId, (_) async {
+        await cache.applyToItem(cachedId, (_) async {
           await Future<dynamic>.delayed(Duration(seconds: 1));
           throw error;
-        }), (e) {
+        }).catchError((e) {
           expect(e, error);
-          return false;
+          return Future<bool>.value(false);
         });
       });
 
@@ -551,20 +547,19 @@ void main() {
         expect(cache.applyToItemCallBacks, isEmpty);
       });
 
-      // test(
-      //     'should remove futures added to applyToItemCallbacks after async '
-      //     'callback completes with error', () async {
-      //   try {
-      //     final applyToItemFuture = cache.applyToItem(cachedId, (_) async {
-      //       print('tlg test Error');
-      //       throw Error();
-      //     });
-      //     // expect(cache.applyToItemCallBacks, isNotEmpty);
-      //     await applyToItemFuture;
-      //   } catch (_) {}
-      //
-      //   // expect(cache.applyToItemCallBacks, isEmpty);
-      // });
+      test(
+          'should remove futures added to applyToItemCallbacks after async '
+          'callback completes with error', () async {
+        try {
+          final applyToItemFuture = cache.applyToItem(cachedId, (_) async {
+            throw Error();
+          });
+          expect(cache.applyToItemCallBacks, isNotEmpty);
+          await applyToItemFuture;
+        } catch (_) {}
+
+        expect(cache.applyToItemCallBacks, isEmpty);
+      });
 
       test(
           'should remove futures added to applyToItemCallbacks after async '
@@ -584,10 +579,6 @@ void main() {
       });
     });
   });
-}
-
-void futureBool(Future<bool> boolFuture, bool Function(dynamic) callback) {
-  boolFuture.catchError(callback);
 }
 
 class MockCachingStrategy<TIdentifier, TValue> extends Mock

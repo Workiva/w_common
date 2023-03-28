@@ -366,7 +366,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     if (callBackResult is Future<dynamic>) {
       // In this case we're only interested in the computation being done or not
       // done, not in the result
-      final errorlessCallbackResult = callBackResult.catchError((_) {});
+      final errorlessCallbackResult = callBackResult.then((_) {}, onError: (_) {});
 
       _applyToItemCallBacks.putIfAbsent(id, () => <Future<dynamic>>[]);
       _applyToItemCallBacks[id]!.add(errorlessCallbackResult);
