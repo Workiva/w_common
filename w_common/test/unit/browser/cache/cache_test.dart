@@ -42,17 +42,17 @@ void main() {
         expect(value, same(cachedValue));
       });
 
-      // test(
-      //     'should return same value when called successively '
-      //     'synchronously', () async {
-      //   var cachedValues = <Future<Object>?>[
-      //     cache.get(notCachedId, () => notCachedValue),
-      //     cache.get(notCachedId, () => Object())
-      //   ];
-      //   var completedValues = await Future.wait(cachedValues as Iterable<Future<Object>>);
-      //   expect(completedValues[0], same(notCachedValue));
-      //   expect(completedValues[1], same(notCachedValue));
-      // });
+      test(
+          'should return same value when called successively '
+          'synchronously', () async {
+        var cachedValues = <Future<Object>>[
+          cache.get(notCachedId, () => notCachedValue)!,
+          cache.get(notCachedId, () => Object())!
+        ];
+        var completedValues = await Future.wait(cachedValues as Iterable<Future<Object>>);
+        expect(completedValues[0], same(notCachedValue));
+        expect(completedValues[1], same(notCachedValue));
+      });
 
       test('should return factory value when identifier is not cached',
           () async {
@@ -90,21 +90,21 @@ void main() {
         expect(didCallValueFactory, isFalse);
       });
 
-      // test('should not dispatch didUpdate event on cached get', () async {
-      //   cache.didUpdate.listen(expectAsync1(
-      //       (CacheContext<dynamic, dynamic> context) {},
-      //       count: 0));
-      //   await cache.get(cachedId, () => Object());
-      // });
+      test('should not dispatch didUpdate event on cached get', () async {
+        cache.didUpdate.listen(expectAsync1(
+            (CacheContext<dynamic, dynamic> context) {},
+            count: 0));
+        await cache.get(cachedId, () => Object());
+      });
 
-      // test('should dispatch didUpdate event on uncached get', () async {
-      //   cache.didUpdate
-      //       .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
-      //     expect(context.id, notCachedId);
-      //     expect(context.value, notCachedValue);
-      //   }));
-      //   await cache.get(notCachedId, () => notCachedValue);
-      // });
+      test('should dispatch didUpdate event on uncached get', () async {
+        cache.didUpdate
+            .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
+          expect(context.id, notCachedId);
+          expect(context.value, notCachedValue);
+        }));
+        await cache.get(notCachedId, () => notCachedValue);
+      });
 
       test('should call onDidGet when value is not cached', () async {
         var mockCachingStrategy = MockCachingStrategy();
@@ -127,74 +127,74 @@ void main() {
         expect(() => cache.get(cachedId, () => cachedValue), throwsStateError);
       });
 
-      // test(
-      //     'should call valueFactory if identifier has been removed but removal '
-      //     'is not complete', () async {
-      //   final value1 = Object();
-      //   final value2 = Object();
-      //   cache.didRemove
-      //       .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
-      //     expect(context.id, notCachedId);
-      //     expect(context.value, value2);
-      //   }));
-      //   // Get a unached value that completes in the future
-      //   final completer = Completer<Object>();
-      //   final futureGet1 = cache.getAsync(notCachedId, () => completer.future);
-      //
-      //   // Remove the identifer from the cache before the original get completes
-      //   cache.remove(notCachedId);
-      //
-      //   // Get the same identifier from the cache but with a new value;
-      //   final futureGet2 = cache.getAsync(notCachedId, () async => value1);
-      //   completer.complete(value2);
-      //   expect(await futureGet2, isNot(same(await futureGet1)));
-      // });
+      test(
+          'should call valueFactory if identifier has been removed but removal '
+          'is not complete', () async {
+        final value1 = Object();
+        final value2 = Object();
+        cache.didRemove
+            .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
+          expect(context.id, notCachedId);
+          expect(context.value, value2);
+        }));
+        // Get a unached value that completes in the future
+        final completer = Completer<Object>();
+        final futureGet1 = cache.getAsync(notCachedId, () => completer.future);
+
+        // Remove the identifer from the cache before the original get completes
+        cache.remove(notCachedId);
+
+        // Get the same identifier from the cache but with a new value;
+        final futureGet2 = cache.getAsync(notCachedId, () async => value1);
+        completer.complete(value2);
+        expect(await futureGet2, isNot(same(await futureGet1)));
+      });
     });
 
     group('remove', () {
-      // test('should dispatch one didUpdate event when identifier is removed',
-      //     () async {
-      //   cache.didUpdate
-      //       .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
-      //     expect(context.id, cachedId);
-      //     expect(context.value, isNull);
-      //   }, count: 1));
-      //   await cache.remove(cachedId);
-      //   await cache.remove(cachedId);
-      // });
+      test('should dispatch one didUpdate event when identifier is removed',
+          () async {
+        cache.didUpdate
+            .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
+          expect(context.id, cachedId);
+          expect(context.value, isNull);
+        }, count: 1));
+        await cache.remove(cachedId);
+        await cache.remove(cachedId);
+      });
 
-      // test(
-      //     'should dispatch one didUpdate event when identifier is removed '
-      //     'synchronously', () {
-      //   cache.didUpdate
-      //       .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
-      //     expect(context.id, cachedId);
-      //     expect(context.value, isNull);
-      //   }, count: 1));
-      //   cache
-      //     ..remove(cachedId)
-      //     ..remove(cachedId);
-      // });
+      test(
+          'should dispatch one didUpdate event when identifier is removed '
+          'synchronously', () {
+        cache.didUpdate
+            .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
+          expect(context.id, cachedId);
+          expect(context.value, isNull);
+        }, count: 1));
+        cache
+          ..remove(cachedId)
+          ..remove(cachedId);
+      });
 
-      // test(
-      //     'should dispatch one didRemove event when identifier is removed '
-      //     'synchronously', () {
-      //   cache.didRemove
-      //       .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
-      //     expect(context.id, cachedId);
-      //     expect(context.value, cachedValue);
-      //   }, count: 1));
-      //   cache
-      //     ..remove(cachedId)
-      //     ..remove(cachedId);
-      // });
+      test(
+          'should dispatch one didRemove event when identifier is removed '
+          'synchronously', () {
+        cache.didRemove
+            .listen(expectAsync1((CacheContext<dynamic, dynamic> context) {
+          expect(context.id, cachedId);
+          expect(context.value, cachedValue);
+        }, count: 1));
+        cache
+          ..remove(cachedId)
+          ..remove(cachedId);
+      });
 
-      // test('should not dispatch didUpdate event when identifier is not cached',
-      //     () async {
-      //   cache.didUpdate.listen(
-      //       expectAsync1((CacheContext<dynamic, dynamic> _) {}, count: 0));
-      //   await cache.remove(notCachedId);
-      // });
+      test('should not dispatch didUpdate event when identifier is not cached',
+          () async {
+        cache.didUpdate.listen(
+            expectAsync1((CacheContext<dynamic, dynamic> _) {}, count: 0));
+        await cache.remove(notCachedId);
+      });
 
       test('should call onDidRemove when value was cached', () async {
         var stubCachingStrategy = MockCachingStrategy();
@@ -231,28 +231,28 @@ void main() {
         // verifyNever(stubCachingStrategy.onWillRemove(any));
       });
 
-      // test('should remove after pending get if called synchronously', () {
-      //   expect(cache.didUpdate.map((context) => context.id),
-      //       emitsInOrder([notCachedId, notCachedId]));
-      //   expect(cache.didUpdate.map((context) => context.value),
-      //       emitsInOrder([notCachedValue, null]));
-      //
-      //   cache.get(notCachedId, () => notCachedValue);
-      //   cache.remove(notCachedId);
-      // });
+      test('should remove after pending get if called synchronously', () {
+        expect(cache.didUpdate.map((context) => context.id),
+            emitsInOrder([notCachedId, notCachedId]));
+        expect(cache.didUpdate.map((context) => context.value),
+            emitsInOrder([notCachedValue, null]));
 
-      // test('should remove after pending getAsync if called synchronously', () {
-      //   expect(cache.didUpdate.map((context) => context.id),
-      //       emitsInOrder([notCachedId, notCachedId]));
-      //   expect(cache.didUpdate.map((context) => context.value),
-      //       emitsInOrder([notCachedValue, null]));
-      //
-      //   cache.getAsync(notCachedId, () async {
-      //     await Future<dynamic>.delayed(Duration(milliseconds: 100));
-      //     return notCachedValue;
-      //   });
-      //   cache.remove(notCachedId);
-      // });
+        cache.get(notCachedId, () => notCachedValue);
+        cache.remove(notCachedId);
+      });
+
+      test('should remove after pending getAsync if called synchronously', () {
+        expect(cache.didUpdate.map((context) => context.id),
+            emitsInOrder([notCachedId, notCachedId]));
+        expect(cache.didUpdate.map((context) => context.value),
+            emitsInOrder([notCachedValue, null]));
+
+        cache.getAsync(notCachedId, () async {
+          await Future<dynamic>.delayed(Duration(milliseconds: 100));
+          return notCachedValue;
+        });
+        cache.remove(notCachedId);
+      });
 
       test('should complete if pending get factory completes with an error',
           () {
@@ -397,17 +397,20 @@ void main() {
     });
 
     group('liveValues', () {
-      test('should not provide access to released values', () async {
-        cache.didRemove.listen(expectAsync1(
-            (CacheContext<dynamic, dynamic> context) {},
-            count: 0,
-            reason: 'Ensure that cached item is not removed'));
-
-        // expect(await cache.liveValues, contains(cachedValue));
-        // ignore: unawaited_futures
-        cache.release(cachedId);
-        // expect(await cache.liveValues, isNot(contains(cachedValue)));
-      });
+      // test('should not provide access to released values', () async {
+      //   cache.didRemove.listen(expectAsync1(
+      //       (CacheContext<dynamic, dynamic> context) {},
+      //       count: 0,
+      //       reason: 'Ensure that cached item is not removed'));
+      //
+      //   final valuesbefore = await cache.liveValues;
+      //   expect(valuesbefore, isNotNull);
+      //   expect(valuesbefore!, contains(cachedValue));
+      //   // ignore: unawaited_futures
+      //   final valuesAfter = await cache.release(cachedId);
+      //   expect(valuesAfter, isNotNull);
+      //   expect(valuesAfter!, isNot(contains(cachedValue)));
+      // });
 
       test(
           'should not provide access to released values when release is awaited',
@@ -532,12 +535,12 @@ void main() {
           'should return future that completes with same error as the '
           'future returned from callback', () async {
         final error = Error();
-        await cache.applyToItem(cachedId, (_) async {
+        futureBool(cache.applyToItem(cachedId, (_) async {
           await Future<dynamic>.delayed(Duration(seconds: 1));
           throw error;
-        }).catchError((e) {
+        }), (e) {
           expect(e, error);
-          return Future<bool>.value(false);
+          return false;
         });
       });
 
@@ -581,6 +584,10 @@ void main() {
       });
     });
   });
+}
+
+void futureBool(Future<bool> boolFuture, bool Function(dynamic) callback) {
+  boolFuture.catchError(callback);
 }
 
 class MockCachingStrategy<TIdentifier, TValue> extends Mock
