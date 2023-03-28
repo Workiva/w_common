@@ -19,8 +19,8 @@ import 'package:w_common/src/common/cache/reference_counting_strategy.dart';
 
 void main() {
   group('ReferenceCountingStrategy', () {
-    Cache<String, Object> cache;
-    ReferenceCountingStrategy<String, Object> referenceCountingStrategy;
+    late Cache<String, Object?> cache;
+    late ReferenceCountingStrategy<String, Object> referenceCountingStrategy;
     const String cachedId = '1';
     final Object cachedValue = Object();
     const String notCachedId = '2';

@@ -33,7 +33,7 @@ abstract class _Disposable {
 /// Used to invoke, and remove references to, a [Disposer] before disposal
 /// of the parent object.
 class ManagedDisposer implements _Disposable {
-  Disposer _disposer;
+  Disposer? _disposer;
   final Completer<Null> _didDispose = Completer<Null>();
   bool _isDisposing = false;
 
@@ -68,7 +68,7 @@ class ManagedDisposer implements _Disposable {
     _isDisposing = true;
 
     var disposeFuture = _disposer != null
-        ? (_disposer() ?? Future.value())
+        ? (_disposer!() ?? Future.value())
         : Future<dynamic>.value();
     _disposer = null;
 
@@ -85,7 +85,7 @@ class ManagedDisposer implements _Disposable {
 /// cancelled.
 class _ObservableTimer implements Timer {
   Completer<Null> _didConclude = Completer<Null>();
-  Timer _timer;
+  late Timer _timer;
 
   _ObservableTimer(Duration duration, void callback()) {
     _timer = Timer(duration, () {
@@ -132,7 +132,7 @@ class LeakFlag {
 }
 
 /// A function that, when called, disposes of one or more objects.
-typedef Disposer = Future<dynamic> Function();
+typedef Disposer = Future<dynamic>? Function();
 
 /// Allows the creation of managed objects, including helpers for common
 /// patterns.
@@ -242,7 +242,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   static bool _debugMode = false;
   static bool _debugModeLogging = false;
   static bool _debugModeTelemetry = false;
-  static Logger _logger;
+  static Logger? _logger;
 
   /// Disables all debug features enabled by [enableDebugMode].
   static void disableDebugMode() {
@@ -259,7 +259,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   ///
   /// This should only be used for debugging and profiling as it can result
   /// in a huge number of messages being generated.
-  static void enableDebugMode({bool disableLogging, bool disableTelemetry}) {
+  static void enableDebugMode({bool? disableLogging, bool? disableTelemetry}) {
     if (!_debugMode) {
       _debugMode = true;
       _debugModeLogging = !(disableLogging ?? false);
@@ -272,7 +272,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   final _awaitableFutures = HashSet<Future<dynamic>>();
   final _didDispose = Completer<Null>();
-  LeakFlag _leakFlag;
+  LeakFlag? _leakFlag;
   final _internalDisposables = HashSet<_Disposable>();
   DisposableState _state = DisposableState.initialized;
 
@@ -365,7 +365,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   /// Dispose of the object, cleaning up to prevent memory leaks.
   @override
   Future<Null> dispose() async {
-    Stopwatch stopwatch;
+    late Stopwatch stopwatch;
     if (_debugModeTelemetry) {
       stopwatch = Stopwatch()..start();
     }
@@ -401,13 +401,13 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     _didDispose.complete();
     _state = DisposableState.disposed;
     if (_debugModeLogging) {
-      _logger.info('Disposed object $hashCode of type $runtimeType');
+      _logger!.info('Disposed object $hashCode of type $runtimeType');
     }
 
     if (_debugModeTelemetry) {
       stopwatch.stop();
       var t = stopwatch.elapsedMicroseconds / 1000000.0;
-      _logger.info('$runtimeType $hashCode took $t seconds to dispose');
+      _logger!.info('$runtimeType $hashCode took $t seconds to dispose');
     }
 
     flagLeak();
@@ -415,7 +415,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   @mustCallSuper
   @override
-  void flagLeak([String description]) {
+  void flagLeak([String? description]) {
     if (_debugMode && _leakFlag == null) {
       _leakFlag = LeakFlag(
           description ?? '$disposableTypeName (runtimeType: $runtimeType)');
@@ -447,7 +447,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   @mustCallSuper
   @override
-  ManagedDisposer getManagedDisposer(Disposer disposer) {
+  ManagedDisposer getManagedDisposer(Disposer? disposer) {
     _throwOnInvalidCall('getManagedDisposer', 'disposer', disposer);
     _logManageMessage(disposer);
 
@@ -488,8 +488,8 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   @mustCallSuper
   @override
   StreamSubscription<T> listenToStream<T>(
-      Stream<T> stream, void onData(T event),
-      {Function onError, void onDone(), bool cancelOnError}) {
+      Stream<T> stream, void onData(T event)?,
+      {Function? onError, void onDone()?, bool? cancelOnError}) {
     _throwOnInvalidCall2('listenToStream', 'stream', 'onData', stream, onData);
     var managedStreamSubscription = ManagedStreamSubscription(stream, onData,
         onError: onError, onDone: onDone, cancelOnError: cancelOnError);
@@ -514,7 +514,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   @mustCallSuper
   @override
-  T manageAndReturnTypedDisposable<T extends Disposable>(T disposable) {
+  T? manageAndReturnTypedDisposable<T extends Disposable>(T? disposable) {
     if (disposable == null) {
       return null;
     }
@@ -552,7 +552,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     return completer;
   }
 
-  void manageDisposable(Disposable disposable) {
+  void manageDisposable(Disposable? disposable) {
     if (disposable == null) {
       return;
     }
@@ -631,20 +631,20 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   void _logDispose() {
     if (_debugModeLogging) {
-      _logger.info('Disposing object $hashCode of type $runtimeType');
+      _logger!.info('Disposing object $hashCode of type $runtimeType');
     }
   }
 
-  void _logUnmanageMessage(Object target) {
+  void _logUnmanageMessage(Object? target) {
     if (_debugModeLogging) {
-      _logger.info(
+      _logger!.info(
           '$runtimeType $hashCode unmanaging ${target.runtimeType} ${target.hashCode}');
     }
   }
 
-  void _logManageMessage(Object target) {
+  void _logManageMessage(Object? target) {
     if (_debugModeLogging) {
-      _logger.info(
+      _logger!.info(
           '$runtimeType $hashCode managing ${target.runtimeType} ${target.hashCode}');
     }
   }

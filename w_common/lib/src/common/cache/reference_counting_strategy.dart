@@ -7,7 +7,7 @@ class ReferenceCountingStrategy<TIdentifier, TValue>
     extends CachingStrategy<TIdentifier, TValue> {
   Map<TIdentifier, int> _count = <TIdentifier, int>{};
 
-  int referenceCount(TIdentifier id) {
+  int? referenceCount(TIdentifier id) {
     return _count[id];
   }
 
@@ -35,8 +35,9 @@ class ReferenceCountingStrategy<TIdentifier, TValue>
 
   @override
   void onWillRelease(TIdentifier id) {
-    if (_count[id] != null && _count[id] > 0) {
-      _count[id]--;
+    final count = _count[id];
+    if (count != null && count > 0) {
+      _count[id] = count - 1;
     }
   }
 }

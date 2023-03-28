@@ -15,7 +15,7 @@ class RandomDisposableAdder extends Disposable {
     print('RandomDisposableAdder.addRandomManager');
     switch (Random().nextInt(5)) {
       case 0:
-        listenToStream(Stream<Null>.empty(), (_) {});
+        listenToStream(Stream<Null>.empty(), (dynamic _) {});
         break;
       case 1:
         manageStreamController(StreamController());
@@ -77,14 +77,14 @@ void main() {
 
   Disposable.enableDebugMode();
 
-  MyManager myManager;
+  MyManager? myManager;
 
   ButtonElement createMyManagerButton =
-      querySelector('#create-MyManager-button');
+      querySelector('#create-MyManager-button') as ButtonElement;
   ButtonElement disposeMyManagerButton =
-      querySelector('#dispose-MyManager-button');
+      querySelector('#dispose-MyManager-button') as ButtonElement;
   ButtonElement posthumousMyManagerButton =
-      querySelector('#posthumous-MyManager-button');
+      querySelector('#posthumous-MyManager-button') as ButtonElement;
 
   createMyManagerButton.onClick.listen((_) {
     myManager = MyManager();
@@ -99,18 +99,18 @@ void main() {
       print('You have not created myManager yet.');
     } else {
       try {
-        myManager.addRandomManager();
+        myManager!.addRandomManager();
       } catch (e) {
         errorLogger.severe(e);
       }
     }
   });
 
-  ErrorCreator errorCreator;
+  ErrorCreator? errorCreator;
   ButtonElement createErrorCreatorButton =
-      querySelector('#create-ErrorCreator-button');
+      querySelector('#create-ErrorCreator-button') as ButtonElement;
   ButtonElement disposeErrorCreatorButton =
-      querySelector('#dispose-ErrorCreator-button');
+      querySelector('#dispose-ErrorCreator-button') as ButtonElement;
 
   createErrorCreatorButton.onClick.listen((_) {
     errorCreator = ErrorCreator();
@@ -121,7 +121,7 @@ void main() {
       print('You have not created the error creator object yet');
     } else {
       try {
-        await errorCreator.dispose();
+        await errorCreator!.dispose();
       } catch (e) {
         errorLogger.severe(e);
       }

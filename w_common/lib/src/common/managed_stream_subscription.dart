@@ -18,8 +18,8 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
 
   Completer<Null> _didComplete = Completer();
 
-  ManagedStreamSubscription(Stream<T> stream, void onData(T arg),
-      {Function onError, void onDone(), bool cancelOnError})
+  ManagedStreamSubscription(Stream<T> stream, void onData(T arg)?,
+      {Function? onError, void onDone()?, bool? cancelOnError})
       : _cancelOnError = cancelOnError ?? false,
         _subscription = stream.listen(onData, cancelOnError: cancelOnError) {
     _wrapOnDone(onDone);
@@ -32,7 +32,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
   bool get isPaused => _subscription.isPaused;
 
   @override
-  Future<E> asFuture<E>([E futureValue]) {
+  Future<E> asFuture<E>([E? futureValue]) {
     return _subscription.asFuture(futureValue).whenComplete(_complete);
   }
 
@@ -40,30 +40,22 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
   Future<Null> cancel() {
     var result = _subscription.cancel();
 
-    // StreamSubscription.cancel() will return null if no cleanup was
-    // necessary. This behavior is described in the docs as "for historical
-    // reasons" so this may change in the future.
-    if (result == null) {
-      _complete();
-      return null;
-    }
-
     return result.then((_) {
       _complete();
     });
   }
 
   @override
-  void onData(void handleData(T _)) => _subscription.onData(handleData);
+  void onData(void handleData(T _)?) => _subscription.onData(handleData);
 
   @override
-  void onDone(void handleDone()) => _wrapOnDone(handleDone);
+  void onDone(void handleDone()?) => _wrapOnDone(handleDone);
 
   @override
-  void onError(Function handleError) => _wrapOnError(handleError);
+  void onError(Function? handleError) => _wrapOnError(handleError);
 
   @override
-  void pause([Future<dynamic> resumeSignal]) =>
+  void pause([Future<dynamic>? resumeSignal]) =>
       _subscription.pause(resumeSignal);
 
   @override
@@ -75,7 +67,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
     }
   }
 
-  void _wrapOnDone(void handleDone()) {
+  void _wrapOnDone(void handleDone()?) {
     _subscription.onDone(() {
       if (handleDone != null) {
         handleDone();
@@ -85,7 +77,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
     });
   }
 
-  void _wrapOnError(Function handleError) {
+  void _wrapOnError(Function? handleError) {
     _subscription.onError((error, stackTrace) {
       if (handleError == null) {
         // By default unhandled stream errors are handled by their zone

@@ -15,7 +15,7 @@ DateFormat monthDayFormat = DateFormat.MMMMd();
 DateFormat yearMonthDayFormat = DateFormat.yMMMd();
 
 /// Formats a DateTime into the 'X ago' string format.
-String formatTimeDifference(DateTime time, {DateTime now}) {
+String formatTimeDifference(DateTime time, {DateTime? now}) {
   now ??= DateTime.now();
   final timeOfDay = timeFormat.format(time).toLowerCase();
   final deltaDays = now.difference(time).inDays.abs();
