@@ -361,8 +361,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: close_sinks
       var controller = StreamController<Null>();
       // ignore: cancel_subscriptions
-      var subscription =
-          disposable.listenToStream(controller.stream, (_) {});
+      var subscription = disposable.listenToStream(controller.stream, (_) {});
       subscription.onError(expectAsync2((error, _) {
         expect(error, isA<Exception>());
         expect(error.toString(), 'Exception: intentional');
@@ -411,8 +410,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: close_sinks
       var controller = StreamController<Null>();
       // ignore: cancel_subscriptions
-      var subscription =
-          disposable.listenToStream(controller.stream, (_) {});
+      var subscription = disposable.listenToStream(controller.stream, (_) {});
       subscription.onDone(expectAsync0(() {}));
       controller.close();
     });
@@ -476,8 +474,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         // ignore: close_sinks
         var controller = StreamController<Null>();
         // ignore: cancel_subscriptions
-        var subscription =
-            disposable.listenToStream(controller.stream, (_) {});
+        var subscription = disposable.listenToStream(controller.stream, (_) {});
         var future = subscription.asFuture('intentional');
         await controller.close();
         var value = await future;
@@ -506,8 +503,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         // ignore: close_sinks
         var controller = StreamController<Null>();
         // ignore: cancel_subscriptions
-        var subscription = disposable.listenToStream(
-            controller.stream, (_) {},
+        var subscription = disposable.listenToStream(controller.stream, (_) {},
             cancelOnError: false, onError: (_, [__]) {});
         var future = subscription.asFuture('intentional').catchError((_, [__]) {
           return '';

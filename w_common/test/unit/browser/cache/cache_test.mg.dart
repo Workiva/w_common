@@ -15,5 +15,6 @@
 import 'package:mockito/annotations.dart';
 import 'package:w_common/src/common/cache/cache.dart';
 
-@GenerateNiceMocks([MockSpec<CachingStrategy<String, Object>>(as: #MockCachingStrategy)])
+@GenerateNiceMocks(
+    [MockSpec<CachingStrategy<String, Object>>(as: #MockCachingStrategy)])
 export 'cache_test.mg.mocks.dart';
