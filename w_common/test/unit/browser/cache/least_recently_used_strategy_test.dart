@@ -74,9 +74,9 @@ void main() {
         var release = cache.release(expectedId);
 
         await Future.wait([
-          firstGet!.then((value) => value),
+          firstGet!,
           remove,
-          secondGet!.then((value) => value),
+          secondGet!,
           release
         ]);
 
