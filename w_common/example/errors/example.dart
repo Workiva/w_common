@@ -15,7 +15,7 @@ class RandomDisposableAdder extends Disposable {
     print('RandomDisposableAdder.addRandomManager');
     switch (Random().nextInt(5)) {
       case 0:
-        listenToStream(Stream<Null>.empty(), (dynamic _) {});
+        listenToStream(Stream<Null>.empty(), (_) {});
         break;
       case 1:
         manageStreamController(StreamController());
