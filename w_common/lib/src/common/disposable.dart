@@ -122,7 +122,7 @@ class _ObservableTimer implements Timer {
 
 /// A class used as a marker for potential memory leaks.
 class LeakFlag {
-  final String description;
+  final String? description;
 
   LeakFlag(this.description);
 
