@@ -64,7 +64,13 @@ class DisposeCounter extends Disposable {
   }
 }
 
-class MockStreamSubscription<T> extends Mock implements StreamSubscription<T> {}
+class MockStreamSubscription<T> extends Mock implements StreamSubscription<T> {
+  @override
+  Future<Null> cancel() {
+    super.noSuchMethod(Invocation.method(#id, [#value]));
+    return Future.value(null);
+  }
+}
 
 typedef OnDataCallback<T> = void Function(T event);
 
@@ -75,7 +81,7 @@ class StubStream<T> extends Stream<T> {
   StreamSubscription<T> listen(OnDataCallback<T>? onData,
       {Function? onError, OnDoneCallback? onDone, bool? cancelOnError}) {
     final sub = MockStreamSubscription<T>();
-    when(sub.cancel()).thenReturn(Future<void>.value());
+    // when(sub.cancel()).thenReturn(Future<void>.value());
     return sub;
   }
 }

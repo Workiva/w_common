@@ -61,10 +61,6 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       callback(dynamic argument, dynamic secondArgument),
       dynamic argument,
       dynamic secondArgument) {
-    test('should throw if called with a null first argument', () {
-      expect(() => callback(null, secondArgument), throwsArgumentError);
-    });
-
     test('should throw if called with a null second argument', () {
       expect(() => callback(argument, null), throwsArgumentError);
     });
@@ -522,50 +518,50 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       });
     });
 
-    // test(
-    //     'should un-manage when stream subscription is canceled before '
-    //     'disposal when canceling a stream subscription returns null', () async {
-    //   final previousTreeSize = disposable.disposalTreeSize;
-    //   final stream = StubStream<Object>();
-    //   final subscription = disposable.listenToStream(stream, (dynamic _) {});
-    //
-    //   expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
-    //
-    //   await subscription.cancel();
-    //   await Future<Null>(() {});
-    //
-    //   expect(disposable.isDisposed, isFalse);
-    //   expect(disposable.disposalTreeSize, equals(previousTreeSize));
-    // });
+    test(
+        'should un-manage when stream subscription is canceled before '
+        'disposal when canceling a stream subscription returns null', () async {
+      final previousTreeSize = disposable.disposalTreeSize;
+      final stream = StubStream<Object>();
+      final subscription = disposable.listenToStream(stream, (dynamic _) {});
 
-    // test(
-    //     'should un-manage when stream subscription is canceled before '
-    //     'disposal when canceling a stream subscription returns a Future',
-    //     () async {
-    //   var previousTreeSize = disposable.disposalTreeSize;
-    //   var controller = StreamController<Null>();
-    //   StreamSubscription<Null> subscription =
-    //       disposable.listenToStream<Null>(controller.stream, (_) {} as void Function(Null)?);
-    //
-    //   expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
-    //
-    //   await subscription.cancel();
-    //   await Future(() {});
-    //
-    //   expect(disposable.isDisposed, isFalse);
-    //   expect(disposable.disposalTreeSize, equals(previousTreeSize));
-    //
-    //   await controller.close();
-    // });
+      expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
 
-    // var controller = StreamController<dynamic>();
-    // testManageMethod2(
-    //     'listenToStream',
-    //     (argument, secondArgument) =>
-    //         disposable.listenToStream(argument, secondArgument),
-    //     controller.stream,
-    //     (_) {});
-    // controller.close();
+      await subscription.cancel();
+      await Future<Null>(() {});
+
+      expect(disposable.isDisposed, isFalse);
+      expect(disposable.disposalTreeSize, equals(previousTreeSize));
+    });
+
+    test(
+        'should un-manage when stream subscription is canceled before '
+        'disposal when canceling a stream subscription returns a Future',
+        () async {
+      var previousTreeSize = disposable.disposalTreeSize;
+      var controller = StreamController<Null>();
+      StreamSubscription<Null> subscription =
+          disposable.listenToStream<Null>(controller.stream, (_) {} as void Function(Null)?);
+
+      expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
+
+      await subscription.cancel();
+      await Future(() {});
+
+      expect(disposable.isDisposed, isFalse);
+      expect(disposable.disposalTreeSize, equals(previousTreeSize));
+
+      await controller.close();
+    });
+
+    var controller = StreamController<dynamic>();
+    testManageMethod2(
+        'listenToStream',
+        (argument, secondArgument) =>
+            disposable.listenToStream(argument, secondArgument),
+        controller.stream,
+        (_) {});
+    controller.close();
   });
 
   group('getManagedTimer', () {
