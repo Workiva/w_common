@@ -47,8 +47,8 @@ void main() {
       window.alert('Dispose before creating a new tree');
     }
 
-    int childCount = int.parse(childCountField!.value!);
-    int treeDepth = int.parse(treeDepthField!.value!);
+    int childCount = int.parse(childCountField.value!);
+    int treeDepth = int.parse(treeDepthField.value!);
 
     treeRoot = TreeNode(treeDepth, childCount);
     print('Disposable tree size: ${treeRoot!.disposalTreeSize}');
