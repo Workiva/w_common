@@ -37,7 +37,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
   }
 
   @override
-  Future<Null> cancel() {
+  Future<void> cancel() {
     var result = _subscription.cancel();
 
     return result.then((_) {

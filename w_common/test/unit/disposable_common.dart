@@ -499,39 +499,28 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         controller.addError(Exception('intentional'));
       });
 
-    //   test(
-    //       'that un-manages the subscription on completion '
-    //       'with an error even when cancelOnError is false', () async {
-    //     var previousTreeSize = disposable.disposalTreeSize;
-    //
-    //     // ignore: close_sinks
-    //     var controller = StreamController<Null>();
-    //     // ignore: cancel_subscriptions
-    //     var subscription = disposable.listenToStream(controller.stream, (dynamic _) {},
-    //         cancelOnError: false, onError: (_, [__]) {});
-    //     var future =
-    //         subscription.asFuture('intentional').catchError((_, [__]) {});
-    //     expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
-    //
-    //     controller.addError(Exception('intentional'));
-    //     await Future(() {});
-    //     await future;
-    //
-    //     expect(disposable.isDisposed, isFalse);
-    //     expect(disposable.disposalTreeSize, equals(previousTreeSize));
-    //   });
-    });
+      test(
+          'that un-manages the subscription on completion '
+          'with an error even when cancelOnError is false', () async {
+        var previousTreeSize = disposable.disposalTreeSize;
 
-    // test(
-    //     'should return ManagedStreamSubscription that returns null when an '
-    //     'unwrapped StreamSubscription would have', () async {
-    //   final stream = StubStream<Object>();
-    //   final unwrappedSubscription = stream.listen((_) async {}, cancelOnError: false);
-    //   final managedSubscription = disposable.listenToStream(stream, (dynamic _) async {});
-    //
-    //   expect(unwrappedSubscription.cancel(), isNull);
-    //   expect(managedSubscription.cancel(), isNull);
-    // });
+        // ignore: close_sinks
+        var controller = StreamController<Null>();
+        // ignore: cancel_subscriptions
+        var subscription = disposable.listenToStream(controller.stream, (dynamic _) {},
+            cancelOnError: false, onError: (_, [__]) {});
+        var future =
+            subscription.asFuture('intentional').catchError((_, [__]) {return '';});
+        expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
+
+        controller.addError(Exception('intentional'));
+        await Future(() {});
+        await future;
+
+        expect(disposable.isDisposed, isFalse);
+        expect(disposable.disposalTreeSize, equals(previousTreeSize));
+      });
+    });
 
     // test(
     //     'should un-manage when stream subscription is canceled before '
