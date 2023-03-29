@@ -35,10 +35,10 @@ void main() {
   ButtonElement createButton = querySelector('#create-button') as ButtonElement;
   ButtonElement disposeButton =
       querySelector('#dispose-button') as ButtonElement;
-  InputElement? childCountField =
-      querySelector('#child-count-field') as InputElement?;
-  InputElement? treeDepthField =
-      querySelector('#tree-depth-field') as InputElement?;
+  InputElement childCountField =
+      querySelector('#child-count-field') as InputElement;
+  InputElement treeDepthField =
+      querySelector('#tree-depth-field') as InputElement;
 
   TreeNode? treeRoot;
 
