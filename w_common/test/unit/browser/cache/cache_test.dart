@@ -45,8 +45,7 @@ void main() {
           cache.get(notCachedId, () => notCachedValue)!,
           cache.get(notCachedId, () => Object())!
         ];
-        var completedValues =
-            await Future.wait(cachedValues as Iterable<Future<Object>>);
+        var completedValues = await Future.wait(cachedValues);
         expect(completedValues[0], same(notCachedValue));
         expect(completedValues[1], same(notCachedValue));
       });
@@ -59,15 +58,13 @@ void main() {
 
       test('should return error thrown by factory function', () {
         var error = StateError('Factory Error');
-        var value =
-            cache.get(notCachedId, (() => throw error) as Object Function());
+        var value = cache.get(notCachedId, () => throw error);
         expect(value, throwsA(same(error)));
       });
 
       test('should return error thrown by async factory function', () {
         var error = StateError('Async Factory Error');
-        var value = cache.getAsync(notCachedId,
-            (() async => throw error) as Future<Object> Function());
+        var value = cache.getAsync(notCachedId, () async => throw error);
         expect(value, throwsA(same(error)));
       });
 
@@ -141,7 +138,7 @@ void main() {
         final futureGet1 = cache.getAsync(notCachedId, () => completer.future);
 
         // Remove the identifer from the cache before the original get completes
-        cache.remove(notCachedId);
+        unawaited(cache.remove(notCachedId));
 
         // Get the same identifier from the cache but with a new value;
         final futureGet2 = cache.getAsync(notCachedId, () async => value1);
@@ -256,8 +253,7 @@ void main() {
       test('should complete if pending get factory completes with an error',
           () {
         var error = StateError('Async factory error');
-        var value =
-            cache.get(notCachedId, (() => throw error) as Object Function());
+        var value = cache.get(notCachedId, () => throw error);
         expect(cache.remove(notCachedId), completes);
         expect(value, throwsA(same(error)));
       });
@@ -266,8 +262,7 @@ void main() {
           'should complete if pending getAsync factory completes with an error',
           () {
         var error = StateError('Async factory error');
-        var value = cache.getAsync(notCachedId,
-            (() async => throw error) as Future<Object> Function());
+        var value = cache.getAsync(notCachedId, () async => throw error);
         expect(cache.remove(notCachedId), completes);
         expect(value, throwsA(same(error)));
       });
@@ -328,8 +323,7 @@ void main() {
       test('should complete if pending get factory completes with an error',
           () {
         var error = StateError('Async factory error');
-        var value =
-            cache.get(notCachedId, (() => throw error) as Object Function());
+        var value = cache.get(notCachedId, () => throw error);
         expect(cache.release(notCachedId), completes);
         expect(value, throwsA(same(error)));
       });
@@ -338,8 +332,7 @@ void main() {
           'should complete if pending getAsync factory completes with an error',
           () {
         var error = StateError('Async factory error');
-        var value = cache.getAsync(notCachedId,
-            (() async => throw error) as Future<Object> Function());
+        var value = cache.getAsync(notCachedId, () async => throw error);
         expect(cache.release(notCachedId), completes);
         expect(value, throwsA(same(error)));
       });
@@ -401,20 +394,18 @@ void main() {
     });
 
     group('liveValues', () {
-      // test('should not provide access to released values', () async {
-      //   cache.didRemove.listen(expectAsync1(
-      //       (CacheContext<dynamic, dynamic> context) {},
-      //       count: 0,
-      //       reason: 'Ensure that cached item is not removed'));
-      //
-      //   final valuesbefore = await cache.liveValues;
-      //   expect(valuesbefore, isNotNull);
-      //   expect(valuesbefore!, contains(cachedValue));
-      //   // ignore: unawaited_futures
-      //   final valuesAfter = await cache.release(cachedId);
-      //   expect(valuesAfter, isNotNull);
-      //   expect(valuesAfter!, isNot(contains(cachedValue)));
-      // });
+      test('should not provide access to released values', () async {
+        cache.didRemove.listen(expectAsync1(
+            (CacheContext<dynamic, dynamic> context) {},
+            count: 0,
+            reason: 'Ensure that cached item is not removed'));
+
+        final valuesbefore = await cache.liveValues;
+        expect(valuesbefore, isNotNull);
+        expect(valuesbefore, contains(cachedValue));
+        final valuesAfter = await cache.release(cachedId);
+        expect(valuesAfter, isNull);
+      });
 
       test(
           'should not provide access to released values when release is awaited',
@@ -424,9 +415,9 @@ void main() {
             count: 0,
             reason: 'Ensure that cached item is not removed'));
 
-        // expect(await cache.liveValues, contains(cachedValue));
+        expect(await cache.liveValues, contains(cachedValue));
         await cache.release(cachedId);
-        // expect(await cache.liveValues, isNot(contains(cachedValue)));
+        expect(await cache.liveValues, isNot(contains(cachedValue)));
       });
     });
 
@@ -542,7 +533,7 @@ void main() {
         await cache.applyToItem(cachedId, (_) async {
           await Future<dynamic>.delayed(Duration(seconds: 1));
           throw error;
-        }).catchError((e) {
+        }).catchError((dynamic e) {
           expect(e, error);
           return Future<bool>.value(false);
         });
@@ -589,34 +580,24 @@ void main() {
   });
 }
 
-class MockCachingStrategy<TIdentifier, TValue> extends Mock
-    implements CachingStrategy<TIdentifier, TValue> {
+class MockCachingStrategy extends Mock
+    implements CachingStrategy<String, Object> {
   @override
-  Future<Null> onDidGet(TIdentifier id, TValue value) async {
+  Future<Null> onDidGet(String id, Object value) async {
     super.noSuchMethod(Invocation.method(#id, [#value]));
     return Future.value(null);
   }
 
   @override
   Future<Null> onDidRelease(
-      TIdentifier id, TValue value, Future<Null> remove(TIdentifier id)) {
+      String id, Object value, Future<Null> remove(String id)) {
     super.noSuchMethod(Invocation.method(#id, [#value, #remove]));
     return Future.value(null);
   }
 
   @override
-  Future<Null> onDidRemove(TIdentifier id, TValue value) {
+  Future<Null> onDidRemove(String id, Object value) {
     super.noSuchMethod(Invocation.method(#id, [#value]));
     return Future.value(null);
-  }
-
-  @override
-  void onWillRelease(TIdentifier id) {
-    super.noSuchMethod(Invocation.method(#id, [#value]));
-  }
-
-  @override
-  void onWillRemove(TIdentifier id) {
-    super.noSuchMethod(Invocation.method(#id, [#value]));
   }
 }
