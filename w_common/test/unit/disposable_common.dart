@@ -912,7 +912,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       expect(controller.isClosed, isTrue);
     });
 
-    // testManageMethod('manageStreamController', (argument) {
+    // testManageMethod('manageStreamController', (dynamic argument) {
     //   disposable.manageStreamController(argument);
     //   return argument;
     // }, StreamController<dynamic>(), doesCallbackReturnArgument: false);

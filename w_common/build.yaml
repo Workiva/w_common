@@ -5,4 +5,6 @@ targets:
       # migrated to null-safety. At that point, it should be scoped only to
       # relevant files.
       mockito:mockBuilder:
-        enabled: false
+        generate_for:
+          include:
+            - "test/unit/browser/cache/cache_test.dart"

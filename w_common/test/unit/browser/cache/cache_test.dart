@@ -14,10 +14,14 @@
 @TestOn('browser')
 
 import 'dart:async';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:w_common/src/common/cache/cache.dart';
 import 'package:w_common/src/common/cache/least_recently_used_strategy.dart';
+
+@GenerateNiceMocks([MockSpec<CachingStrategy<String, Object>>(as: #MockCachingStrategy)])
+import 'cache_test.mocks.dart';
 
 void main() {
   group('Cache', () {
@@ -578,26 +582,4 @@ void main() {
       });
     });
   });
-}
-
-class MockCachingStrategy extends Mock
-    implements CachingStrategy<String, Object> {
-  @override
-  Future<Null> onDidGet(String id, Object value) async {
-    super.noSuchMethod(Invocation.method(#id, [#value]));
-    return Future.value(null);
-  }
-
-  @override
-  Future<Null> onDidRelease(
-      String id, Object value, Future<Null> remove(String id)) {
-    super.noSuchMethod(Invocation.method(#id, [#value, #remove]));
-    return Future.value(null);
-  }
-
-  @override
-  Future<Null> onDidRemove(String id, Object value) {
-    super.noSuchMethod(Invocation.method(#id, [#value]));
-    return Future.value(null);
-  }
 }
