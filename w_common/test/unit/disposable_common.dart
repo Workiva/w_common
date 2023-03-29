@@ -320,8 +320,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test('should not throw if stream subscription is canceled after disposal',
         () async {
       var controller = StreamController<Null>();
-      StreamSubscription<Null> subscription = disposable.listenToStream<Null>(
-          controller.stream, (_) {});
+      StreamSubscription<Null> subscription =
+          disposable.listenToStream<Null>(controller.stream, (_) {});
       await disposable.dispose();
       expect(() async => await subscription.cancel(), returnsNormally);
       await controller.close();
