@@ -320,8 +320,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
     test('should not throw if stream subscription is canceled after disposal',
         () async {
       var controller = StreamController<Null>();
-      StreamSubscription<Null> subscription =
-          disposable.listenToStream<Null>(controller.stream, (_) {} as void Function(Null)?);
+      StreamSubscription<Null> subscription = disposable.listenToStream<Null>(
+          controller.stream, (_) {} as void Function(Null)?);
       await disposable.dispose();
       expect(() async => await subscription.cancel(), returnsNormally);
       await controller.close();
@@ -361,7 +361,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: close_sinks
       var controller = StreamController<Null>();
       // ignore: cancel_subscriptions
-      var subscription = disposable.listenToStream(controller.stream, (dynamic _) {});
+      var subscription =
+          disposable.listenToStream(controller.stream, (dynamic _) {});
       subscription.onError(expectAsync2((dynamic error, dynamic _) {
         expect(error, isA<Exception>());
         expect(error.toString(), 'Exception: intentional');
@@ -410,7 +411,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       // ignore: close_sinks
       var controller = StreamController<Null>();
       // ignore: cancel_subscriptions
-      var subscription = disposable.listenToStream(controller.stream, (dynamic _) {});
+      var subscription =
+          disposable.listenToStream(controller.stream, (dynamic _) {});
       subscription.onDone(expectAsync0(() {}));
       controller.close();
     });
@@ -474,7 +476,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         // ignore: close_sinks
         var controller = StreamController<Null>();
         // ignore: cancel_subscriptions
-        var subscription = disposable.listenToStream(controller.stream, (dynamic _) {});
+        var subscription =
+            disposable.listenToStream(controller.stream, (dynamic _) {});
         var future = subscription.asFuture('intentional');
         await controller.close();
         var value = await future;
@@ -485,7 +488,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         // ignore: close_sinks
         var controller = StreamController<Null>();
         // ignore: cancel_subscriptions
-        var subscription = disposable.listenToStream(controller.stream, (dynamic _) {});
+        var subscription =
+            disposable.listenToStream(controller.stream, (dynamic _) {});
         subscription
             .asFuture('intentional')
             .then(expectAsync1((_) {}, count: 0))
@@ -503,10 +507,12 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         // ignore: close_sinks
         var controller = StreamController<Null>();
         // ignore: cancel_subscriptions
-        var subscription = disposable.listenToStream(controller.stream, (dynamic _) {},
+        var subscription = disposable.listenToStream(
+            controller.stream, (dynamic _) {},
             cancelOnError: false, onError: (_, [__]) {});
-        var future =
-            subscription.asFuture('intentional').catchError((_, [__]) {return '';});
+        var future = subscription.asFuture('intentional').catchError((_, [__]) {
+          return '';
+        });
         expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
 
         controller.addError(Exception('intentional'));
@@ -540,8 +546,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         () async {
       var previousTreeSize = disposable.disposalTreeSize;
       var controller = StreamController<Null>();
-      StreamSubscription<Null> subscription =
-          disposable.listenToStream<Null>(controller.stream, (_) {} as void Function(Null)?);
+      StreamSubscription<Null> subscription = disposable.listenToStream<Null>(
+          controller.stream, (_) {} as void Function(Null)?);
 
       expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
 

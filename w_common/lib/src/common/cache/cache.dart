@@ -160,8 +160,9 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   /// Values that have not been released.
   ///
   /// To access a released value a [get] or [getAsync] should be used.
-  Future<Iterable<TValue>> get liveValues =>
-      Future.wait(liveKeys.map(((TIdentifier key) => _cache[key]?.then((value) => value!)) as Future<TValue> Function(TIdentifier)));
+  Future<Iterable<TValue>> get liveValues => Future.wait(liveKeys.map(
+      ((TIdentifier key) => _cache[key]?.then((value) => value!))
+          as Future<TValue> Function(TIdentifier)));
 
   /// Keys that have been released but are not yet removed.
   Iterable<TIdentifier> get releasedKeys =>
@@ -366,7 +367,8 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     if (callBackResult is Future<dynamic>) {
       // In this case we're only interested in the computation being done or not
       // done, not in the result
-      final errorlessCallbackResult = callBackResult.then((_) {}, onError: (_) {});
+      final errorlessCallbackResult =
+          callBackResult.then((_) {}, onError: (_) {});
 
       _applyToItemCallBacks.putIfAbsent(id, () => <Future<dynamic>>[]);
       _applyToItemCallBacks[id]!.add(errorlessCallbackResult);

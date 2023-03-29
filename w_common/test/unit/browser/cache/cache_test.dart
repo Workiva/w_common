@@ -45,7 +45,8 @@ void main() {
           cache.get(notCachedId, () => notCachedValue)!,
           cache.get(notCachedId, () => Object())!
         ];
-        var completedValues = await Future.wait(cachedValues as Iterable<Future<Object>>);
+        var completedValues =
+            await Future.wait(cachedValues as Iterable<Future<Object>>);
         expect(completedValues[0], same(notCachedValue));
         expect(completedValues[1], same(notCachedValue));
       });
@@ -58,13 +59,15 @@ void main() {
 
       test('should return error thrown by factory function', () {
         var error = StateError('Factory Error');
-        var value = cache.get(notCachedId, (() => throw error) as Object Function());
+        var value =
+            cache.get(notCachedId, (() => throw error) as Object Function());
         expect(value, throwsA(same(error)));
       });
 
       test('should return error thrown by async factory function', () {
         var error = StateError('Async Factory Error');
-        var value = cache.getAsync(notCachedId, (() async => throw error) as Future<Object> Function());
+        var value = cache.getAsync(notCachedId,
+            (() async => throw error) as Future<Object> Function());
         expect(value, throwsA(same(error)));
       });
 
@@ -215,7 +218,7 @@ void main() {
         var childCache = Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
 
-        // verifyNever(stubCachingStrategy.onDidRemove(any, any));
+        verifyNever(stubCachingStrategy.onDidRemove(cachedId, cachedValue));
       });
 
       test('should not call onWillRemove when identifier is not cached',
@@ -253,7 +256,8 @@ void main() {
       test('should complete if pending get factory completes with an error',
           () {
         var error = StateError('Async factory error');
-        var value = cache.get(notCachedId, (() => throw error) as Object Function());
+        var value =
+            cache.get(notCachedId, (() => throw error) as Object Function());
         expect(cache.remove(notCachedId), completes);
         expect(value, throwsA(same(error)));
       });
@@ -262,7 +266,8 @@ void main() {
           'should complete if pending getAsync factory completes with an error',
           () {
         var error = StateError('Async factory error');
-        var value = cache.getAsync(notCachedId, (() async => throw error) as Future<Object> Function());
+        var value = cache.getAsync(notCachedId,
+            (() async => throw error) as Future<Object> Function());
         expect(cache.remove(notCachedId), completes);
         expect(value, throwsA(same(error)));
       });
@@ -308,7 +313,8 @@ void main() {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
         await childCache.release(cachedId);
-        // verifyNever(stubCachingStrategy.onDidRelease(any, any, any));
+        verifyNever(stubCachingStrategy.onDidRelease(
+            cachedId, cachedValue, childCache.remove));
       });
 
       test('should not call onWillRemove when identifer is not cached',
@@ -322,7 +328,8 @@ void main() {
       test('should complete if pending get factory completes with an error',
           () {
         var error = StateError('Async factory error');
-        var value = cache.get(notCachedId, (() => throw error) as Object Function());
+        var value =
+            cache.get(notCachedId, (() => throw error) as Object Function());
         expect(cache.release(notCachedId), completes);
         expect(value, throwsA(same(error)));
       });
@@ -331,7 +338,8 @@ void main() {
           'should complete if pending getAsync factory completes with an error',
           () {
         var error = StateError('Async factory error');
-        var value = cache.getAsync(notCachedId, (() async => throw error) as Future<Object> Function());
+        var value = cache.getAsync(notCachedId,
+            (() async => throw error) as Future<Object> Function());
         expect(cache.release(notCachedId), completes);
         expect(value, throwsA(same(error)));
       });
@@ -590,7 +598,8 @@ class MockCachingStrategy<TIdentifier, TValue> extends Mock
   }
 
   @override
-  Future<Null> onDidRelease(TIdentifier id, TValue value, Future<Null> remove(TIdentifier id)) {
+  Future<Null> onDidRelease(
+      TIdentifier id, TValue value, Future<Null> remove(TIdentifier id)) {
     super.noSuchMethod(Invocation.method(#id, [#value, #remove]));
     return Future.value(null);
   }
