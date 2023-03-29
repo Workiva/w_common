@@ -206,10 +206,10 @@ void main() {
         var childCache = Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.remove(cachedId);
-        // verify(stubCachingStrategy.onWillRemove(cachedId));
+        verify(stubCachingStrategy.onWillRemove(cachedId));
       });
 
-      test('should not call onDidRemove when identifer is not cached',
+      test('should not call onDidRemove when identifier is not cached',
           () async {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
@@ -218,13 +218,13 @@ void main() {
         // verifyNever(stubCachingStrategy.onDidRemove(any, any));
       });
 
-      test('should not call onWillRemove when identifer is not cached',
+      test('should not call onWillRemove when identifier is not cached',
           () async {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
 
-        // verifyNever(stubCachingStrategy.onWillRemove(any));
+        verifyNever(stubCachingStrategy.onWillRemove(cachedId));
       });
 
       test('should remove after pending get if called synchronously', () {
@@ -300,7 +300,7 @@ void main() {
         await childCache.get(cachedId, () => cachedValue);
         await childCache.release(cachedId);
 
-        // verify(stubCachingStrategy.onWillRelease(cachedId));
+        verify(stubCachingStrategy.onWillRelease(cachedId));
       });
 
       test('should not call onDidRelease when identifier is not cached',
@@ -316,7 +316,7 @@ void main() {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
         await childCache.release(cachedId);
-        // verifyNever(stubCachingStrategy.onWillRelease(any));
+        verifyNever(stubCachingStrategy.onWillRelease(cachedId));
       });
 
       test('should complete if pending get factory completes with an error',
@@ -602,8 +602,12 @@ class MockCachingStrategy<TIdentifier, TValue> extends Mock
   }
 
   @override
-  void onWillRelease(TIdentifier id) {}
+  void onWillRelease(TIdentifier id) {
+    super.noSuchMethod(Invocation.method(#id, [#value]));
+  }
 
   @override
-  void onWillRemove(TIdentifier id) {}
+  void onWillRemove(TIdentifier id) {
+    super.noSuchMethod(Invocation.method(#id, [#value]));
+  }
 }
