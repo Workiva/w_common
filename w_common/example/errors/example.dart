@@ -79,11 +79,11 @@ void main() {
 
   MyManager? myManager;
 
-  ButtonElement createMyManagerButton =
+  final createMyManagerButton =
       querySelector('#create-MyManager-button') as ButtonElement;
-  ButtonElement disposeMyManagerButton =
+  final disposeMyManagerButton =
       querySelector('#dispose-MyManager-button') as ButtonElement;
-  ButtonElement posthumousMyManagerButton =
+  final posthumousMyManagerButton =
       querySelector('#posthumous-MyManager-button') as ButtonElement;
 
   createMyManagerButton.onClick.listen((_) {
@@ -107,9 +107,9 @@ void main() {
   });
 
   ErrorCreator? errorCreator;
-  ButtonElement createErrorCreatorButton =
+  final createErrorCreatorButton =
       querySelector('#create-ErrorCreator-button') as ButtonElement;
-  ButtonElement disposeErrorCreatorButton =
+  final disposeErrorCreatorButton =
       querySelector('#dispose-ErrorCreator-button') as ButtonElement;
 
   createErrorCreatorButton.onClick.listen((_) {
