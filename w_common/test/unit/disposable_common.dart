@@ -321,7 +321,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         () async {
       var controller = StreamController<Null>();
       StreamSubscription<Null> subscription = disposable.listenToStream<Null>(
-          controller.stream, (_) {} as void Function(Null)?);
+          controller.stream, (_) {});
       await disposable.dispose();
       expect(() async => await subscription.cancel(), returnsNormally);
       await controller.close();
@@ -529,7 +529,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         'disposal when canceling a stream subscription returns null', () async {
       final previousTreeSize = disposable.disposalTreeSize;
       final stream = StubStream<Object>();
-      final subscription = disposable.listenToStream(stream, (dynamic _) {});
+      final subscription = disposable.listenToStream(stream, (_) {});
 
       expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
 
@@ -546,8 +546,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         () async {
       var previousTreeSize = disposable.disposalTreeSize;
       var controller = StreamController<Null>();
-      StreamSubscription<Null> subscription = disposable.listenToStream<Null>(
-          controller.stream, (_) {} as void Function(Null)?);
+      StreamSubscription<Null> subscription =
+          disposable.listenToStream<Null>(controller.stream, (_) {});
 
       expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));
 
