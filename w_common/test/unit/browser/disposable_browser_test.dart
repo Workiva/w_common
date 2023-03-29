@@ -35,94 +35,94 @@ void main() {
       late EventListener callback;
 
       setUp(() {
-        // disposable = BrowserDisposable();
-        // callback = (_) {};
-        // eventName = 'event';
-        // useCapture = true;
+        disposable = BrowserDisposable();
+        callback = (_) {};
+        eventName = 'event';
+        useCapture = true;
       });
 
       test(
           'subscribeToDocumentEvent should remove same listener when thing is disposed',
           () async {
-        // var document = MockEventTarget();
-        //
-        // disposable.subscribeToDocumentEvent(eventName, callback,
-        //     documentObject: document, useCapture: useCapture);
-        // verify(document.addEventListener(eventName, callback, useCapture));
-        // await disposable.dispose();
-        // verify(document.removeEventListener(eventName, callback, useCapture));
+        var document = MockEventTarget();
+
+        disposable.subscribeToDocumentEvent(eventName, callback,
+            documentObject: document, useCapture: useCapture);
+        verify(document.addEventListener(eventName, callback, useCapture));
+        await disposable.dispose();
+        verify(document.removeEventListener(eventName, callback, useCapture));
       });
 
-      // test(
-      //     'subscribeToWindowEvent should remove same listener when thing is disposed',
-      //     () async {
-      //   var window = MockEventTarget();
-      //
-      //   disposable.subscribeToWindowEvent(eventName, callback,
-      //       windowObject: window, useCapture: useCapture);
-      //   verify(window.addEventListener(eventName, callback, useCapture));
-      //   await disposable.dispose();
-      //   verify(window.removeEventListener(eventName, callback, useCapture));
-      // });
+      test(
+          'subscribeToWindowEvent should remove same listener when thing is disposed',
+          () async {
+        var window = MockEventTarget();
+
+        disposable.subscribeToWindowEvent(eventName, callback,
+            windowObject: window, useCapture: useCapture);
+        verify(window.addEventListener(eventName, callback, useCapture));
+        await disposable.dispose();
+        verify(window.removeEventListener(eventName, callback, useCapture));
+      });
     });
 
-    // group('events on DOM element', () {
-    //   late BrowserDisposable disposable;
-    //
-    //   setUp(() {
-    //     disposable = BrowserDisposable();
-    //   });
-    //
-    //   test(
-    //       'subscribeToDomElementEvent should remove listener when thing is disposed',
-    //       () async {
-    //     var element = Element.div();
-    //     var event = Event('event');
-    //     var eventName = 'event';
-    //     int numberOfEventCallbacks = 0;
-    //     EventListener eventCallback = (_) {
-    //       numberOfEventCallbacks++;
-    //     };
-    //     var shouldNotListenEvent = Event('shouldNotListenEvent');
-    //
-    //     disposable.subscribeToDomElementEvent(
-    //         element, eventName, eventCallback);
-    //     expect(numberOfEventCallbacks, equals(0));
-    //
-    //     element.dispatchEvent(shouldNotListenEvent);
-    //     expect(numberOfEventCallbacks, equals(0));
-    //
-    //     element.dispatchEvent(event);
-    //     expect(numberOfEventCallbacks, equals(1));
-    //
-    //     await disposable.dispose();
-    //     numberOfEventCallbacks = 0;
-    //
-    //     element.dispatchEvent(event);
-    //     expect(numberOfEventCallbacks, equals(0));
-    //   });
-    // });
+    group('events on DOM element', () {
+      late BrowserDisposable disposable;
 
-    // group('debug mode', () {
-    //   test('should not add leak flag factory to window by default', () {
-    //     expect(js.context.hasProperty(Disposable.leakFlagFactoryName), isFalse);
-    //   });
-    //
-    //   test('should add leak flag factory to window when enabled', () {
-    //     Disposable.enableDebugMode();
-    //     final LeakFlag leakFlag =
-    //         js.context.callMethod(Disposable.leakFlagFactoryName, ['foo']);
-    //     expect(leakFlag, isNotNull);
-    //     expect(leakFlag.description, equals('foo'));
-    //   });
-    //
-    //   test('should remove leak flag factory from window when disabled', () {
-    //     Disposable.enableDebugMode();
-    //     expect(js.context.hasProperty(Disposable.leakFlagFactoryName), isTrue);
-    //
-    //     Disposable.disableDebugMode();
-    //     expect(js.context.hasProperty(Disposable.leakFlagFactoryName), isFalse);
-    //   });
-    // });
+      setUp(() {
+        disposable = BrowserDisposable();
+      });
+
+      test(
+          'subscribeToDomElementEvent should remove listener when thing is disposed',
+          () async {
+        var element = Element.div();
+        var event = Event('event');
+        var eventName = 'event';
+        int numberOfEventCallbacks = 0;
+        EventListener eventCallback = (_) {
+          numberOfEventCallbacks++;
+        };
+        var shouldNotListenEvent = Event('shouldNotListenEvent');
+
+        disposable.subscribeToDomElementEvent(
+            element, eventName, eventCallback);
+        expect(numberOfEventCallbacks, equals(0));
+
+        element.dispatchEvent(shouldNotListenEvent);
+        expect(numberOfEventCallbacks, equals(0));
+
+        element.dispatchEvent(event);
+        expect(numberOfEventCallbacks, equals(1));
+
+        await disposable.dispose();
+        numberOfEventCallbacks = 0;
+
+        element.dispatchEvent(event);
+        expect(numberOfEventCallbacks, equals(0));
+      });
+    });
+
+    group('debug mode', () {
+      test('should not add leak flag factory to window by default', () {
+        expect(js.context.hasProperty(Disposable.leakFlagFactoryName), isFalse);
+      });
+
+      test('should add leak flag factory to window when enabled', () {
+        Disposable.enableDebugMode();
+        final LeakFlag leakFlag =
+            js.context.callMethod(Disposable.leakFlagFactoryName, ['foo']);
+        expect(leakFlag, isNotNull);
+        expect(leakFlag.description, equals('foo'));
+      });
+
+      test('should remove leak flag factory from window when disabled', () {
+        Disposable.enableDebugMode();
+        expect(js.context.hasProperty(Disposable.leakFlagFactoryName), isTrue);
+
+        Disposable.disableDebugMode();
+        expect(js.context.hasProperty(Disposable.leakFlagFactoryName), isFalse);
+      });
+    });
   });
 }
