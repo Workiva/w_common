@@ -33,12 +33,9 @@ void main() {
   Disposable.enableDebugMode();
 
   final createButton = querySelector('#create-button') as ButtonElement;
-  final disposeButton =
-      querySelector('#dispose-button') as ButtonElement;
-  final childCountField =
-      querySelector('#child-count-field') as InputElement;
-  final treeDepthField =
-      querySelector('#tree-depth-field') as InputElement;
+  final disposeButton = querySelector('#dispose-button') as ButtonElement;
+  final childCountField = querySelector('#child-count-field') as InputElement;
+  final treeDepthField = querySelector('#tree-depth-field') as InputElement;
 
   TreeNode? treeRoot;
 
