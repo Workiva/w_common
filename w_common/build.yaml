@@ -7,4 +7,4 @@ targets:
       mockito:mockBuilder:
         generate_for:
           include:
-            - "test/unit/browser/cache/cache_test.dart"
+            - "test/**.mg.dart"

@@ -14,14 +14,12 @@
 @TestOn('browser')
 
 import 'dart:async';
-import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:w_common/src/common/cache/cache.dart';
 import 'package:w_common/src/common/cache/least_recently_used_strategy.dart';
 
-@GenerateNiceMocks([MockSpec<CachingStrategy<String, Object>>(as: #MockCachingStrategy)])
-import 'cache_test.mocks.dart';
+import 'cache_test.mg.dart';
 
 void main() {
   group('Cache', () {
