@@ -519,7 +519,7 @@ void main() {
               throw Error();
             });
           },
-              onError: expectAsync1((dynamic _) {},
+              onError: expectAsync1((_) {},
                   reason: 'error should be thrown in callback'));
 
           cache.release(cachedId);
