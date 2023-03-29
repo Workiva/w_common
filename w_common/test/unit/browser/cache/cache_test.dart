@@ -533,7 +533,7 @@ void main() {
         await cache.applyToItem(cachedId, (_) async {
           await Future<dynamic>.delayed(Duration(seconds: 1));
           throw error;
-        }).catchError((dynamic e) {
+        }).catchError((e) {
           expect(e, error);
           return Future<bool>.value(false);
         });
