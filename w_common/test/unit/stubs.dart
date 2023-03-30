@@ -80,9 +80,7 @@ class StubStream<T> extends Stream<T> {
   @override
   StreamSubscription<T> listen(OnDataCallback<T>? onData,
       {Function? onError, OnDoneCallback? onDone, bool? cancelOnError}) {
-    final sub = MockStreamSubscription<T>();
-    // when(sub.cancel()).thenReturn(Future<void>.value());
-    return sub;
+    return MockStreamSubscription<T>();
   }
 }
 
