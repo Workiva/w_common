@@ -254,7 +254,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   ///
   /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
   @mustCallSuper
-  Future<TValue>? getAsync(TIdentifier id, Func<Future<TValue>> valueFactory) {
+  Future<TValue> getAsync(TIdentifier id, Func<Future<TValue>> valueFactory) {
     _log.finest('getAsync id: $id');
     _throwWhenDisposed('getAsync');
     _isReleased[id] = false;
@@ -274,7 +274,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
       return value;
     });
 
-    return _cache[id];
+    return _cache[id]!;
   }
 
   /// Marks a [TIdentifier] [TValue] pair as eligible for removal.

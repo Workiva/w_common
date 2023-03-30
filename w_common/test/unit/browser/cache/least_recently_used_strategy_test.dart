@@ -73,7 +73,7 @@ void main() {
         // release expected item
         var release = cache.release(expectedId);
 
-        await Future.wait([firstGet!, remove, secondGet!, release]);
+        await Future.wait([firstGet, remove, secondGet, release]);
 
         // create i releases, after which expected item (and only expected
         // item) should be released
