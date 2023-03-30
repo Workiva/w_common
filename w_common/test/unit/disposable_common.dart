@@ -10,31 +10,11 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
   late StubDisposable disposable;
 
   void testManageMethod<T>(
-      String methodName, T? callback(T? argument), T argument,
+      String methodName, T callback(T argument), T argument,
       {bool doesCallbackReturnArgument = true}) {
     if (doesCallbackReturnArgument) {
       test('should return the argument', () {
         expect(callback(argument), same(argument));
-      });
-    }
-
-    if ({'manageAndReturnTypedDisposable'}.contains(methodName)) {
-      test('should return null if called with a null argument', () {
-        expect(callback(null), isNull);
-      });
-    } else if ({
-      'waitBeforeDispose',
-      'manageStreamController',
-      'manageDisposable',
-      'manageCompleter',
-      'getManagedDisposer',
-    }.contains(methodName)) {
-      test('should throw if called with a null argument', () {
-        expect(() => callback(null), isNotNull);
-      });
-    } else {
-      test('should throw if called with a null argument', () {
-        expect(() => callback(null), throwsA(isA<TypeError>()));
       });
     }
 
@@ -238,7 +218,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
 
     testManageMethod(
         'manageAndReturnTypedDisposable',
-        (StubDisposable? argument) =>
+        (StubDisposable argument) =>
             disposable.manageAndReturnTypedDisposable(argument),
         disposableFactory());
   });
