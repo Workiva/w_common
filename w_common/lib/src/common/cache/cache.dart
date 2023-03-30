@@ -355,14 +355,14 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   ///
   /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
   Future<bool> applyToItem(
-      TIdentifier id, dynamic callback(Future<TValue>? value)) {
+      TIdentifier id, dynamic callback(Future<TValue> value)) {
     _log.finest('applyToItem id: $id');
     _throwWhenDisposed('applyToItem');
-    if (_isReleased[id] != false) {
+    if (_isReleased[id] != false || _cache[id] == null) {
       return Future<bool>.value(false);
     }
 
-    final callBackResult = callback(_cache[id]);
+    final callBackResult = callback(_cache[id]!);
     if (callBackResult is Future<dynamic>) {
       // In this case we're only interested in the computation being done or not
       // done, not in the result
