@@ -25,23 +25,22 @@ class _InnerDisposable extends disposable_common.Disposable {
   @override
   String get disposableTypeName => '_InnerDisposable';
 
-  Func<Future<Null>>? onDisposeHandler;
-  Func<Future<Null>>? onWillDisposeHandler;
+  final Func<Future<Null>> onDisposeHandler;
+  final Func<Future<Null>> onWillDisposeHandler;
+
+  _InnerDisposable({
+    required this.onDisposeHandler,
+    required this.onWillDisposeHandler,
+  });
 
   @override
   Future<Null> onDispose() {
-    if (onDisposeHandler != null) {
-      return onDisposeHandler!.call();
-    }
-    return Future(() => null);
+    return onDisposeHandler();
   }
 
   @override
   Future<Null> onWillDispose() {
-    if (onWillDisposeHandler != null) {
-      return onWillDisposeHandler!.call();
-    }
-    return Future(() => null);
+    return onWillDisposeHandler();
   }
 }
 
@@ -180,7 +179,10 @@ class Disposable implements disposable_common.Disposable {
     }
   }
 
-  final _InnerDisposable _disposable = _InnerDisposable();
+  late final _InnerDisposable _disposable = _InnerDisposable(
+    onDisposeHandler: onDispose,
+    onWillDisposeHandler: onWillDispose,
+  );
 
   @override
   Future<Null> get didDispose => _disposable.didDispose;
@@ -206,9 +208,6 @@ class Disposable implements disposable_common.Disposable {
 
   @override
   Future<Null> dispose() {
-    _disposable
-      ..onDisposeHandler = onDispose
-      ..onWillDisposeHandler = onWillDispose;
     // We want the description to be the runtime type of this
     // object, not the proxy disposable, so we need to set
     // the leak flag here, before we delegate the `dispose`
