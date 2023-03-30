@@ -195,7 +195,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   ///
   /// If the [Cache] [isOrWillBeDisposed] then a [StateError] is thrown.
   @mustCallSuper
-  Future<TValue>? get(TIdentifier id, Func<TValue> valueFactory) {
+  Future<TValue> get(TIdentifier id, Func<TValue> valueFactory) {
     _log.finest('get id: $id');
     _throwWhenDisposed('get');
     _cachingStrategy.onWillGet(id);
@@ -222,7 +222,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
       completer.completeError(error, stackTrace);
     }
 
-    return _cache[id];
+    return _cache[id]!;
   }
 
   /// Returns a value from the cache for a given [TIdentifier].

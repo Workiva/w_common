@@ -36,7 +36,7 @@ void main() {
 
     group('get', () {
       test('should return cached value when identifier is cached', () async {
-        var value = await cache.get(cachedId, () => notCachedValue)!;
+        var value = await cache.get(cachedId, () => notCachedValue);
         expect(value, same(cachedValue));
       });
 
@@ -44,8 +44,8 @@ void main() {
           'should return same value when called successively '
           'synchronously', () async {
         var cachedValues = <Future<Object>>[
-          cache.get(notCachedId, () => notCachedValue)!,
-          cache.get(notCachedId, () => Object())!
+          cache.get(notCachedId, () => notCachedValue),
+          cache.get(notCachedId, () => Object())
         ];
         var completedValues = await Future.wait(cachedValues);
         expect(completedValues[0], same(notCachedValue));
@@ -54,7 +54,7 @@ void main() {
 
       test('should return factory value when identifier is not cached',
           () async {
-        var value = await cache.get(notCachedId, () => notCachedValue)!;
+        var value = await cache.get(notCachedId, () => notCachedValue);
         expect(value, same(notCachedValue));
       });
 
