@@ -53,7 +53,7 @@ void main() {
 
   disposeButton.onClick.listen((_) {
     treeRoot?.dispose().then((_) {
-      print('Disposable tree size: ${treeRoot!.disposalTreeSize}');
+      print('Disposable tree size: ${treeRoot?.disposalTreeSize}');
       treeRoot = null;
     });
   });
