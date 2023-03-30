@@ -512,7 +512,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
         'should un-manage when stream subscription is canceled before '
         'disposal when canceling a stream subscription returns null', () async {
       final previousTreeSize = disposable.disposalTreeSize;
-      final stream = StubStream<Object>();
+      final stream = Stream<Object>.empty();
       final subscription = disposable.listenToStream(stream, (_) {});
 
       expect(disposable.disposalTreeSize, equals(previousTreeSize + 1));

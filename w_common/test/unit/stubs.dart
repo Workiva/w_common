@@ -14,7 +14,6 @@
 
 import 'dart:async';
 
-import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:w_common/disposable.dart';
 
@@ -64,25 +63,9 @@ class DisposeCounter extends Disposable {
   }
 }
 
-class MockStreamSubscription<T> extends Mock implements StreamSubscription<T> {
-  @override
-  Future<Null> cancel() {
-    super.noSuchMethod(Invocation.method(#id, [#value]));
-    return Future.value(null);
-  }
-}
-
 typedef OnDataCallback<T> = void Function(T event);
 
 typedef OnDoneCallback = void Function();
-
-class StubStream<T> extends Stream<T> {
-  @override
-  StreamSubscription<T> listen(OnDataCallback<T>? onData,
-      {Function? onError, OnDoneCallback? onDone, bool? cancelOnError}) {
-    return MockStreamSubscription<T>();
-  }
-}
 
 class TimerHarness {
   bool _didCancelTimer = true;
