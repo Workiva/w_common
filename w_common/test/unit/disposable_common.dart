@@ -18,10 +18,18 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       });
     }
 
-    if ({'manageAndReturnTypedDisposable', 'manageDisposable'}
-        .contains(methodName)) {
+    if ({'manageAndReturnTypedDisposable'}.contains(methodName)) {
       test('should return null if called with a null argument', () {
         expect(callback(null), isNull);
+      });
+    } else if ({
+      'waitBeforeDispose',
+      'manageStreamController',
+      'manageDisposable',
+      'manageCompleter'
+    }.contains(methodName)) {
+      test('should throw if called with a null argument', () {
+        expect(() => callback(null), isNotNull);
       });
     } else {
       test('should throw if called with a null argument', () {
@@ -801,8 +809,10 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       await Future.wait([awaitedFuture, awaitedFuture2, disposeFuture]);
     });
 
-    // testManageMethod('waitBeforeDispose',
-    //     (argument) => disposable.awaitBeforeDispose(argument), Future(() {}));
+    testManageMethod(
+        'waitBeforeDispose',
+        (dynamic argument) => disposable.awaitBeforeDispose(argument),
+        Future(() {}));
   });
 
   group('manageCompleter', () {
@@ -822,9 +832,9 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       expect(() => disposable.dispose(), returnsNormally);
     });
 
-    // var completer = Completer<Null>()..complete();
-    // testManageMethod('manageCompleter',
-    //     (argument) => disposable.manageCompleter(argument), completer);
+    var completer = Completer<Null>()..complete();
+    testManageMethod('manageCompleter',
+        (dynamic argument) => disposable.manageCompleter(argument), completer);
   });
 
   group('manageDisposable', () {
@@ -908,10 +918,10 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       expect(controller.isClosed, isTrue);
     });
 
-    // testManageMethod('manageStreamController', (dynamic argument) {
-    //   disposable.manageStreamController(argument);
-    //   return argument;
-    // }, StreamController<dynamic>(), doesCallbackReturnArgument: false);
+    testManageMethod('manageStreamController', (dynamic argument) {
+      disposable.manageStreamController(argument);
+      return argument;
+    }, StreamController<dynamic>(), doesCallbackReturnArgument: false);
   });
 
   group('flagLeak', () {
