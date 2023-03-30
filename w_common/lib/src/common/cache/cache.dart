@@ -326,7 +326,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
     _isReleased.remove(id);
     if (_cache.containsKey(id)) {
       _cachingStrategy.onWillRemove(id);
-      final removedValue = _cache.remove(id)?.then((value) => value!);
+      final removedValue = _cache.remove(id);
       if (removedValue != null) {
         return removedValue.then((TValue value) async {
           if (_applyToItemCallBacks[id] != null) {
