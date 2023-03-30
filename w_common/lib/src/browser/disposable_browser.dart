@@ -284,7 +284,7 @@ class Disposable implements disposable_common.Disposable {
   /// method on the document singleton to remove the listener. At this point
   /// the only way to remove the listener is to use the [dispose] method.
   void subscribeToDocumentEvent(String event, EventListener callback,
-      {bool? useCapture, EventTarget? documentObject}) {
+      {bool useCapture = false, EventTarget? documentObject}) {
     if (documentObject == null) {
       documentObject = document;
     }
@@ -299,7 +299,7 @@ class Disposable implements disposable_common.Disposable {
   /// to remove the listener is to use the [dispose] method.
   void subscribeToDomElementEvent(
       Element element, String event, EventListener callback,
-      {bool? useCapture}) {
+      {bool useCapture = false}) {
     _subscribeToEvent(element, event, callback, useCapture);
   }
 
@@ -310,7 +310,7 @@ class Disposable implements disposable_common.Disposable {
   /// method on the window singleton to remove the listener. At this point
   /// the only way to remove the listener is to use the [dispose] method.
   void subscribeToWindowEvent(String event, EventListener callback,
-      {bool? useCapture, EventTarget? windowObject}) {
+      {bool useCapture = false, EventTarget? windowObject}) {
     if (windowObject == null) {
       windowObject = window;
     }
@@ -318,7 +318,7 @@ class Disposable implements disposable_common.Disposable {
   }
 
   void _subscribeToEvent(EventTarget eventTarget, String event,
-      EventListener callback, bool? useCapture) {
+      EventListener callback, bool useCapture) {
     eventTarget.addEventListener(event, callback, useCapture);
     _disposable.getManagedDisposer(() {
       eventTarget.removeEventListener(event, callback, useCapture);
