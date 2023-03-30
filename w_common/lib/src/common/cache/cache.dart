@@ -150,7 +150,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
 
   /// The stream of [CacheContext]s that dispatches when an item is updated in
   /// the cache.
-  Stream<CacheContext<TIdentifier, TValue?>> get didUpdate =>
+  Stream<CacheContext<TIdentifier, TValue>> get didUpdate =>
       _didUpdateController.stream;
 
   /// Keys that have not been released.
