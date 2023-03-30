@@ -26,14 +26,15 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       'waitBeforeDispose',
       'manageStreamController',
       'manageDisposable',
-      'manageCompleter'
+      'manageCompleter',
+      'getManagedDisposer',
     }.contains(methodName)) {
       test('should throw if called with a null argument', () {
         expect(() => callback(null), isNotNull);
       });
     } else {
       test('should throw if called with a null argument', () {
-        expect(() => callback(null), throwsArgumentError);
+        expect(() => callback(null), throwsA(isA<TypeError>()));
       });
     }
 
@@ -70,7 +71,7 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       dynamic argument,
       dynamic secondArgument) {
     test('should throw if called with a null second argument', () {
-      expect(() => callback(argument, null), throwsArgumentError);
+      expect(() => callback(argument, null), throwsA(isA<TypeError>()));
     });
 
     test(
