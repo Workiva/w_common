@@ -258,7 +258,7 @@ class Disposable implements disposable_common.Disposable {
 
   @override
   disposable_common.ManagedDisposer getManagedDisposer(
-          disposable_common.Disposer? disposer) =>
+          disposable_common.Disposer disposer) =>
       _disposable.getManagedDisposer(disposer);
 
   @override

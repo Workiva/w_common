@@ -447,7 +447,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   @mustCallSuper
   @override
-  ManagedDisposer getManagedDisposer(Disposer? disposer) {
+  ManagedDisposer getManagedDisposer(Disposer disposer) {
     _throwOnInvalidCall('getManagedDisposer', 'disposer', disposer);
     _logManageMessage(disposer);
 
