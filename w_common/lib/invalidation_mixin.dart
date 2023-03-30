@@ -38,16 +38,17 @@ abstract class InvalidationMixin {
       return _onValidate!.future;
     }
 
-    _onValidate = Completer<ValidationStatus>();
+    final onValidate = Completer<ValidationStatus>();
 
     window.animationFrame.then((_) {
       if (invalid) {
         validate();
-        _onValidate!.complete(ValidationStatus.complete);
+        onValidate.complete(ValidationStatus.complete);
       }
     });
 
-    return _onValidate!.future;
+    _onValidate = onValidate;
+    return onValidate.future;
   }
 
   /// Abstract method to be implemented as means of performing validation.
