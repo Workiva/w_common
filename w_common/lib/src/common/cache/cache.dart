@@ -155,7 +155,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
 
   /// Keys that have not been released.
   Iterable<TIdentifier> get liveKeys =>
-      _cache.keys.where((TIdentifier key) => !_isReleased[key]!);
+      _cache.keys.where((TIdentifier key) => !(_isReleased[key] ?? false));
 
   /// Values that have not been released.
   ///
@@ -165,7 +165,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
 
   /// Keys that have been released but are not yet removed.
   Iterable<TIdentifier> get releasedKeys =>
-      _cache.keys.where((TIdentifier key) => _isReleased[key]!);
+      _cache.keys.where((TIdentifier key) => _isReleased[key] ?? false);
 
   /// Returns a value from the cache for a given [TIdentifier].
   ///
