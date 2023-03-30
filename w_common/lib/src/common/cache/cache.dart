@@ -161,7 +161,7 @@ class Cache<TIdentifier, TValue> extends Object with Disposable {
   ///
   /// To access a released value a [get] or [getAsync] should be used.
   Future<Iterable<TValue>> get liveValues => Future.wait(
-      liveKeys.map((TIdentifier key) => _cache[key]!.then((value) => value!)));
+      liveKeys.map((TIdentifier key) => _cache[key]!));
 
   /// Keys that have been released but are not yet removed.
   Iterable<TIdentifier> get releasedKeys =>
