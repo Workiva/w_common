@@ -139,7 +139,7 @@ void main() {
         final completer = Completer<Object>();
         final futureGet1 = cache.getAsync(notCachedId, () => completer.future);
 
-        // Remove the identifer from the cache before the original get completes
+        // Remove the identifier from the cache before the original get completes
         unawaited(cache.remove(notCachedId));
 
         // Get the same identifier from the cache but with a new value;
@@ -314,7 +314,7 @@ void main() {
             cachedId, cachedValue, childCache.remove));
       });
 
-      test('should not call onWillRemove when identifer is not cached',
+      test('should not call onWillRemove when identifier is not cached',
           () async {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
