@@ -25,17 +25,23 @@ class _InnerDisposable extends disposable_common.Disposable {
   @override
   String get disposableTypeName => '_InnerDisposable';
 
-  late Func<Future<Null>> onDisposeHandler;
-  late Func<Future<Null>> onWillDisposeHandler;
+  Func<Future<Null>>? onDisposeHandler;
+  Func<Future<Null>>? onWillDisposeHandler;
 
   @override
   Future<Null> onDispose() {
-    return onDisposeHandler();
+    if (onDisposeHandler != null) {
+      return onDisposeHandler!.call();
+    }
+    return Future(() => null);
   }
 
   @override
   Future<Null> onWillDispose() {
-    return onWillDisposeHandler();
+    if (onWillDisposeHandler != null) {
+      return onWillDisposeHandler!.call();
+    }
+    return Future(() => null);
   }
 }
 
