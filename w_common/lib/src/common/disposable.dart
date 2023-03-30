@@ -365,7 +365,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
   /// Dispose of the object, cleaning up to prevent memory leaks.
   @override
   Future<Null> dispose() async {
-    late Stopwatch stopwatch;
+    Stopwatch? stopwatch;
     if (_debugModeTelemetry) {
       stopwatch = Stopwatch()..start();
     }
@@ -405,8 +405,8 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     }
 
     if (_debugModeTelemetry) {
-      stopwatch.stop();
-      var t = stopwatch.elapsedMicroseconds / 1000000.0;
+      stopwatch!.stop();
+      var t = stopwatch!.elapsedMicroseconds / 1000000.0;
       _logger!.info('$runtimeType $hashCode took $t seconds to dispose');
     }
 
