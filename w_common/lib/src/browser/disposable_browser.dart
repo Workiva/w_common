@@ -169,7 +169,7 @@ class Disposable implements disposable_common.Disposable {
   /// generate a [disposable_common.LeakFlag]
   /// and manually attach it to an object. For example, this may be useful in
   /// code transpiled to JavaScript from another language.
-  static void enableDebugMode({bool disableLogging = false, bool disableTelemetry = false}) {
+  static void enableDebugMode({bool? disableLogging, bool? disableTelemetry}) {
     disposable_common.Disposable.enableDebugMode(
         disableLogging: disableLogging, disableTelemetry: disableTelemetry);
 
