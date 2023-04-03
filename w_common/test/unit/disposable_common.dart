@@ -50,12 +50,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       callback(dynamic argument, dynamic secondArgument),
       dynamic argument,
       dynamic secondArgument) {
-    test('should throw if called with a null second argument', () {
-      expect(() => callback(argument, null), throwsA(isA<TypeError>()));
-    });
-
     test(
-        'should not throw if called after diposal is requested but before it starts',
+        'should not throw if called after disposal is requested but before it starts',
         () async {
       var completer = Completer<dynamic>();
       // ignore: unawaited_futures
