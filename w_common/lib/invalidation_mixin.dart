@@ -43,7 +43,9 @@ abstract class InvalidationMixin {
     window.animationFrame.then((_) {
       if (invalid) {
         validate();
-        onValidate.complete(ValidationStatus.complete);
+        if (!onValidate.isCompleted) {
+          onValidate.complete(ValidationStatus.complete);
+        }
       }
     });
 
