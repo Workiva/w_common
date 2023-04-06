@@ -21,7 +21,7 @@ import 'package:w_common/invalidation_mixin.dart';
 
 void main() {
   group('InvalidationMixin', () {
-    InvalidThing thing;
+    late InvalidThing thing;
 
     setUp(() {
       thing = InvalidThing();
@@ -60,9 +60,9 @@ void main() {
 }
 
 class InvalidThing extends InvalidationMixin {
-  final _onValidate = StreamController<ValidationStatus>.broadcast();
+  final _onValidate = StreamController<ValidationStatus?>.broadcast();
 
-  Stream<ValidationStatus> get onValidate => _onValidate.stream;
+  Stream<ValidationStatus?> get onValidate => _onValidate.stream;
 
   @override
   void validate() {

@@ -33,9 +33,9 @@ void main() {
     'MostRecentlyUsedStrategy keep = 2': () => LeastRecentlyUsedStrategy(2),
   }.forEach((name, strategyFactory) {
     group('$name', () {
-      Cache<String, Object> cache;
-      Func<Future<Object>> valueFactory;
-      int valueFactoryCalled;
+      late Cache<String, Object> cache;
+      late Func<Future<Object>> valueFactory;
+      late int valueFactoryCalled;
 
       setUp(() {
         valueFactoryCalled = 0;

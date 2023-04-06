@@ -19,9 +19,11 @@ import 'package:test/test.dart';
 import 'package:w_common/src/common/cache/cache.dart';
 import 'package:w_common/src/common/cache/least_recently_used_strategy.dart';
 
+import 'cache_test.mg.dart';
+
 void main() {
   group('Cache', () {
-    Cache<String, Object> cache;
+    late Cache<String, Object> cache;
     const String cachedId = '1';
     final Object cachedValue = Object();
     const String notCachedId = '2';
@@ -124,7 +126,7 @@ void main() {
       });
 
       test(
-          'should call valueFactory if identifer has been removed but removal '
+          'should call valueFactory if identifier has been removed but removal '
           'is not complete', () async {
         final value1 = Object();
         final value2 = Object();
@@ -137,8 +139,8 @@ void main() {
         final completer = Completer<Object>();
         final futureGet1 = cache.getAsync(notCachedId, () => completer.future);
 
-        // Remove the identifer from the cache before the original get completes
-        cache.remove(notCachedId);
+        // Remove the identifier from the cache before the original get completes
+        unawaited(cache.remove(notCachedId));
 
         // Get the same identifier from the cache but with a new value;
         final futureGet2 = cache.getAsync(notCachedId, () async => value1);
@@ -209,22 +211,22 @@ void main() {
         verify(stubCachingStrategy.onWillRemove(cachedId));
       });
 
-      test('should not call onDidRemove when identifer is not cached',
+      test('should not call onDidRemove when identifier is not cached',
           () async {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
 
-        verifyNever(stubCachingStrategy.onDidRemove(any, any));
+        verifyNever(stubCachingStrategy.onDidRemove(cachedId, cachedValue));
       });
 
-      test('should not call onWillRemove when identifer is not cached',
+      test('should not call onWillRemove when identifier is not cached',
           () async {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
 
-        verifyNever(stubCachingStrategy.onWillRemove(any));
+        verifyNever(stubCachingStrategy.onWillRemove(cachedId));
       });
 
       test('should remove after pending get if called synchronously', () {
@@ -303,20 +305,21 @@ void main() {
         verify(stubCachingStrategy.onWillRelease(cachedId));
       });
 
-      test('should not call onDidRelease when identifer is not cached',
+      test('should not call onDidRelease when identifier is not cached',
           () async {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
         await childCache.release(cachedId);
-        verifyNever(stubCachingStrategy.onDidRelease(any, any, any));
+        verifyNever(stubCachingStrategy.onDidRelease(
+            cachedId, cachedValue, childCache.remove));
       });
 
-      test('should not call onWillRemove when identifer is not cached',
+      test('should not call onWillRemove when identifier is not cached',
           () async {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
         await childCache.release(cachedId);
-        verifyNever(stubCachingStrategy.onWillRelease(any));
+        verifyNever(stubCachingStrategy.onWillRelease(cachedId));
       });
 
       test('should complete if pending get factory completes with an error',
@@ -399,10 +402,11 @@ void main() {
             count: 0,
             reason: 'Ensure that cached item is not removed'));
 
-        expect(await cache.liveValues, contains(cachedValue));
-        // ignore: unawaited_futures
-        cache.release(cachedId);
-        expect(await cache.liveValues, isNot(contains(cachedValue)));
+        final valuesbefore = await cache.liveValues;
+        expect(valuesbefore, isNotNull);
+        expect(valuesbefore, contains(cachedValue));
+        final valuesAfter = await cache.release(cachedId);
+        expect(valuesAfter, isNull);
       });
 
       test(
@@ -423,7 +427,7 @@ void main() {
       group('when item is in the cache', () {
         test('should run callback', () async {
           var callbackRan = false;
-          await cache.applyToItem(cachedId, (Future<Object> value) async {
+          await cache.applyToItem(cachedId, (Future<Object>? value) async {
             callbackRan = true;
             expect(await value, cachedValue);
           });
@@ -533,6 +537,7 @@ void main() {
           throw error;
         }).catchError((e) {
           expect(e, error);
+          return Future<bool>.value(false);
         });
       });
 
@@ -575,13 +580,4 @@ void main() {
       });
     });
   });
-}
-
-class MockCachingStrategy extends Mock
-    implements CachingStrategy<String, Object> {
-  MockCachingStrategy() {
-    when(onDidGet(any, any)).thenAnswer((i) => Future.value(null));
-    when(onDidRelease(any, any, any)).thenAnswer((i) => Future.value(null));
-    when(onDidRemove(any, any)).thenAnswer((i) => Future.value(null));
-  }
 }

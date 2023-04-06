@@ -32,28 +32,28 @@ void main() {
 
   Disposable.enableDebugMode();
 
-  ButtonElement createButton = querySelector('#create-button');
-  ButtonElement disposeButton = querySelector('#dispose-button');
-  InputElement childCountField = querySelector('#child-count-field');
-  InputElement treeDepthField = querySelector('#tree-depth-field');
+  final createButton = querySelector('#create-button') as ButtonElement;
+  final disposeButton = querySelector('#dispose-button') as ButtonElement;
+  final childCountField = querySelector('#child-count-field') as InputElement;
+  final treeDepthField = querySelector('#tree-depth-field') as InputElement;
 
-  TreeNode treeRoot;
+  TreeNode? treeRoot;
 
   createButton.onClick.listen((_) {
     if (treeRoot != null) {
       window.alert('Dispose before creating a new tree');
     }
 
-    int childCount = int.parse(childCountField.value);
-    int treeDepth = int.parse(treeDepthField.value);
+    int childCount = int.parse(childCountField.value!);
+    int treeDepth = int.parse(treeDepthField.value!);
 
     treeRoot = TreeNode(treeDepth, childCount);
-    print('Disposable tree size: ${treeRoot.disposalTreeSize}');
+    print('Disposable tree size: ${treeRoot!.disposalTreeSize}');
   });
 
   disposeButton.onClick.listen((_) {
-    treeRoot?.dispose()?.then((_) {
-      print('Disposable tree size: ${treeRoot.disposalTreeSize}');
+    treeRoot?.dispose().then((_) {
+      print('Disposable tree size: ${treeRoot?.disposalTreeSize}');
       treeRoot = null;
     });
   });

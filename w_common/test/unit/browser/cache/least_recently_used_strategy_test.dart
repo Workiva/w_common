@@ -25,7 +25,7 @@ void main() {
     var expectedValue = 'expectedValue';
 
     for (var i in Iterable<int>.generate(3)) {
-      Cache<String, Object> cache;
+      late Cache<String, Object> cache;
 
       setUp(() async {
         cache = Cache<String, Object>(LeastRecentlyUsedStrategy(i));
