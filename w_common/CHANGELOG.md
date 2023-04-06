@@ -1,3 +1,7 @@
+## [3.0.0](https://github.com/Workiva/w_common/compare/2.1.2...3.0.0)
+
+- Migrate to null-safety.
+
 ## [2.1.1](https://github.com/Workiva/w_common/compare/2.1.0...2.1.1)
 
 - Implement `_ObservableTimer.tick`, which allows timers created via
