@@ -29,3 +29,6 @@ dev_dependencies:
 dependency_validator:
   ignore:
     - mockito
+
+dependency_overrides:
+  color: ^3.0.0
