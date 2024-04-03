@@ -62,6 +62,11 @@ jobs:
         run: dart test
         if: always() && steps.install-tools.outcome == 'success'
 
+      - uses: anchore/sbom-action@v0
+        with:
+          path: ./
+          format: cyclonedx-json
+
   format:
     runs-on: ubuntu-latest
     steps:
