@@ -5,7 +5,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i3;
 
-import 'package:mockito/mockito.dart' as _i1;
+import 'package:mocktail/mocktail.dart' as _i1;
 import 'package:w_common/src/common/cache/cache.dart' as _i2;
 
 // ignore_for_file: type=lint

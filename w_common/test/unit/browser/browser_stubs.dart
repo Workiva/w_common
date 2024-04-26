@@ -14,7 +14,7 @@
 
 import 'dart:html';
 
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:w_common/disposable_browser.dart';
 
 import '../stubs.dart';

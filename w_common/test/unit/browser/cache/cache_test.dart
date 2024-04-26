@@ -14,7 +14,7 @@
 @TestOn('browser')
 
 import 'dart:async';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:w_common/src/common/cache/cache.dart';
 import 'package:w_common/src/common/cache/least_recently_used_strategy.dart';
@@ -108,7 +108,7 @@ void main() {
         var mockCachingStrategy = MockCachingStrategy();
         var childCache = Cache(mockCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
-        verify(mockCachingStrategy.onDidGet(cachedId, cachedValue));
+        verify(() => mockCachingStrategy.onDidGet(cachedId, cachedValue));
       });
 
       test('should call onDidGet when value is cached', () async {
@@ -117,7 +117,7 @@ void main() {
         await childCache.get(cachedId, () => cachedValue);
         await childCache.get(cachedId, () => cachedValue);
 
-        verify(mockCachingStrategy.onDidGet(cachedId, cachedValue)).called(2);
+        verify(() => mockCachingStrategy.onDidGet(cachedId, cachedValue)).called(2);
       });
 
       test('should throw when disposed', () async {
@@ -200,7 +200,7 @@ void main() {
         await childCache.get(cachedId, () => cachedValue);
         await childCache.remove(cachedId);
 
-        verify(stubCachingStrategy.onDidRemove(cachedId, cachedValue));
+        verify(() => stubCachingStrategy.onDidRemove(cachedId, cachedValue));
       });
 
       test('should call onWillRemove when value was cached', () async {
@@ -208,7 +208,7 @@ void main() {
         var childCache = Cache(stubCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         await childCache.remove(cachedId);
-        verify(stubCachingStrategy.onWillRemove(cachedId));
+        verify(() => stubCachingStrategy.onWillRemove(cachedId));
       });
 
       test('should not call onDidRemove when identifier is not cached',
@@ -217,7 +217,7 @@ void main() {
         var childCache = Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
 
-        verifyNever(stubCachingStrategy.onDidRemove(cachedId, cachedValue));
+        verifyNever(() => stubCachingStrategy.onDidRemove(cachedId, cachedValue));
       });
 
       test('should not call onWillRemove when identifier is not cached',
@@ -226,7 +226,7 @@ void main() {
         var childCache = Cache(stubCachingStrategy);
         await childCache.remove(cachedId);
 
-        verifyNever(stubCachingStrategy.onWillRemove(cachedId));
+        verifyNever(() => stubCachingStrategy.onWillRemove(cachedId));
       });
 
       test('should remove after pending get if called synchronously', () {
@@ -292,7 +292,7 @@ void main() {
         await childCache.get(cachedId, () => cachedValue);
         await childCache.release(cachedId);
 
-        verify(stubCachingStrategy.onDidRelease(
+        verify(() => stubCachingStrategy.onDidRelease(
             cachedId, cachedValue, childCache.remove));
       });
 
@@ -302,7 +302,7 @@ void main() {
         await childCache.get(cachedId, () => cachedValue);
         await childCache.release(cachedId);
 
-        verify(stubCachingStrategy.onWillRelease(cachedId));
+        verify(() => stubCachingStrategy.onWillRelease(cachedId));
       });
 
       test('should not call onDidRelease when identifier is not cached',
@@ -310,7 +310,7 @@ void main() {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
         await childCache.release(cachedId);
-        verifyNever(stubCachingStrategy.onDidRelease(
+        verifyNever(() => stubCachingStrategy.onDidRelease(
             cachedId, cachedValue, childCache.remove));
       });
 
@@ -319,7 +319,7 @@ void main() {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
         await childCache.release(cachedId);
-        verifyNever(stubCachingStrategy.onWillRelease(cachedId));
+        verifyNever(() => stubCachingStrategy.onWillRelease(cachedId));
       });
 
       test('should complete if pending get factory completes with an error',
