@@ -48,9 +48,11 @@ void main() {
 
         disposable.subscribeToDocumentEvent(eventName, callback,
             documentObject: document, useCapture: useCapture);
-        verify(() => document.addEventListener(eventName, callback, useCapture));
+        verify(
+            () => document.addEventListener(eventName, callback, useCapture));
         await disposable.dispose();
-        verify(() => document.removeEventListener(eventName, callback, useCapture));
+        verify(() =>
+            document.removeEventListener(eventName, callback, useCapture));
       });
 
       test(
@@ -62,7 +64,8 @@ void main() {
             windowObject: window, useCapture: useCapture);
         verify(() => window.addEventListener(eventName, callback, useCapture));
         await disposable.dispose();
-        verify(() => window.removeEventListener(eventName, callback, useCapture));
+        verify(
+            () => window.removeEventListener(eventName, callback, useCapture));
       });
     });
 
