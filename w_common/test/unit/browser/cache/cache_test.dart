@@ -19,7 +19,6 @@ import 'package:test/test.dart';
 import 'package:w_common/src/common/cache/cache.dart';
 import 'package:w_common/src/common/cache/least_recently_used_strategy.dart';
 
-import 'cache_test.mg.dart';
 
 void main() {
   group('Cache', () {
@@ -30,7 +29,7 @@ void main() {
     final Object notCachedValue = Object();
 
     setUp(() async {
-      cache = Cache(MockCachingStrategy());
+      cache = Cache(CachingStrategy());
       await cache.get(cachedId, () => cachedValue);
     });
 
@@ -106,6 +105,7 @@ void main() {
 
       test('should call onDidGet when value is not cached', () async {
         var mockCachingStrategy = MockCachingStrategy();
+        when(()=>mockCachingStrategy.onDidGet(any(), any())).thenAnswer((_) =>Future.value());
         var childCache = Cache(mockCachingStrategy);
         await childCache.get(cachedId, () => cachedValue);
         verify(() => mockCachingStrategy.onDidGet(cachedId, cachedValue));
@@ -114,6 +114,8 @@ void main() {
       test('should call onDidGet when value is cached', () async {
         var mockCachingStrategy = MockCachingStrategy();
         var childCache = Cache(mockCachingStrategy);
+        when(()=>mockCachingStrategy.onDidGet(any(), any())).thenAnswer((_) =>Future.value());
+
         await childCache.get(cachedId, () => cachedValue);
         await childCache.get(cachedId, () => cachedValue);
 
@@ -197,6 +199,8 @@ void main() {
       test('should call onDidRemove when value was cached', () async {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
+        when(()=>stubCachingStrategy.onDidGet(any(), any())).thenAnswer((_) =>Future.value());
+
         await childCache.get(cachedId, () => cachedValue);
         await childCache.remove(cachedId);
 
@@ -206,6 +210,8 @@ void main() {
       test('should call onWillRemove when value was cached', () async {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
+        when(()=>stubCachingStrategy.onDidGet(any(), any())).thenAnswer((_) =>Future.value());
+
         await childCache.get(cachedId, () => cachedValue);
         await childCache.remove(cachedId);
         verify(() => stubCachingStrategy.onWillRemove(cachedId));
@@ -289,6 +295,7 @@ void main() {
       test('should call onDidRelease when value was cached', () async {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
+        when(()=>stubCachingStrategy.onDidGet(any(), any())).thenAnswer((_) =>Future.value());
         await childCache.get(cachedId, () => cachedValue);
         await childCache.release(cachedId);
 
@@ -299,6 +306,8 @@ void main() {
       test('should call onWillRelease when value was cached', () async {
         var stubCachingStrategy = MockCachingStrategy();
         var childCache = Cache(stubCachingStrategy);
+        when(()=>stubCachingStrategy.onDidGet(any(), any())).thenAnswer((_) =>Future.value());
+
         await childCache.get(cachedId, () => cachedValue);
         await childCache.release(cachedId);
 
@@ -580,4 +589,7 @@ void main() {
       });
     });
   });
+}
+
+class MockCachingStrategy extends Mock implements CachingStrategy<String, Object>{
 }
