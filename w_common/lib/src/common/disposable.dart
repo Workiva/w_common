@@ -534,12 +534,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     });
     _internalDisposables.add(disposable);
 
-    completer.future.catchError((e) {
-      if (!_isDisposedOrDisposing) {
-        _logUnmanageMessage(completer);
-        _internalDisposables.remove(disposable);
-      }
-    }).then((_) {
+    completer.future.whenComplete(() {
       if (!_isDisposedOrDisposing) {
         _logUnmanageMessage(completer);
         _internalDisposables.remove(disposable);
