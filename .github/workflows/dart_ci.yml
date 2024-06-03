@@ -63,6 +63,7 @@ jobs:
         if: always() && steps.install-tools.outcome == 'success'
 
       - uses: anchore/sbom-action@v0
+        if: ${{ matrix.sdk == '2.19.6'}}
         with:
           path: ./
           format: cyclonedx-json
