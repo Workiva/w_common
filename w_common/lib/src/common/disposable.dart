@@ -534,17 +534,20 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     });
     _internalDisposables.add(disposable);
 
-    // We need to log and remove regardless of completion state. 
-    // By attaching to the future, we create an isolate that will cause an unhandled exception
-    // if the completer errors. To catch an error, we must type catchError correctly or risk 
-    // causing a type error. Then turns Future<T> into Future<Null> which allows the catchError
-    // to return null rather than T.  
-    completer.future.then((value) => null).catchError((_) => null).whenComplete(() {
-      if (!_isDisposedOrDisposing) {
-        _logUnmanageMessage(completer);
-        _internalDisposables.remove(disposable);
-      }
-    });
+    completer.future
+        // Log and remove disposable regardless of the outcome of the future.
+        .whenComplete(() {
+          if (!_isDisposedOrDisposing) {
+            _logUnmanageMessage(completer);
+            _internalDisposables.remove(disposable);
+          }
+        })
+        // Transform the stream from Future<T> to Future<Null> to allow catchError to exist.
+        // Without this, catchError would throw a TypeError at runtime.
+        .then((value) => null)
+        // Avoid uncaught errors in the isolate spawned by the whenComplete.
+        // Without this we will see runtime errors.
+        .catchError((_) => null);
 
     return completer;
   }
