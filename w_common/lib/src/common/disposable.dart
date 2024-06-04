@@ -545,8 +545,8 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
         // Transform the stream from Future<T> to Future<Null> to allow catchError to exist.
         // Without this, catchError would throw a TypeError at runtime.
         .then((value) => null)
-        // Avoid uncaught errors in the isolate spawned by the whenComplete.
-        // Without this we will see runtime errors.
+        // Avoid uncaught errors in the event loop spawned by the whenComplete.
+        // Without this we will see runtime errors in tests and the developer console.
         .catchError((_) => null);
 
     return completer;
