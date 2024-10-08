@@ -21,8 +21,8 @@ abstract class JsonSerializable {
   /// Returns a map representing the serialized class.
   ///
   ///   @override
-  ///   Map<String, dynamic> toJson() {
-  ///     Map<String, dynamic> fieldMap = {};
+  ///   JsonMap toJson() {
+  ///     JsonMap fieldMap = {};
   ///     fieldMap['context'] = _context;
   ///     return fieldMap;
   ///   }
