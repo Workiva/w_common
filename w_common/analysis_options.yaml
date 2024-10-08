@@ -1,4 +1,1 @@
 include: package:workiva_analysis_options/v2.yaml
-analyzer:
-  errors:
-    included_file_warning: info
