@@ -117,7 +117,7 @@ class SassCompilationOptions {
       exitCode = 1;
       return;
     }
-
+    // ignore: unnecessary_null_comparison
     if (unparsedArgs != null && unparsedArgs.isNotEmpty) {
       compileTargets = unparsedArgs.map(path.relative).toList();
       exitCode = _validateCompileTargets();

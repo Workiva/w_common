@@ -43,6 +43,7 @@ class ManagedStreamSubscription<T> implements StreamSubscription<T> {
     // StreamSubscription.cancel() will return null if no cleanup was
     // necessary. This behavior is described in the docs as "for historical
     // reasons" so this may change in the future.
+    // ignore: unnecessary_null_comparison
     if (result == null) {
       _complete();
       return Future(() {});

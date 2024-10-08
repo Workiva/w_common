@@ -1,3 +1,10 @@
+## [3.1.0](https://github.com/Workiva/w_common/compare/3.0.0...3.1.0)
+
+- Adds JsonMap and JsonMapObject typedefs
+- Update SDK minimum to 2.19.0 to support the non-function
+ typedef language feature.
+- Raised package versions to their first nullsafe version.
+
 ## [3.0.0](https://github.com/Workiva/w_common/compare/2.1.2...3.0.0)
 
 - Migrate to null-safety.

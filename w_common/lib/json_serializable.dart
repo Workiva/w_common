@@ -21,10 +21,16 @@ abstract class JsonSerializable {
   /// Returns a map representing the serialized class.
   ///
   ///   @override
-  ///   Map<String, dynamic> toJson() {
-  ///     Map<String, dynamic> fieldMap = {};
+  ///   JsonMap toJson() {
+  ///     JsonMap fieldMap = {};
   ///     fieldMap['context'] = _context;
   ///     return fieldMap;
   ///   }
-  Map<String, dynamic> toJson();
+  JsonMap toJson();
 }
+
+/// A type definition for a map that represents the default JSON object type Map<String, dynamic>.
+typedef JsonMap = Map<String, dynamic>;
+
+/// A type definition for a map that represents a JSON map of Map<String, Object?>.
+typedef JsonMapObject = Map<String, Object?>;
