@@ -1,3 +1,11 @@
+## [3.3.0](https://github.com/Workiva/w_common/compare/3.2.0...3.3.0)
+- Allow a nullable to be managed via `Disposable.manageDisposable` and 
+`Disposable.manageAndReturnTypedDisposable`.
+
+## [3.2.0](https://github.com/Workiva/w_common/compare/3.1.0...3.2.0)
+
+- Adds JsonMap and JsonMapObject typedefs
+
 ## [3.1.0](https://github.com/Workiva/w_common/compare/3.0.0...3.1.0)
 
 - Adds JsonMap and JsonMapObject typedefs
