@@ -514,8 +514,8 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   @mustCallSuper
   @override
-  T manageAndReturnTypedDisposable<T extends Disposable>(T disposable) {
-    _throwOnInvalidCall('manageAndReturnDisposable', 'disposable', disposable);
+  T? manageAndReturnTypedDisposable<T extends Disposable>(T? disposable) {
+    _throwOnInvalidDisposable('manageAndReturnDisposable', 'disposable', disposable);
     manageDisposable(disposable);
 
     return disposable;
@@ -552,12 +552,11 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     return completer;
   }
 
-  void manageDisposable(Disposable disposable) {
-    // ignore: unnecessary_null_comparison
+  void manageDisposable(Disposable? disposable) {
     if (disposable == null) {
       return;
     }
-    _throwOnInvalidCall('manageDisposable', 'disposable', disposable);
+    _throwOnInvalidDisposable('manageDisposable', 'disposable', disposable);
     _logManageMessage(disposable);
 
     _internalDisposables.add(disposable);
@@ -656,6 +655,17 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
       throw ArgumentError.notNull(parameterName);
     }
     if (_isDisposing) {
+      throw StateError(
+          '$disposableTypeName.$methodName not allowed, object is disposing');
+    }
+    if (isDisposed) {
+      throw StateError(
+          '$disposableTypeName.$methodName not allowed, object is already disposed');
+    }
+  }
+
+  void _throwOnInvalidDisposable(String methodName, String parameterName, Disposable? parameterValue){
+if (_isDisposing) {
       throw StateError(
           '$disposableTypeName.$methodName not allowed, object is disposing');
     }
