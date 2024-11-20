@@ -216,7 +216,8 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       StubDisposable? nullable;
       var returnValue;
       expect(() {
-        returnValue = disposable.manageAndReturnTypedDisposable(nullable);
+        returnValue = disposable
+            .manageAndReturnTypedDisposable<StubDisposable?>(nullable);
       }, returnsNormally);
       expect(returnValue, isNull);
     });
