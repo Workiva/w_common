@@ -212,6 +212,15 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
       expect(disposable.injected!.isDisposed, isFalse);
     });
 
+    test('should not throw if value is null', () async {
+      StubDisposable? nullable;
+      var returnValue;
+      expect(() {
+        returnValue = disposable.manageAndReturnTypedDisposable(nullable);
+      }, returnsNormally);
+      expect(returnValue, isNull);
+    });
+
     testManageMethod(
         'manageAndReturnTypedDisposable',
         (StubDisposable? argument) =>
@@ -815,6 +824,13 @@ void testCommonDisposable(Func<StubDisposable> disposableFactory) {
   });
 
   group('manageDisposable', () {
+    test('should not throw if value is null', () async {
+      StubDisposable? nullable;
+      expect(() {
+        disposable.manageDisposable(nullable);
+      }, returnsNormally);
+    });
+
     test('should dispose child when parent is disposed', () async {
       var childThing = disposableFactory();
       disposable.manageDisposable(childThing);
