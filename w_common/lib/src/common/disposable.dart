@@ -519,7 +519,8 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
       return disposable;
     }
 
-    _throwOnInvalidCall('manageAndReturnDisposable', 'disposable', disposable);
+    _throwOnInvalidCall(
+        'manageAndReturnTyped Disposable', 'disposable', disposable);
     manageDisposable(disposable);
 
     return disposable;
