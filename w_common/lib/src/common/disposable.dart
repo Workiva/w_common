@@ -514,13 +514,8 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
 
   @mustCallSuper
   @override
-  T manageAndReturnTypedDisposable<T extends Disposable?>(T disposable) {
-    if (disposable == null) {
-      return disposable;
-    }
-
-    _throwOnInvalidCall(
-        'manageAndReturnTyped Disposable', 'disposable', disposable);
+  T manageAndReturnTypedDisposable<T extends Disposable>(T disposable) {
+    _throwOnInvalidCall('manageAndReturnDisposable', 'disposable', disposable);
     manageDisposable(disposable);
 
     return disposable;
@@ -557,7 +552,8 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     return completer;
   }
 
-  void manageDisposable(Disposable? disposable) {
+  void manageDisposable(Disposable disposable) {
+    // ignore: unnecessary_null_comparison
     if (disposable == null) {
       return;
     }
