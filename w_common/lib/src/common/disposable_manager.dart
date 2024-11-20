@@ -47,7 +47,7 @@ abstract class DisposableManagerV7 {
   ///      }
   ///
   /// A null parameter will result in a null return value.
-  T manageAndReturnTypedDisposable<T extends Disposable>(T disposable);
+  T manageAndReturnTypedDisposable<T extends Disposable?>(T disposable);
 
   /// Automatically cancel a stream controller when this object is disposed.
   ///
