@@ -2,10 +2,8 @@ name: w_common_tools
 version: 3.3.0
 description: General dev utilities for Dart projects.
 homepage: https://www.github.com/Workiva/w_common
-
 environment:
   sdk: '>=2.12.0 <3.0.0'
-
 dependencies:
   args: ^2.0.0
   async: ^2.4.0
@@ -16,7 +14,6 @@ dependencies:
   path: ^1.8.0
   sass: ^1.60.0
   watcher: ^1.0.0
-
 dev_dependencies:
   build_runner: '>=1.12.0 <3.0.0'
   build_test: ^2.0.0
@@ -24,7 +21,3 @@ dev_dependencies:
   dependency_validator: ^3.0.0
   test: ^1.21.1
   workiva_analysis_options: ^1.0.0
-
-dependency_validator:
-  ignore:
-    - mockito
