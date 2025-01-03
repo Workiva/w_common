@@ -2,16 +2,13 @@ name: w_common
 version: 3.3.0
 description: General utilities for Dart projects.
 homepage: https://www.github.com/Workiva/w_common
-
 environment:
   sdk: '>=2.19.0 <3.0.0'
-
 dependencies:
   intl: '>=0.17.0 <0.19.0'
   js: ^0.6.3
   logging: ^1.0.0
   meta: ^1.16.0
-
 dev_dependencies:
   build_runner: ^2.0.0
   build_test: ^2.0.0
@@ -20,7 +17,3 @@ dev_dependencies:
   mocktail: ^1.0.4
   test: ^1.21.1
   workiva_analysis_options: ^1.4.2
-
-dependency_validator:
-  ignore:
-    - mockito
