@@ -17,7 +17,7 @@ import 'dart:html';
 import 'dart:js' as js;
 
 import 'package:meta/meta.dart';
-import 'package:w_common/func.dart';
+
 
 import 'package:w_common/src/common/disposable.dart' as disposable_common;
 
