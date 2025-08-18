@@ -552,8 +552,7 @@ class Disposable implements _Disposable, DisposableManagerV7, LeakFlagger {
     return completer;
   }
 
-  void manageDisposable(Disposable disposable) {
-    // ignore: unnecessary_null_comparison
+  void manageDisposable(Disposable? disposable) {
     if (disposable == null) {
       return;
     }
