@@ -1,6 +1,7 @@
 library w_common.timestamp;
 
 import 'package:intl/intl.dart';
+import 'package:w_common/src/intl/time_intl.dart';
 
 final locale = Intl.getCurrentLocale();
 
@@ -24,12 +25,12 @@ String formatTimeDifference(DateTime time, {DateTime? now}) {
 
   if (deltaDays < 1 && now.day == time.day) {
     // "Today, XX:XXam"
-    return '${Intl.message('Today')}, $timeOfDay';
+    return '${TimeIntl.today}, $timeOfDay';
   }
 
   if (deltaDays < 2 && now.weekday == (time.weekday + 1) % 7) {
     // "Yesterday, XX:XXam"
-    return '${Intl.message('Yesterday')}, $timeOfDay';
+    return '${TimeIntl.yesterday}, $timeOfDay';
   }
 
   // Weekday check prevents ambiguity between dates that are

@@ -17,3 +17,9 @@ dev_dependencies:
   mocktail: ^1.0.4
   test: ^1.21.1
   workiva_analysis_options: ^1.4.2
+
+  # hosted dependencies
+  w_intl:
+    hosted:
+      name: w_intl
+      url: https://pub.workiva.org
