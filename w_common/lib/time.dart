@@ -2,17 +2,19 @@ library w_common.timestamp;
 
 import 'package:intl/intl.dart';
 
+final locale = Intl.getCurrentLocale();
+
 /// The format of a timestamp with no date.
-DateFormat timeFormat = DateFormat('h:mma', Intl.getCurrentLocale());
+DateFormat timeFormat = DateFormat('h:mma', locale);
 
 /// The format of a weekday with no time of day.
-DateFormat weekdayFormat = DateFormat.EEEE(Intl.getCurrentLocale());
+DateFormat weekdayFormat = DateFormat.EEEE(locale);
 
 /// The format of a month and day with no time of day.
-DateFormat monthDayFormat = DateFormat.MMMMd(Intl.getCurrentLocale());
+DateFormat monthDayFormat = DateFormat.MMMMd(locale);
 
 /// The format of the full date with no time of day.
-DateFormat yearMonthDayFormat = DateFormat.yMMMd(Intl.getCurrentLocale());
+DateFormat yearMonthDayFormat = DateFormat.yMMMd(locale);
 
 /// Formats a DateTime into the 'X ago' string format.
 String formatTimeDifference(DateTime time, {DateTime? now}) {
