@@ -23,3 +23,4 @@ dev_dependencies:
     hosted:
       name: w_intl
       url: https://pub.workiva.org
+    version: ^2.26.57
