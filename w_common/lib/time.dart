@@ -3,16 +3,16 @@ library w_common.timestamp;
 import 'package:intl/intl.dart';
 
 /// The format of a timestamp with no date.
-DateFormat timeFormat = DateFormat('h:mma');
+DateFormat timeFormat = DateFormat('h:mma', Intl.getCurrentLocale());
 
 /// The format of a weekday with no time of day.
-DateFormat weekdayFormat = DateFormat.EEEE();
+DateFormat weekdayFormat = DateFormat.EEEE(Intl.getCurrentLocale());
 
 /// The format of a month and day with no time of day.
-DateFormat monthDayFormat = DateFormat.MMMMd();
+DateFormat monthDayFormat = DateFormat.MMMMd(Intl.getCurrentLocale());
 
 /// The format of the full date with no time of day.
-DateFormat yearMonthDayFormat = DateFormat.yMMMd();
+DateFormat yearMonthDayFormat = DateFormat.yMMMd(Intl.getCurrentLocale());
 
 /// Formats a DateTime into the 'X ago' string format.
 String formatTimeDifference(DateTime time, {DateTime? now}) {
@@ -22,12 +22,12 @@ String formatTimeDifference(DateTime time, {DateTime? now}) {
 
   if (deltaDays < 1 && now.day == time.day) {
     // "Today, XX:XXam"
-    return 'Today, $timeOfDay';
+    return '${Intl.message('Today')}, $timeOfDay';
   }
 
   if (deltaDays < 2 && now.weekday == (time.weekday + 1) % 7) {
     // "Yesterday, XX:XXam"
-    return 'Yesterday, $timeOfDay';
+    return '${Intl.message('Yesterday')}, $timeOfDay';
   }
 
   // Weekday check prevents ambiguity between dates that are
