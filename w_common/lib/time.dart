@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:w_common/src/intl/time_intl.dart';
 
 /// The format of a timestamp with no date.
-DateFormat get timeFormat => DateFormat('h:mma');
+DateFormat get timeFormat => DateFormat.jm();
 
 /// The format of a weekday with no time of day.
 DateFormat get weekdayFormat => DateFormat.EEEE();
