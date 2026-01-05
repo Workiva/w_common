@@ -1,4 +1,4 @@
-import 'package:w_intl/intl_wrapper.dart';
+import 'package:intl/intl.dart';
 
 class TimeIntl {
   static String get today => Intl.message('Today', name: 'TimeIntl_today');
