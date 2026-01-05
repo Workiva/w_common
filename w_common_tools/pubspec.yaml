@@ -20,4 +20,4 @@ dev_dependencies:
   build_web_compilers: '>=2.16.5 <5.0.0'
   dependency_validator: ^3.0.0
   test: ^1.21.1
-  workiva_analysis_options: ^1.4.3
+  workiva_analysis_options: ^1.0.0
