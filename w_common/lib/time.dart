@@ -23,12 +23,12 @@ String formatTimeDifference(DateTime time, {DateTime? now}) {
 
   if (deltaDays < 1 && now.day == time.day) {
     // "Today, XX:XXam"
-    return '${TimeIntl.today}, $timeOfDay';
+    return TimeIntl.today(timeOfDay);
   }
 
   if (deltaDays < 2 && now.weekday == (time.weekday + 1) % 7) {
     // "Yesterday, XX:XXam"
-    return '${TimeIntl.yesterday}, $timeOfDay';
+    return TimeIntl.yesterday(timeOfDay);
   }
 
   // Weekday check prevents ambiguity between dates that are
