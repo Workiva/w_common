@@ -35,14 +35,14 @@ String formatTimeDifference(DateTime time, {DateTime? now}) {
   // almost a week apart in the same week day.
   if (deltaDays < 7 && now.weekday != time.weekday) {
     // "Tuesday, XX:XXam"
-    return '${weekdayFormat.format(time)}, $timeOfDay';
+    return TimeIntl.dateAndTime(weekdayFormat.format(time), timeOfDay);
   }
 
   // Month check prevents ambiguity between dates that are
   // almost a year apart in the same month.
   if (deltaDays < 365 && (now.year == time.year || now.month != time.month)) {
     // "January 25, XX:XXam"
-    return '${monthDayFormat.format(time)}, $timeOfDay';
+    return TimeIntl.dateAndTime(monthDayFormat.format(time), timeOfDay);
   }
 
   // "Jan 5, 2016"
