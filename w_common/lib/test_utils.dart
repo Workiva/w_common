@@ -17,6 +17,7 @@ import 'package:w_common/disposable.dart';
 /// By default, it will assert that the `disposableTypeName` matches the
 /// simple class name. It will also return the [Symbol] that represents
 /// the class name.
+@Deprecated("Will be removed in 4.0.0")
 Symbol verifyDisposableTypeName(Disposable object,
     {bool makeAssertion = true}) {
   final type = reflect(object).type.simpleName;
