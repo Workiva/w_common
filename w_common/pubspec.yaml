@@ -1,5 +1,5 @@
 name: w_common
-version: 4.0.0
+version: 1.2.146
 description: General utilities for Dart projects.
 homepage: https://www.github.com/Workiva/w_common
 environment:
