@@ -1,0 +1,4 @@
+{
+  "name": "w_common",
+  "install": "bash .cursor/install.sh"
+}
