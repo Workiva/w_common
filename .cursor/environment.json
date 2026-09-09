@@ -1,4 +1,4 @@
 {
   "name": "w_common",
-  "install": "bash .cursor/install.sh"
+  "install": "set -e\n[ \"$(uname -s)\" = \"Linux\" ] || { echo \"refusing: not a Linux Cloud Agent VM\" >&2; exit 1; }\n# Pinned Dart SDK — matches .github/workflows/dart_ci.yml (format job + test matrix lower bound).\nDART_VERSION=2.19.6\nDART_SDK_DIR=/usr/lib/dart-sdk\nif ! command -v dart >/dev/null 2>&1 || ! dart --version 2>&1 | grep -q \"$DART_VERSION\"; then\n  echo \"Installing Dart SDK ${DART_VERSION}...\"\n  tmpzip=\"$(mktemp --suffix=.zip)\"\n  curl -fsSL \"https://storage.googleapis.com/dart-archive/channels/stable/release/${DART_VERSION}/sdk/dartsdk-linux-x64-release.zip\" -o \"$tmpzip\"\n  sudo rm -rf \"$DART_SDK_DIR\"\n  sudo unzip -q \"$tmpzip\" -d /usr/lib/\n  sudo ln -sf \"$DART_SDK_DIR/bin/dart\" /usr/local/bin/dart\n  rm -f \"$tmpzip\"\nfi\ndart --version\n# All dependencies are public pub.dev packages, so no wk/Artifactory auth is required.\n(cd w_common && dart pub get)\n(cd w_common_tools && dart pub get)\n"
 }
